@@ -41,9 +41,23 @@ int8_t Display::menuButton(uint16_t *x, uint16_t *y, bool pressed, bool check_ho
 
 uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
   #ifdef HAS_ILI9341
-    if (!this->headless_mode)
-      #ifndef HAS_CYD_TOUCH
+    if (!this->headless_mode) {
+
+      #ifdef HAS_CST820
+       if (CST820_touch.available()) {
+
+	   if (CST820_touch.data.event == 0) {  // Down event
+	       *x = CST820_touch.data.x;
+	       *y = CST820_touch.data.y;
+
+	       return 1;
+	   }
+       }
+       return 0;
+
+      #elif !defined(HAS_CYD_TOUCH)
         return this->tft.getTouch(x, y, threshold);
+
       #else
         if (this->touchscreen.tirqTouched() && this->touchscreen.touched()) {
           TS_Point p = this->touchscreen.getPoint();
@@ -80,7 +94,7 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
         else
           return 0;
       #endif
-    else
+    } else
       return !this->headless_mode;
   #endif
 
@@ -122,6 +136,8 @@ void Display::setCalData(bool landscape) {
     if (!landscape) {
       #ifdef TFT_SHIELD
         uint16_t calData[5] = { 275, 3494, 361, 3528, 4 }; // tft.setRotation(0); // Portrait with TFT Shield
+      #elif defined(MARAUDER_CYD_24)
+	uint16_t calData[5] = { 296, 3401, 321, 3519, 3 };
       #elif defined(MARAUDER_CYD_3_5_INCH)
         uint16_t calData[5] = { 239, 3560, 262, 3643, 4 };
       #elif defined(MARAUDER_V8)
@@ -137,6 +153,8 @@ void Display::setCalData(bool landscape) {
     else {
       #ifdef TFT_SHIELD
         uint16_t calData[5] = { 391, 3491, 266, 3505, 7 }; // Landscape TFT Shield
+      #elif defined(MARAUDER_CYD_24)
+	uint16_t calData[5] = { 296, 3401, 321, 3519, 3 };
       #elif defined(MARAUDER_CYD_3_5_INCH)
         uint16_t calData[5] = { 272, 3648, 234, 3565, 7 };
       #elif defined(MARAUDER_V8)
@@ -160,6 +178,10 @@ void Display::RunSetup() {
 
   #ifdef SCREEN_BUFFER
     screen_buffer = new LinkedList<String>();
+  #endif
+
+  #if defined(HAS_CST820)
+      this->CST820_touch.begin(CST820_SDA, CST820_SCL, CST820_RST, CST820_INT);
   #endif
 
   #ifdef HAS_CYD_TOUCH
@@ -522,7 +544,13 @@ void Display::processAndPrintString(TFT_eSPI& tft, const String& originalString)
     }
   }
 
-  String spaces = String(' ', TFT_WIDTH / CHAR_WIDTH);
+  int count = TFT_WIDTH / CHAR_WIDTH;
+
+  char buf[count + 1];
+  memset(buf, ' ', count);
+  buf[count] = '\0';
+
+  String spaces(buf);
 
   // Set text color and print the string
   tft.setTextColor(text_color, background_color);
@@ -584,9 +612,12 @@ void Display::displayBuffer(bool do_clear)
   }
 }
 
-void Display::showCenterText(String text, int y)
+void Display::showCenterText(String text, int y, bool small_pp)
 {
-  tft.setCursor((SCREEN_WIDTH - (text.length() * (6 * BANNER_TEXT_SIZE))) / 2, y);
+  if (!small_pp)
+    tft.setCursor((SCREEN_WIDTH - (text.length() * (6 * BANNER_TEXT_SIZE))) / 2, y);
+  else
+    tft.setCursor((SCREEN_WIDTH - (text.length() * (6))) / 2, y);
   tft.println(text);
 }
 
