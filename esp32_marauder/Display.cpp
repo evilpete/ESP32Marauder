@@ -56,11 +56,9 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
        return 0;
 
       #elif !defined(HAS_CYD_TOUCH)
-	Serial.println("Display::updateTouchi HAS_CYD_TOUCH");
         return this->tft.getTouch(x, y, threshold);
 
       #else
-	Serial.println("Display::updateTouch #else");
         if (this->touchscreen.tirqTouched() && this->touchscreen.touched()) {
           TS_Point p = this->touchscreen.getPoint();
 
