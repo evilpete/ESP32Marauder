@@ -230,6 +230,7 @@
       #define HAS_BT
       #define MARAUDER_REV_FEATHER  // Everything else is the same
     #endif
+    #define HAS_MAX1704X
     #define HAS_MINI_KB
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
@@ -379,9 +380,9 @@
     #define USE_SD
     #define HAS_GPS
     #define HAS_CYD_PORTRAIT
-    // #define HAS_NIMBLE_2
+    #define HAS_NIMBLE_2
     #define HAS_IDF_3
-    // #define SPEAKER=26
+    #define SPEAKER=26
   #endif
 
   #ifdef MARAUDER_JC2432W328C
@@ -408,8 +409,8 @@
     #define CST820_INT 21
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
-    // #define HAS_IDF_3
-    // #define SPEAKER=26
+    #define HAS_IDF_3
+    #define SPEAKER=26
   #endif
 
   #ifdef MARAUDER_KIT
