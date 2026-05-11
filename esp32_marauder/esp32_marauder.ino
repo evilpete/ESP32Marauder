@@ -69,6 +69,11 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #endif
 
+#ifdef HAS_CST820
+  #include <CST820.h>
+  CST820 CST820_touch;
+#endif
+
 WiFiScan wifi_scan_obj;
 EvilPortal evil_portal_obj;
 Buffer buffer_obj;
@@ -302,9 +307,19 @@ void setup()
     #endif
   #endif
 
+  #if defined(HAS_CST820)
+      Serial.println(F("CST820_touch.begin()")); Serial.flush();
+      // Serial.println("CST820::begin sda " + (String) CST820_SDA + " scl " + (String) CST820_SCL + " rst " +  (String)CST820_RST + " int  " +  (String)CST820_INT); Serial.flush();
+      // Serial.println("CST820:: I2C_SDA" + (String) I2C_SDA + " I2C_SCL " + (String) I2C_SCL); Serial.flush();
+      CST820_touch.begin(CST820_SDA, CST820_SCL, CST820_RST, CST820_INT);
+      // delay(500);
+      // CST820_touch.test("CST820_touch.begin");
+  #endif
+
   #ifdef HAS_SCREEN
     display_obj.RunSetup();
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      // CST820_touch.test("display_obj.RunSetup");
   #endif
 
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
@@ -340,6 +355,7 @@ void setup()
   #endif
 
   settings_obj.begin();
+  // CST820_touch.test("settings_obj.begin");
 
   const char* type = settings_obj.getSettingType("ChanHop");
 
@@ -349,17 +365,21 @@ void setup()
   }
 
   buffer_obj = Buffer();
+  // CST820_touch.test("buffer_obj");
 
   #ifndef HAS_SIMPLEX_DISPLAY
     #if defined(HAS_SD)
       // Do some SD stuff
       if(!sd_obj.initSD())
         Serial.println(F("SD Card NOT Supported"));
+      // CST820_touch.test("sd_obj.initSD");
 
     #endif
   #endif
 
+  Serial.println("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
+  // CST820_touch.test("wifi_scan_obj.RunSetup");
 
   #ifdef HAS_SCREEN
     display_obj.tft.setTextColor(TFT_GREEN, TFT_BLACK);
@@ -367,9 +387,11 @@ void setup()
   #endif
 
   evil_portal_obj.setup();
+  // CST820_touch.test("evil_portal_obj.setup");
 
   #ifdef HAS_BATTERY
     battery_obj.RunSetup();
+    // CST820_touch.test("battery_obj.RunSetup");
   #endif
 
   #ifdef HAS_BATTERY
@@ -379,6 +401,7 @@ void setup()
   // Do some LED stuff
   #ifdef HAS_FLIPPER_LED
     flipper_led.RunSetup();
+    // CST820_touch.test("flipper_led.RunSetup");
   #elif defined(XIAO_ESP32_S3)
     xiao_led.RunSetup();
   #elif defined(MARAUDER_M5STICKC)
@@ -389,6 +412,7 @@ void setup()
 
   #ifdef HAS_GPS
     gps_obj.begin();
+    // CST820_touch.test("gps_obj.begin");
   #endif
 
   #ifdef HAS_SCREEN  
@@ -400,6 +424,7 @@ void setup()
       display_obj.clearScreen();
     #endif
     menu_function_obj.RunSetup();
+    // CST820_touch.test("menu_function_obj.RunSetup");
   #endif
 
   /*char ssidBuf[64] = {0};  // or prefill with existing SSID
@@ -413,8 +438,10 @@ void setup()
   menu_function_obj.changeMenu(menu_function_obj.current_menu);*/
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
+  // CST820_touch.test("wifi_scan_obj.StartScan");
   
   cli_obj.RunSetup();
+  // CST820_touch.test("cli_obj.RunSetup");
 }
 
 

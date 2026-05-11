@@ -40,22 +40,22 @@ int8_t Display::menuButton(uint16_t *x, uint16_t *y, bool pressed, bool check_ho
 }
 
 uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
-  #ifdef HAS_ILI9341
+
+    #ifdef HAS_CST820
+     if (CST820_touch.available()) {
+       if (CST820_touch.data.event == 0) {  // Down event
+         *x = CST820_touch.data.x;
+         *y = CST820_touch.data.y;
+
+         return 1;
+       }
+     }
+     return 0;
+
+  #elif  defined(HAS_ILI9341)
     if (!this->headless_mode) {
 
-      #ifdef HAS_CST820
-       if (CST820_touch.available()) {
-
-	   if (CST820_touch.data.event == 0) {  // Down event
-	       *x = CST820_touch.data.x;
-	       *y = CST820_touch.data.y;
-
-	       return 1;
-	   }
-       }
-       return 0;
-
-      #elif !defined(HAS_CYD_TOUCH)
+      #if !defined(HAS_CYD_TOUCH)
         return this->tft.getTouch(x, y, threshold);
 
       #else
@@ -180,11 +180,8 @@ void Display::RunSetup() {
     screen_buffer = new LinkedList<String>();
   #endif
 
-  #if defined(HAS_CST820)
-      this->CST820_touch.begin(CST820_SDA, CST820_SCL, CST820_RST, CST820_INT);
-  #endif
 
-  #ifdef HAS_CYD_TOUCH
+  #if defined( HAS_CYD_TOUCH)
     this->touchscreenSPI.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
     this->touchscreen.begin(touchscreenSPI);
     this->touchscreen.setRotation(0);
