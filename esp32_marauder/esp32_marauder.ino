@@ -18,12 +18,22 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "GpsInterface.h"
 #endif
 
+#ifdef defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL
+  #include "driver/gpio.h"
+  #include "soc/soc_caps.h"
+#endif
+
 #include "Assets.h"
 #include "WiFiScan.h"
 #ifdef HAS_SD
   #include "SDInterface.h"
 #endif
 #include "Buffer.h"
+
+#ifdef CYD_SOUND
+    #include "Sound_CYD.h"
+    Sound_CYD sound_obj;
+#endif
 
 #ifdef HAS_FLIPPER_LED
   #include "flipperLED.h"
@@ -50,7 +60,7 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #ifdef HAS_BUTTONS
   #include "Switches.h"
-  
+
   #if (U_BTN >= 0)
     Switches u_btn = Switches(U_BTN, 1000, U_PULL);
   #endif
@@ -67,6 +77,11 @@ https://www.online-utility.org/image/convert/to/XBM
     Switches c_btn = Switches(C_BTN, 1000, C_PULL);
   #endif
 
+#endif
+
+#ifdef PM_ENABLE
+  #include "PowerSave.h"
+  PowerSave PM_obj;
 #endif
 
 #ifdef HAS_CST820
@@ -204,7 +219,7 @@ uint32_t currentTime  = 0;
       #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
         digitalWrite(TFT_BL, LOW);
       #endif
-    
+
       #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
         digitalWrite(TFT_BL, HIGH);
       #endif
@@ -216,7 +231,7 @@ uint32_t currentTime  = 0;
       #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
         digitalWrite(TFT_BL, HIGH);
       #endif
-    
+
       #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
         digitalWrite(TFT_BL, LOW);
       #endif
@@ -232,19 +247,27 @@ uint32_t currentTime  = 0;
 void setup()
 {
   randomSeed(esp_random());
-  
+
   #ifndef DEVELOPER
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
-  
+
   #ifndef HAS_IDF_3
     esp_spiram_init();
   #endif
 
-  Serial.begin(115200);
+  Serial.begin(115200);  // 115200);
 
+// -D ARDUINO_USB_MODE=1
+//   -D ARDUINO_USB_CDC_ON_BOOT
+  Serial.setTxTimeoutMs(40);
+  #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT == 1
+  Serial.setTxTimeoutMs(40);
+  #endif
   while(!Serial)
-    delay(10);
+     delay(10);
+
+  log_i("Serial.setTxTimeoutMs = 40");
 
   #ifdef HAS_C5_SD
     sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
@@ -259,27 +282,27 @@ void setup()
     pinMode(POWER_HOLD_PIN, OUTPUT);
     digitalWrite(POWER_HOLD_PIN, HIGH);
   #endif
-  
+
   #ifdef HAS_SCREEN
     pinMode(TFT_BL, OUTPUT);
   #endif
-  
+
   backlightOff();
   #if BATTERY_ANALOG_ON == 1
     pinMode(BATTERY_PIN, OUTPUT);
     pinMode(CHARGING_PIN, INPUT);
   #endif
-  
+
   // Preset SPI CS pins to avoid bus conflicts
   #ifdef HAS_SCREEN
     digitalWrite(TFT_CS, HIGH);
   #endif
-  
+
   #if defined(HAS_SD) && !defined(HAS_C5_SD)
     pinMode(SD_CS, OUTPUT);
 
     delay(10);
-  
+
     digitalWrite(SD_CS, HIGH);
 
     delay(10);
@@ -289,6 +312,10 @@ void setup()
 
   //while(!Serial)
   //  delay(10);
+
+  #ifdef CYD_SOUND
+      sound_obj.RunSetup();
+  #endif
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
 
@@ -308,18 +335,15 @@ void setup()
   #endif
 
   #if defined(HAS_CST820)
+      // github.com/evilpete/CST820
       Serial.println(F("CST820_touch.begin()")); Serial.flush();
-      // Serial.println("CST820::begin sda " + (String) CST820_SDA + " scl " + (String) CST820_SCL + " rst " +  (String)CST820_RST + " int  " +  (String)CST820_INT); Serial.flush();
-      // Serial.println("CST820:: I2C_SDA" + (String) I2C_SDA + " I2C_SCL " + (String) I2C_SCL); Serial.flush();
       CST820_touch.begin(CST820_SDA, CST820_SCL, CST820_RST, CST820_INT);
       // delay(500);
-      // CST820_touch.test("CST820_touch.begin");
   #endif
 
   #ifdef HAS_SCREEN
     display_obj.RunSetup();
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      // CST820_touch.test("display_obj.RunSetup");
   #endif
 
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
@@ -355,7 +379,6 @@ void setup()
   #endif
 
   settings_obj.begin();
-  // CST820_touch.test("settings_obj.begin");
 
   const char* type = settings_obj.getSettingType("ChanHop");
 
@@ -365,21 +388,18 @@ void setup()
   }
 
   buffer_obj = Buffer();
-  // CST820_touch.test("buffer_obj");
 
   #ifndef HAS_SIMPLEX_DISPLAY
     #if defined(HAS_SD)
       // Do some SD stuff
       if(!sd_obj.initSD())
         Serial.println(F("SD Card NOT Supported"));
-      // CST820_touch.test("sd_obj.initSD");
 
     #endif
   #endif
 
   Serial.println("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
-  // CST820_touch.test("wifi_scan_obj.RunSetup");
 
   #ifdef HAS_SCREEN
     display_obj.tft.setTextColor(TFT_GREEN, TFT_BLACK);
@@ -387,11 +407,9 @@ void setup()
   #endif
 
   evil_portal_obj.setup();
-  // CST820_touch.test("evil_portal_obj.setup");
 
   #ifdef HAS_BATTERY
     battery_obj.RunSetup();
-    // CST820_touch.test("battery_obj.RunSetup");
   #endif
 
   #ifdef HAS_BATTERY
@@ -401,7 +419,6 @@ void setup()
   // Do some LED stuff
   #ifdef HAS_FLIPPER_LED
     flipper_led.RunSetup();
-    // CST820_touch.test("flipper_led.RunSetup");
   #elif defined(XIAO_ESP32_S3)
     xiao_led.RunSetup();
   #elif defined(MARAUDER_M5STICKC)
@@ -412,10 +429,9 @@ void setup()
 
   #ifdef HAS_GPS
     gps_obj.begin();
-    // CST820_touch.test("gps_obj.begin");
   #endif
 
-  #ifdef HAS_SCREEN  
+  #ifdef HAS_SCREEN
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
   #endif
 
@@ -424,7 +440,6 @@ void setup()
       display_obj.clearScreen();
     #endif
     menu_function_obj.RunSetup();
-    // CST820_touch.test("menu_function_obj.RunSetup");
   #endif
 
   /*char ssidBuf[64] = {0};  // or prefill with existing SSID
@@ -438,11 +453,23 @@ void setup()
   menu_function_obj.changeMenu(menu_function_obj.current_menu);*/
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
-  // CST820_touch.test("wifi_scan_obj.StartScan");
-  
+
   cli_obj.RunSetup();
-  // CST820_touch.test("cli_obj.RunSetup");
+
+  #ifdef PM_ENABLE
+    PM_obj.pm_config();
+  PM_obj.set_wake_intr();
+  #endif
+
+#ifdef defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL
+    gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK);
+#endif
+    gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK);
+
+
+
 }
+
 
 
 void loop()

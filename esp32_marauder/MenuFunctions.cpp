@@ -582,6 +582,9 @@ void MenuFunctions::main(uint32_t currentTime)
             #endif
             wifi_scan_obj.drawChannelLine();
           }
+          #ifdef CYD_SOUND
+            sound_obj.click();
+          #endif
         }
         if (menu_button == DOWN_BUTTON) {
           if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) ||
@@ -651,9 +654,15 @@ void MenuFunctions::main(uint32_t currentTime)
             #endif
             wifi_scan_obj.drawChannelLine();
           }
+          #ifdef CYD_SOUND
+            sound_obj.click();
+          #endif
         }
         if(menu_button == SELECT_BUTTON) {
           current_menu->list->get(current_menu->selected).callable();
+          #ifdef CYD_SOUND
+            sound_obj.click();
+          #endif
         }
         else {
           if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) ||
@@ -1484,7 +1493,9 @@ void MenuFunctions::RunSetup()
 
   // Main menu stuff
   wifiMenu.list = new LinkedList<MenuNode>(); // Get list in second menu ready
+#ifdef HAS_BT
   bluetoothMenu.list = new LinkedList<MenuNode>(); // Get list in third menu ready
+#endif
   deviceMenu.list = new LinkedList<MenuNode>();
   #ifdef HAS_GPS
     if (gps_obj.getGpsModuleStatus()) {
@@ -1605,9 +1616,11 @@ void MenuFunctions::RunSetup()
   this->addNodes(&mainMenu, text_table1[7], TFTGREEN, NULL, WIFI, [this]() {
     this->changeMenu(&wifiMenu, true);
   });
+  #ifdef HAS_BT
   this->addNodes(&mainMenu, text_table1[19], TFTCYAN, NULL, BLUETOOTH, [this]() {
     this->changeMenu(&bluetoothMenu, true);
   });
+  #endif
   #ifdef HAS_GPS
 	if (gps_obj.getGpsModuleStatus()) {
     	this->addNodes(&mainMenu, text1_66, TFTRED, NULL, GPS_MENU, [this]() {
@@ -2547,6 +2560,7 @@ void MenuFunctions::RunSetup()
     this->changeMenu(clearAPsMenu.parentMenu, true);
   });
 
+#ifdef HAS_BT
   // Build Bluetooth Menu
   bluetoothMenu.parentMenu = &mainMenu; // Second Menu is third menu parent
   this->addNodes(&bluetoothMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
@@ -2646,6 +2660,7 @@ void MenuFunctions::RunSetup()
     this->drawStatusBar();
     wifi_scan_obj.StartScan(BT_ATTACK_SPAM_ALL, TFT_MAGENTA);
   });
+#endif
 
   //#ifndef HAS_ILI9341
     #ifdef HAS_BT
@@ -2797,40 +2812,49 @@ void MenuFunctions::RunSetup()
     wifi_scan_obj.RunLoadATList();
   });
 
-  saveSSIDsMenu.parentMenu = &saveFileMenu;
-  this->addNodes(&saveSSIDsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(saveSSIDsMenu.parentMenu, true);
-  });
+#ifdef HAS_SD
+  if(!sd_obj.supported) {
+      this->addNodes(&saveFileMenu, "Rescan SD", TFTWHITE, NULL, SD_UPDATE, [this]() {
+        this->changeMenu(&loadAPsMenu, true);
+        sd_obj.initSD();
+      });
+  }
+#endif
 
-  loadSSIDsMenu.parentMenu = &saveFileMenu;
-  this->addNodes(&loadSSIDsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(loadSSIDsMenu.parentMenu, true);
-  });
+    saveSSIDsMenu.parentMenu = &saveFileMenu;
+    this->addNodes(&saveSSIDsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
+      this->changeMenu(saveSSIDsMenu.parentMenu, true);
+    });
 
-  saveAPsMenu.parentMenu = &saveFileMenu;
-  this->addNodes(&saveAPsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(saveAPsMenu.parentMenu, true);
-  });
+    loadSSIDsMenu.parentMenu = &saveFileMenu;
+    this->addNodes(&loadSSIDsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
+      this->changeMenu(loadSSIDsMenu.parentMenu, true);
+    });
 
-  loadAPsMenu.parentMenu = &saveFileMenu;
-  this->addNodes(&loadAPsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(loadAPsMenu.parentMenu, true);
-  });
+    saveAPsMenu.parentMenu = &saveFileMenu;
+    this->addNodes(&saveAPsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
+      this->changeMenu(saveAPsMenu.parentMenu, true);
+    });
 
-  saveATsMenu.parentMenu = &saveFileMenu;
-  this->addNodes(&saveATsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(saveATsMenu.parentMenu, true);
-  });
+    loadAPsMenu.parentMenu = &saveFileMenu;
+    this->addNodes(&loadAPsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
+      this->changeMenu(loadAPsMenu.parentMenu, true);
+    });
 
-  loadATsMenu.parentMenu = &saveFileMenu;
-  this->addNodes(&loadATsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
-    this->changeMenu(loadATsMenu.parentMenu, true);
-  });
+    saveATsMenu.parentMenu = &saveFileMenu;
+    this->addNodes(&saveATsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
+      this->changeMenu(saveATsMenu.parentMenu, true);
+    });
 
-  // GPS Menu
-  #ifdef HAS_GPS
-    if (gps_obj.getGpsModuleStatus()) {
-      gpsMenu.parentMenu = &mainMenu; // Main Menu is second menu parent
+    loadATsMenu.parentMenu = &saveFileMenu;
+    this->addNodes(&loadATsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
+      this->changeMenu(loadATsMenu.parentMenu, true);
+    });
+
+    // GPS Menu
+    #ifdef HAS_GPS
+      if (gps_obj.getGpsModuleStatus()) {
+        gpsMenu.parentMenu = &mainMenu; // Main Menu is second menu parent
 
       this->addNodes(&gpsMenu, text09, TFTLIGHTGREY, NULL, 0, [this]() {
         this->changeMenu(gpsMenu.parentMenu, true);

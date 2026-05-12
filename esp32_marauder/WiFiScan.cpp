@@ -508,6 +508,9 @@ extern "C" {
                   display_obj.loading = false;
                 }
               #endif
+            #ifdef CYD_SOUND
+              sound_obj.geigerClick();  // differnt click for stations
+            #endif
             }
           }
           else if (wifi_scan_obj.currentScanMode == WIFI_SCAN_WAR_DRIVE) {
@@ -905,6 +908,9 @@ extern "C" {
             }
           }
           wifi_scan_obj.bt_cb_busy = false;
+          #ifdef CYD_SOUND
+            sound_obj.geigerClick();
+          #endif
           return;
         }
     };
@@ -1086,6 +1092,10 @@ extern "C" {
                 display_string.concat(mac);
                 Serial.print(mac);
               }
+
+                #ifdef CYD_SOUND
+                  sound_obj.geigerClick();
+                #endif
       
               #ifdef HAS_SCREEN
                 uint8_t temp_len = display_string.length();
@@ -1369,6 +1379,9 @@ extern "C" {
                   }
                     
                   display_obj.display_buffer->add(display_string);
+                #endif
+                #ifdef CYD_SOUND
+                  sound_obj.geigerClick();
                 #endif
               }
             }
@@ -3841,14 +3854,18 @@ void WiFiScan::RunInfo() {
     display_obj.tft.setTextColor(TFT_CYAN);
     display_obj.tft.println(text_table4[20]);
     display_obj.tft.println(text_table4[21] + display_obj.version_number);
+    display_obj.tft.println("Build Date: " + String(__DATE__ " " __TIME__));
     display_obj.tft.println("Hardware: " + (String)HARDWARE_NAME);
     display_obj.tft.println(text_table4[22] + (String)esp_get_idf_version());
+    display_obj.tft.println("ESP Arduino:" + String(ESP_ARDUINO_VERSION_MAJOR) + "." + String(ESP_ARDUINO_VERSION_MINOR) + "." + String(ESP_ARDUINO_VERSION_PATCH));
   #endif
 
   Serial.println(text_table4[20]);
   Serial.println(text_table4[21] + (String)MARAUDER_VERSION);
+  Serial.println("Build Date: " + String(__DATE__ " " __TIME__));
   Serial.println("Hardware: " + (String)HARDWARE_NAME);
   Serial.println(text_table4[22] + (String)esp_get_idf_version());
+  Serial.println("ESP Arduino:" + String(ESP_ARDUINO_VERSION_MAJOR) + "." + String(ESP_ARDUINO_VERSION_MINOR) + "." + String(ESP_ARDUINO_VERSION_PATCH));
 
   if (this->wsl_bypass_enabled) {
     #ifdef HAS_SCREEN
@@ -5666,6 +5683,10 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
           access_points->add(ap);
         }
 
+        #ifdef CYD_SOUND
+          sound_obj.geigerClick();   // click for AP
+        #endif
+
         Serial.println();
 
         buffer_obj.append(snifferPacket, len);
@@ -5788,6 +5809,10 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
       Serial.print(F(" -> ap: "));
       Serial.println(ap_addr);
     }
+
+    #ifdef CYD_SOUND
+      sound_obj.geigerClick(1);  // differnt click for stations
+    #endif
 
     //display_string.concat(replaceOUIWithManufacturer(sta_addr));
     display_string.concat(sta_addr);
@@ -7058,6 +7083,9 @@ void WiFiScan::beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type
           #endif
 
           Serial.println();
+          #ifdef CYD_SOUND
+            sound_obj.geigerClick(0);
+          #endif
 
           buffer_obj.append(snifferPacket, len);
         }    
@@ -7082,6 +7110,9 @@ void WiFiScan::beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type
           }
 
           probe_req_essid = wifi_scan_obj.checkEmptyProbe(probe_req_essid);
+          #ifdef CYD_SOUND
+            sound_obj.geigerClick();
+          #endif
 
           display_string.concat(probe_req_essid);
 
@@ -7245,6 +7276,9 @@ void WiFiScan::beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type
           #endif
 
           Serial.println(display_string);
+          #ifdef CYD_SOUND
+            sound_obj.geigerClick();
+          #endif
 
           buffer_obj.append(snifferPacket, len);
           return;

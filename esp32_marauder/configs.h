@@ -235,7 +235,6 @@
     #define HAS_MINI_KB
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
     #define HAS_SD
@@ -243,7 +242,7 @@
     #define HAS_TEMP_SENSOR
     // #define HAS_GPS
     #define HAS_NIMBLE_2
-    #define HAS_IDF_3
+    // #define HAS_IDF_3
   #endif
 
   #ifdef MARAUDER_V4
@@ -275,10 +274,10 @@
     #define HAS_FULL_SCREEN
     #define HAS_SD
     #define USE_SD
-    // #define HAS_GPS
+    #define HAS_GPS
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
-    // #define HAS_IDF_3
+    #define HAS_IDF_3
     #define CYD_SOUND
   #endif
 
@@ -446,21 +445,16 @@
     #define HAS_BT
     // #define HAS_BT_REMOTE
     #define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
     #define HAS_SD
     #define USE_SD
-    // #define HAS_BATTERY
-    // #define HAS_GPS
-    // #define HAS_TEMP_SENSOR
+    #define HAS_GPS
     #define HAS_CST820
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
-    // #define HAS_IDF_3
-    #define CYD_SOUND
-    #define SOUND_PIN 26
+    #define HAS_IDF_3
+    // #define CYD_SOUND
   #endif
 
   #ifdef MARAUDER_MULTIBOARD_S3
@@ -1792,6 +1786,7 @@
 
       #define I2C_SDA 33
       #define I2C_SCL 32
+      #define SOUND_PIN 26
 
       #define CST820_SDA 33
       #define CST820_SCL 32
