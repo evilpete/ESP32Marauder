@@ -258,14 +258,18 @@ void setup()
 
   Serial.begin(115200);  // 115200);
 
+
 // -D ARDUINO_USB_MODE=1
 //   -D ARDUINO_USB_CDC_ON_BOOT
-  Serial.setTxTimeoutMs(40);
+  // Serial.setTxTimeoutMs(40);
   #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT == 1
-  Serial.setTxTimeoutMs(40);
+  // Serial.setTxTimeoutMs(40);
+    while(!Serial && millis() < 5000)
+       delay(10);
+  #else
+    while(!Serial)
+       delay(10);
   #endif
-  while(!Serial)
-     delay(10);
 
   log_i("Serial.setTxTimeoutMs = 40");
 
