@@ -258,6 +258,11 @@ void setup()
 
   Serial.begin(115200);  // 115200);
 
+  #ifdef HAS_ACT_LED
+    pinMode(ACT_LED_PIN, OUTPUT);
+    delay(100);
+    digitalWrite(ACT_LED_PIN, LOW);
+  #endif
 
 // -D ARDUINO_USB_MODE=1
 //   -D ARDUINO_USB_CDC_ON_BOOT
