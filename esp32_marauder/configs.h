@@ -457,7 +457,7 @@
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
     #define HAS_IDF_3
-    // #define CYD_SOUND
+    #define CYD_SOUND
   #endif
 
   #ifdef MARAUDER_MULTIBOARD_S3
