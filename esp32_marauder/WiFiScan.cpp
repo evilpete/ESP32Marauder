@@ -492,6 +492,10 @@ extern "C" {
                 display_string.concat(advertisedDevice->getAddress().toString().c_str());
                 Serial.print(advertisedDevice->getAddress().toString().c_str());
               }
+
+              #ifdef CYD_SOUND
+                sound_obj.geigerClick();  // differnt click for stations
+              #endif
       
               #ifdef HAS_SCREEN
                 uint8_t temp_len = display_string.length();
@@ -508,9 +512,6 @@ extern "C" {
                   display_obj.loading = false;
                 }
               #endif
-            #ifdef CYD_SOUND
-              sound_obj.geigerClick();  // differnt click for stations
-            #endif
             }
           }
           else if (wifi_scan_obj.currentScanMode == WIFI_SCAN_WAR_DRIVE) {
@@ -3892,7 +3893,10 @@ void WiFiScan::RunInfo() {
     display_obj.tft.println(text_table4[20]);
     display_obj.tft.println(text_table4[21] + display_obj.version_number);
     display_obj.tft.println("Build Date: " + String(__DATE__ " " __TIME__));
-    display_obj.tft.println("Hardware: " + (String)HARDWARE_NAME);
+    display_obj.tft.println("Hardware:   " + (String)HARDWARE_NAME);
+    #ifdef GIT_BRANCH
+    display_obj.tft.println("GIT_BRANCH: " + (String)GIT_BRANCH);
+    #endif
     display_obj.tft.println(text_table4[22] + (String)esp_get_idf_version());
     display_obj.tft.println("ESP Arduino:" + String(ESP_ARDUINO_VERSION_MAJOR) + "." + String(ESP_ARDUINO_VERSION_MINOR) + "." + String(ESP_ARDUINO_VERSION_PATCH));
   #endif
@@ -3900,7 +3904,10 @@ void WiFiScan::RunInfo() {
   Serial.println(text_table4[20]);
   Serial.println(text_table4[21] + (String)MARAUDER_VERSION);
   Serial.println("Build Date: " + String(__DATE__ " " __TIME__));
-  Serial.println("Hardware: " + (String)HARDWARE_NAME);
+  Serial.println("Hardware:   " + (String)HARDWARE_NAME);
+  #ifdef GIT_BRANCH
+  Serial.println("GIT_BRANCH: " + (String)GIT_BRANCH);
+  #endif
   Serial.println(text_table4[22] + (String)esp_get_idf_version());
   Serial.println("ESP Arduino:" + String(ESP_ARDUINO_VERSION_MAJOR) + "." + String(ESP_ARDUINO_VERSION_MINOR) + "." + String(ESP_ARDUINO_VERSION_PATCH));
 

@@ -1645,6 +1645,11 @@ void MenuFunctions::RunSetup()
   this->addNodes(&mainMenu, text_table1[30], TFTLIGHTGREY, NULL, REBOOT, []() {
     ESP.restart();
   });
+  #ifdef DEEPSLEEP
+  this->addNodes(&mainMenu, "Deep Sleep", TFTLIGHTGREY, NULL, SHUTDOWN, [this]() {
+    this->DeepSleep();
+  });
+  #endif
 
   // Build WiFi Menu
   wifiMenu.parentMenu = &mainMenu; // Main Menu is second menu parent
@@ -3911,6 +3916,23 @@ void MenuFunctions::displayCurrentMenu(int start_index)
 
     #undef BL_PREVIEW
     this->changeMenu(current_menu, true);
+  }
+#endif
+
+#ifdef DEEPSLEEP
+  void MenuFunctions::DeepSleep() {
+
+    pinMode(GPIO_NUM_0, INPUT_PULLUP);
+
+    // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0); // 0 means LOW
+
+    Serial.println("Going to sleep now...");
+    Serial.flush();
+    delay(100); // Give serial monitor time to flush
+
+    // Enter deep sleep
+    esp_deep_sleep_start();
   }
 #endif
 
