@@ -237,6 +237,9 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_NMEA_CMD);
     Serial.println(HELP_GPS_POI_CMD);
     Serial.println(HELP_GPS_TRACKER_CMD);
+    #if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
+      Serial.println(HELP_SHUTDOWN_CMD);
+    #endif
     
     // WiFi sniff/scan
     Serial.println(HELP_EVIL_PORTAL_CMD);
@@ -530,6 +533,10 @@ void CommandLine::runCommand(String input) {
 
   else if (cmd_args.get(0) == REBOOT_CMD)
     ESP.restart();
+  #if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
+  else if (cmd_args.get(0) == SHUTDOWN_CMD)
+    shutdown();
+  #endif
 
   //// WiFi/Bluetooth Scan/Attack commands
   if (!wifi_scan_obj.scanning()) {
@@ -1346,6 +1353,7 @@ void CommandLine::runCommand(String input) {
     }
   }
   else if (cmd_args.get(0) == JOIN_CMD) {
+    int np_sw = this->argSearch(&cmd_args, "-n");
     int ap_sw = this->argSearch(&cmd_args, "-a");
     int pw_sw = this->argSearch(&cmd_args, "-p");
     int s_sw  = this->argSearch(&cmd_args, "-s");
@@ -1363,6 +1371,17 @@ void CommandLine::runCommand(String input) {
           menu_function_obj.changeMenu(menu_function_obj.current_menu);
         #endif
       #endif
+    }
+    else if ((np_sw != -1) && (pw_sw != -1)) {
+      String password = cmd_args.get(pw_sw + 1);
+      String ssid = cmd_args.get(np_sw + 1);
+
+      Serial.println("Using SSID: " + (String)ssid + " Password: " + (String)password);
+      settings_obj.saveSetting<bool>("ClientSSID", ssid);
+      settings_obj.saveSetting<bool>("ClientPW", password);
+
+      wifi_scan_obj.joinWiFi(ssid, password, false);
+
     }
     else if (s_sw != -1) {
       String ssid = settings_obj.loadSetting<String>("ClientSSID");

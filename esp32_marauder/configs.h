@@ -277,7 +277,7 @@
     #define HAS_FULL_SCREEN
     #define HAS_SD
     #define USE_SD
-    #define HAS_GPS
+    // #define HAS_GPS
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
     #define HAS_IDF_3
@@ -452,7 +452,7 @@
     #define HAS_FULL_SCREEN
     #define HAS_SD
     #define USE_SD
-    #define HAS_GPS
+    // #define HAS_GPS
     #define HAS_CST820
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
