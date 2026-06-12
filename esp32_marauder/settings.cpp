@@ -28,14 +28,15 @@ void Settings::_buildCache() {
       _cache.EPDeauth = json["Settings"][i]["value"].as<bool>();
     else if (strcmp(name, "ChanHop") == 0)
       _cache.ChanHop = json["Settings"][i]["value"].as<bool>();
-    else if (strcmp(name, "ClientSSID") == 0)
-      _cache.ClientSSID = json["Settings"][i]["value"].as<String>();
-    else if (strcmp(name, "ClientPW") == 0)
-      _cache.ClientPW = json["Settings"][i]["value"].as<String>();
 #ifdef CYD_SOUND
     else if (strcmp(name, "EnableSND") == 0)
       _cache.EnableSND = json["Settings"][i]["value"].as<bool>();
 #endif
+    else if (strcmp(name, "ClientSSID") == 0)
+      _cache.ClientSSID = json["Settings"][i]["value"].as<String>();
+    else if (strcmp(name, "ClientPW") == 0)
+      _cache.ClientPW = json["Settings"][i]["value"].as<String>();
+
   }
 }
 
@@ -456,25 +457,26 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
     jsonBuffer["Settings"][5]["range"]["min"] = false;
     jsonBuffer["Settings"][5]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][6]["name"] = "ClientSSID";
-    jsonBuffer["Settings"][6]["type"] = "String";
-    jsonBuffer["Settings"][6]["value"] = "";
-    jsonBuffer["Settings"][6]["range"]["min"] = "";
-    jsonBuffer["Settings"][6]["range"]["max"] = "";
+// #ifdef CYD_SOUND
+    jsonBuffer["Settings"][6]["name"] = "EnableSND";
+    jsonBuffer["Settings"][6]["type"] = "bool";
+    jsonBuffer["Settings"][6]["value"] = true;
+    jsonBuffer["Settings"][6]["range"]["min"] = false;
+    jsonBuffer["Settings"][6]["range"]["max"] = true;
+// #endif
 
-    jsonBuffer["Settings"][7]["name"] = "ClientPW";
+    jsonBuffer["Settings"][7]["name"] = "ClientSSID";
     jsonBuffer["Settings"][7]["type"] = "String";
     jsonBuffer["Settings"][7]["value"] = "";
     jsonBuffer["Settings"][7]["range"]["min"] = "";
     jsonBuffer["Settings"][7]["range"]["max"] = "";
 
-#ifdef CYD_SOUND
-    jsonBuffer["Settings"][8]["name"] = "EnableSND";
-    jsonBuffer["Settings"][8]["type"] = "bool";
-    jsonBuffer["Settings"][8]["value"] = true;
-    jsonBuffer["Settings"][8]["range"]["min"] = false;
-    jsonBuffer["Settings"][8]["range"]["max"] = true;
-#endif
+    jsonBuffer["Settings"][8]["name"] = "ClientPW";
+    jsonBuffer["Settings"][8]["type"] = "String";
+    jsonBuffer["Settings"][8]["value"] = "";
+    jsonBuffer["Settings"][8]["range"]["min"] = "";
+    jsonBuffer["Settings"][8]["range"]["max"] = "";
+
 
     serializeJson(jsonBuffer, settingsFile);
     serializeJson(jsonBuffer, settings_string);

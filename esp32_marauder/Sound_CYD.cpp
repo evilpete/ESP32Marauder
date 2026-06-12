@@ -88,17 +88,17 @@ void Sound_CYD::tok() {
 }
 
 void Sound_CYD::click() {
-    //if (!settings_obj.loadSetting<bool>("EnableSND")) {
-    //    return;
-    //}
+    if (!settings_obj.loadSetting<bool>("EnableSND")) {
+        return;
+    }
     gen_tone(400, 8);
 }
 
 
 void Sound_CYD::geigerClick(uint8_t i) {
-    //if (!settings_obj.loadSetting<bool>("EnableSND")) {
-    //    return;
-    //}
+    if (!settings_obj.loadSetting<bool>("EnableSND")) {
+        return;
+    }
 
     if (i) {
         gen_tone(250, 10);

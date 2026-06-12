@@ -12,7 +12,7 @@
     #define SOUND_PIN 26
 #endif
 
-// extern Settings settings_obj;
+extern Settings settings_obj;
 
 class Sound_CYD {
 
