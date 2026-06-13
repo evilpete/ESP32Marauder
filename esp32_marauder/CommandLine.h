@@ -117,6 +117,7 @@ const char PROGMEM MAC_CMD_B[] = "randstamac";
 const char PROGMEM MAC_CMD_C[] = "cloneapmac";
 const char PROGMEM MAC_CMD_D[] = "clonestamac";
 const char PROGMEM ADD_CMD[] = "add";
+const char PROGMEM RTC_NTP_SYNC[] = "rtc_ntp_sync";
 
 // Bluetooth sniff/scan
 const char PROGMEM BT_SPAM_CMD[] = "blespam";
@@ -193,6 +194,7 @@ const char PROGMEM HELP_MAC_CMD_C[] = "cloneapmac [-a <index>]";
 const char PROGMEM HELP_MAC_CMD_D[] = "clonestamac [-s <index>]";
 const char PROGMEM HELP_ADD_CMD_A[] = "add -a -b <mac> [-ch <channel>] [-e <ssid>]";
 const char PROGMEM HELP_ADD_CMD_B[] = "add -c -b <mac> -ap <ap_index>";
+const char PROGMEM HELP_RTC_NTP_SYNC[] = "rtc_ntp_sync";
 
 // Bluetooth sniff/scan
 const char PROGMEM HELP_BT_SNIFF_CMD[] = "sniffbt [-t] <airtag/flipper/flock/meta>";

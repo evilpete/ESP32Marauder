@@ -99,6 +99,11 @@ CommandLine cli_obj;
   GpsInterface gps_obj;
 #endif
 
+#ifdef HAS_RTC
+  #include "RTC.h"
+  RTC rtc_obj;
+#endif
+
 #ifdef HAS_BATTERY
   BatteryInterface battery_obj;
 #endif
@@ -452,6 +457,10 @@ void setup()
   #ifdef HAS_SCREEN
     display_obj.tft.setTextColor(TFT_GREEN, TFT_BLACK);
     display_obj.tft.drawCentreString("Initializing...", TFT_WIDTH/2, TFT_HEIGHT * 0.82, 1);
+  #endif
+
+  #ifdef HAS_RTC
+    rtc_obj.RunSetup();
   #endif
 
   evil_portal_obj.setup();

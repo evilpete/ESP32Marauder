@@ -1759,6 +1759,17 @@ void CommandLine::runCommand(String input) {
     }
   }
 
+  #ifdef HAS_RTC
+  else if (cmd_args.get(0) == RTC_NTP_SYNC) {
+
+    if (!wifi_scan_obj.wifi_connected) {
+      Serial.println(F("WIFI is not connected."));
+      return;
+    }
+    rtc_obj.sync_rtc_ntp();
+  }
+  #endif //  HAS_RTC
+
   // SSID stuff
   else if (cmd_args.get(0) == SSID_CMD) {
     int add_sw = this->argSearch(&cmd_args, "-a");

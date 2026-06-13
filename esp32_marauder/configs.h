@@ -231,6 +231,10 @@
     #ifdef MARAUDER_REV_FEATHER_S3
       #define MARAUDER_REV_FEATHER
       #define HAS_BT
+      #define HAS_RTC
+      #define HAS_TEMP_SENSOR
+      #define HAS_SD
+      #define USE_SD
     #endif
     #define HAS_BATTERY
     #define HAS_PSRAM
@@ -240,9 +244,6 @@
     #define HAS_NEOPIXEL_LED
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_TEMP_SENSOR
     // #define HAS_GPS
     #define HAS_NIMBLE_2
     // #define HAS_IDF_3

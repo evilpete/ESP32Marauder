@@ -1079,6 +1079,54 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
+  #ifdef HAS_RTC
+    if(rtc_obj.synced) {
+      char timeBuffer[16];
+      struct tm timeinfo;
+      static uint32_t tic = 0;
+
+      // lets only update every 20 sec
+      if ((this->initTime - tic) < 20000) {
+        return;
+      }
+      tic = this->initTime;
+
+      if(!getLocalTime(&timeinfo)){
+          Serial.println("Failed to obtain time");
+          return;
+      }
+
+      strftime(timeBuffer, sizeof(timeBuffer), "%H:%M", &timeinfo);
+
+      int tx, ty, tw, th;
+      tw = 5 * 8;
+      th = 15;
+      #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
+        tx = TFT_HEIGHT - tw;
+        // ty = TFT_WIDTH - th; // Bottom Right
+        ty = th;   // Near Top Right
+      #else
+        tx = TFT_WIDTH - tw;
+        // ty = TFT_HEIGHT - th;    // Bottom Right
+        ty = th;   // Near Top Right
+      #endif
+
+      // Serial.print("time: ");
+      // Serial.println(timeBuffer);
+      // Serial.println((String) tx + " : " + (String) ty);
+
+      display_obj.tft.fillRect(tx, ty, tw, th, TFT_BLACK);
+      display_obj.tft.setTextColor(TFT_YELLOW, TFT_BLACK, true);
+      display_obj.tft.drawString(timeBuffer, tx , ty , 2);
+
+      display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
+
+    } else {
+      Serial.print("synced == false");
+    }
+
+  #endif
+
   // RAM Stuff
   wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
   if ((wifi_scan_obj.free_ram != wifi_scan_obj.old_free_ram) || (status_changed)) {
@@ -2197,7 +2245,7 @@ void MenuFunctions::RunSetup()
     });
 
     // Select APs on Mini
-    this->addNodes(&wifiGeneralMenu, "Select APs", TFTNAVY, NULL, KEYBOARD_ICO, [this](){
+    this->addNodes(&wifiGeneralMenu, "Select APs", TFTSKYBLUE, NULL, KEYBOARD_ICO, [this](){
       wifiAPMenu.parentMenu = &wifiGeneralMenu;
       // Add the back button
       wifiAPMenu.list->clear();
@@ -2496,6 +2544,11 @@ void MenuFunctions::RunSetup()
     wifi_scan_obj.StartScan(WIFI_SCAN_OFF, TFT_RED);
     this->changeMenu(current_menu, true);
   });
+  #ifdef HAS_RTC
+    this->addNodes(&wifiGeneralMenu, "Sync RTC with WiFi", TFTRED, NULL, 0, []() {
+      rtc_obj.sync_rtc_ntp();
+    });
+  #endif
 
 
   // Menu for generating and setting MAC addrs for AP and STA

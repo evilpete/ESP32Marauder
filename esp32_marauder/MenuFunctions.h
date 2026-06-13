@@ -22,6 +22,11 @@
 #include "SDInterface.h"
 #include "settings.h"
 
+#ifdef HAS_RTC
+  #include "RTC.h"
+  extern RTC rtc_obj;
+#endif
+
 #ifdef CYD_SOUND
   #include "Sound_CYD.h"
   extern Sound_CYD sound_obj;
