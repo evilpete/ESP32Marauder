@@ -80,7 +80,6 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #endif
 
-<<<<<<< HEAD
 #ifdef PM_ENABLE
   #include "PowerSave.h"
   PowerSave PM_obj;
@@ -90,8 +89,6 @@ https://www.online-utility.org/image/convert/to/XBM
   #include <CST820.h>
   CST820 CST820_touch;
 #endif
-=======
->>>>>>> Lilygo-T-HMI
 
 WiFiScan wifi_scan_obj;
 EvilPortal evil_portal_obj;
@@ -149,58 +146,6 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 
 uint32_t currentTime  = 0;
 
-<<<<<<< HEAD
-#if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
-  void shutdown() {
-    #ifdef PWR_ON_PIN
-        // T-HMI
-        //  if on battery, can be turn off with the PWR_ON_PIN, if on battery
-        Serial.println("Set PWR_ON_PIN:  LOW");
-        Serial.flush();
-        digitalWrite(PWR_ON_PIN, LOW);
-
-        //  if plugged in we use DEEPSLEEP instead
-        delay(500);
-        Serial.println("DeepSleep");
-        DeepSleep();
-    #else
-        DeepSleep(0);
-    #endif
-  }
-
-  void DeepSleep(int8_t wakeup_but) {
-
-    if (wakeup_but >= 0) {
-      pinMode(wakeup_but, INPUT_PULLUP);
-
-      Serial.println("Setting WakeUp to GPIO 0...");
-      // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
-      esp_sleep_enable_ext0_wakeup(wakeup_but, 0); // 0 means LOW
-      gpio_hold_en(0);
-    }
-    esp_wifi_stop();
-
-    Serial.println("Going to sleep now...");
-    Serial.flush();
-    delay(100); // Give serial monitor time to flush
-
-    // Enter deep sleep
-    esp_deep_sleep_start();
-  }
-#endif  // SHUTDOWN
-
-// PWM Brightness Control
-#ifdef HAS_SCREEN
-  #include <Preferences.h>
-  #define BL_CHANNEL 0
-  #define BL_FREQ 5000
-  #define BL_RESOLUTION 8
-  const uint8_t BL_LEVELS[] = {26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
-  const uint8_t BL_NUM_LEVELS = 10;
-  uint8_t bl_level_idx = 9; // default full brightness
-  Preferences bl_prefs;
-#endif
-=======
 #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
   void shutdown() {
     #ifdef POWER_HOLD_PIN
@@ -209,7 +154,6 @@ uint32_t currentTime  = 0;
         Serial.println("Set POWER_HOLD_PIN:  LOW");
         Serial.flush();
         digitalWrite(POWER_HOLD_PIN, LOW);
->>>>>>> Lilygo-T-HMI
 
         //  if plugged in we use DEEPSLEEP instead
         delay(500);
@@ -232,36 +176,6 @@ uint32_t currentTime  = 0;
     if (wakeup_but >= 0) {
       pinMode(wakeup_but, INPUT_PULLUP);
 
-<<<<<<< HEAD
-  void backlightOff() {
-    #ifdef HAS_SCREEN
-      BL_SET(0);
-    #endif
-  }
-#else
-  void backlightOn() {
-    #ifdef HAS_SCREEN
-      #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, LOW);
-      #endif
-
-      #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, HIGH);
-      #endif
-    #endif
-  }
-
-  void backlightOff() {
-    #ifdef HAS_SCREEN
-      #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, HIGH);
-      #endif
-
-      #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, LOW);
-      #endif
-    #endif
-=======
       // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
       esp_sleep_enable_ext0_wakeup((gpio_num_t) wakeup_but, 0); // 0 means LOW
     }
@@ -272,7 +186,6 @@ uint32_t currentTime  = 0;
 
     // Enter deep sleep
     esp_deep_sleep_start();
->>>>>>> Lilygo-T-HMI
   }
 #endif  // SHUTDOWN
 
@@ -303,9 +216,7 @@ void setup()
   #ifndef DEVELOPER
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
-<<<<<<< HEAD
 
-=======
   #ifdef ARDUINO_USB_MODE
     Serial.println("ARDUINO_USB_MODE = " + (String)ARDUINO_USB_MODE);
   #endif
@@ -313,7 +224,6 @@ void setup()
     Serial.println("ARDUINO_USB_CDC_ON_BOOT = " + (String)ARDUINO_USB_CDC_ON_BOOT);
   #endif
   
->>>>>>> Lilygo-T-HMI
   #ifndef HAS_IDF_3
     esp_spiram_init();
   #endif
@@ -326,7 +236,6 @@ void setup()
     digitalWrite(ACT_LED_PIN, LOW);
   #endif
 
-<<<<<<< HEAD
 // -D ARDUINO_USB_MODE=1
 //   -D ARDUINO_USB_CDC_ON_BOOT
   // Serial.setTxTimeoutMs(40);
@@ -341,14 +250,9 @@ void setup()
 
   log_i("Serial.setTxTimeoutMs = 40");
 
-  #ifdef HAS_C5_SD
-    sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
-    delay(100);
-=======
   #if defined(TFT_BL)
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH); // ???
->>>>>>> Lilygo-T-HMI
   #endif
 
     //brightnessInit();
@@ -361,18 +265,6 @@ void setup()
     axp192_obj.begin();
   #endif
 
-<<<<<<< HEAD
-  #if defined(MARAUDER_M5STICKCP2) // Prevent StickCP2 from turning off when disconnect USB cable
-    pinMode(POWER_HOLD_PIN, OUTPUT);
-    digitalWrite(POWER_HOLD_PIN, HIGH);
-  #endif
-
-  #ifdef HAS_SCREEN
-    pinMode(TFT_BL, OUTPUT);
-  #endif
-
-  backlightOff();
-=======
   #if defined(HAS_SCREEN) && defined(TFT_BL)
     pinMode(TFT_BL, OUTPUT);
   #endif
@@ -381,7 +273,6 @@ void setup()
     backlightOff();
   #endif
 
->>>>>>> Lilygo-T-HMI
   #if BATTERY_ANALOG_ON == 1
     pinMode(BATTERY_PIN, OUTPUT);
     pinMode(CHARGING_PIN, INPUT);
@@ -391,13 +282,8 @@ void setup()
   #if defined(HAS_SCREEN) && defined(TFT_CS)
     digitalWrite(TFT_CS, HIGH);
   #endif
-<<<<<<< HEAD
-
-  #if defined(HAS_SD) && !defined(HAS_C5_SD)
-=======
   
   #if defined(HAS_SD) && defined(SD_CS) && !defined(HAS_C5_SD)
->>>>>>> Lilygo-T-HMI
     pinMode(SD_CS, OUTPUT);
     delay(10);
 
@@ -575,7 +461,6 @@ void setup()
 
   cli_obj.RunSetup();
 
-<<<<<<< HEAD
   #ifdef PM_ENABLE
     PM_obj.pm_config();
   PM_obj.set_wake_intr();
@@ -586,8 +471,6 @@ void setup()
 // #endif
 
 
-=======
->>>>>>> Lilygo-T-HMI
 
 }
 
