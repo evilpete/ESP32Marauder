@@ -43,9 +43,9 @@ extern LinkedList<ProbeReqSsid>* probe_req_ssids;
 extern const String PROGMEM version_number;
 extern const String PROGMEM board_target;
 
-#if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
-  void shutdown();
-  void DeepSleep(int8_t wakeup_but = -1);
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  extern void shutdown();
+  extern void DeepSleep(int8_t wakeup_but);
 #endif
 
 //// Commands
@@ -64,7 +64,11 @@ const char PROGMEM GPS_CMD[] = "gps";
 const char PROGMEM NMEA_CMD[] = "nmea";
 const char PROGMEM GPS_POI_CMD[] = "gpspoi";
 const char PROGMEM GPS_TRACKER_CMD[] = "gpstracker";
+<<<<<<< HEAD
 #if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
+=======
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+>>>>>>> Lilygo-T-HMI
   const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
 #endif
 
@@ -144,7 +148,11 @@ const char PROGMEM HELP_GPS_CMD[] = "gps [-t] [-g] <fix/sat/lon/lat/alt/date/acc
 const char PROGMEM HELP_GPS_POI_CMD[] = "gpspoi -s/-m/-e";
 const char PROGMEM HELP_GPS_TRACKER_CMD[] = "gpstracker -c <start/stop>";
 const char PROGMEM HELP_NMEA_CMD[] = "nmea";
+<<<<<<< HEAD
 #if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
+=======
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+>>>>>>> Lilygo-T-HMI
   const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
 #endif
 

@@ -53,6 +53,7 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "BatteryInterface.h"
 #endif
 
+
 #ifdef HAS_SCREEN
   #include "Display.h"
   #include "MenuFunctions.h"
@@ -79,6 +80,7 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #endif
 
+<<<<<<< HEAD
 #ifdef PM_ENABLE
   #include "PowerSave.h"
   PowerSave PM_obj;
@@ -88,12 +90,20 @@ https://www.online-utility.org/image/convert/to/XBM
   #include <CST820.h>
   CST820 CST820_touch;
 #endif
+=======
+>>>>>>> Lilygo-T-HMI
 
 WiFiScan wifi_scan_obj;
 EvilPortal evil_portal_obj;
 Buffer buffer_obj;
 Settings settings_obj;
 CommandLine cli_obj;
+
+#ifdef HAS_SCREEN
+  extern void brightnessInit();
+  extern void backlightOff();
+  extern void backlightOn();
+#endif
 
 #ifdef HAS_GPS
   GpsInterface gps_obj;
@@ -139,6 +149,7 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 
 uint32_t currentTime  = 0;
 
+<<<<<<< HEAD
 #if defined(DEEPSLEEP) || defined(PWR_ON_PIN)
   void shutdown() {
     #ifdef PWR_ON_PIN
@@ -189,69 +200,39 @@ uint32_t currentTime  = 0;
   uint8_t bl_level_idx = 9; // default full brightness
   Preferences bl_prefs;
 #endif
+=======
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  void shutdown() {
+    #ifdef POWER_HOLD_PIN
+        // T-HMI
+        //  if on battery, can be turn off with the PWR_ON_PIN/POWER_HOLD_PIN if on battery
+        Serial.println("Set POWER_HOLD_PIN:  LOW");
+        Serial.flush();
+        digitalWrite(POWER_HOLD_PIN, LOW);
+>>>>>>> Lilygo-T-HMI
 
-// Helper macros for LEDC API compatibility (2.x vs 3.x board package)
-#ifdef HAS_SCREEN
-  #ifndef HAS_MINI_SCREEN
-    #if ESP_ARDUINO_VERSION_MAJOR >= 3
-      #define BL_SETUP()       ledcAttach(TFT_BL, BL_FREQ, BL_RESOLUTION)
-      #define BL_SET(duty)     ledcWrite(TFT_BL, (duty))
+        //  if plugged in we use DEEPSLEEP instead
+        delay(500);
+        Serial.println("DeepSleep");
+        DeepSleep();
     #else
-      #define BL_SETUP()       do { ledcSetup(BL_CHANNEL, BL_FREQ, BL_RESOLUTION); ledcAttachPin(TFT_BL, BL_CHANNEL); } while(0)
-      #define BL_SET(duty)     ledcWrite(BL_CHANNEL, (duty))
-    #endif
-  #endif
-#endif
-
-#ifndef HAS_MINI_SCREEN
-  void brightnessInit() {
-    #ifdef HAS_SCREEN
-      BL_SETUP();
-      bl_prefs.begin("backlight", false);
-      bl_level_idx = bl_prefs.getUChar("level", 9);
-      if (bl_level_idx >= BL_NUM_LEVELS) bl_level_idx = 9;
-      BL_SET(BL_LEVELS[bl_level_idx]);
+        DeepSleep(0);
     #endif
   }
 
-  void brightnessCycle() {
-    #ifdef HAS_SCREEN
-      bl_level_idx = (bl_level_idx + 1) % BL_NUM_LEVELS;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-      bl_prefs.putUChar("level", bl_level_idx);
-      Serial.print(F("[Brightness] Level "));
-      Serial.print(bl_level_idx + 1);
-      Serial.print(F("/"));
-      Serial.print(BL_NUM_LEVELS);
-      Serial.print(F(" ("));
-      Serial.print(BL_LEVELS[bl_level_idx] * 100 / 255);
-      Serial.println(F("%)"));
-    #endif
-  }
+  void DeepSleep(int8_t wakeup_but) {
 
-  uint8_t getBrightnessLevel() {
-    #ifdef HAS_SCREEN
-      return bl_level_idx;
-    #else
-      return 0;
-    #endif
-  }
+    // 1. Disconnect from the network gracefully
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
 
-  void brightnessSave(uint8_t level) {
-    #ifdef HAS_SCREEN
-      if (level >= BL_NUM_LEVELS) level = BL_NUM_LEVELS - 1;
-      bl_level_idx = level;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-      bl_prefs.putUChar("level", bl_level_idx);
-    #endif
-  }
+    // 2. Explicitly stop the WiFi driver to save power
+    esp_wifi_stop();
 
-  void backlightOn() {
-    #ifdef HAS_SCREEN
-      BL_SET(BL_LEVELS[bl_level_idx]);
-    #endif
-  }
+    if (wakeup_but >= 0) {
+      pinMode(wakeup_but, INPUT_PULLUP);
 
+<<<<<<< HEAD
   void backlightOff() {
     #ifdef HAS_SCREEN
       BL_SET(0);
@@ -280,8 +261,21 @@ uint32_t currentTime  = 0;
         digitalWrite(TFT_BL, LOW);
       #endif
     #endif
+=======
+      // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
+      esp_sleep_enable_ext0_wakeup((gpio_num_t) wakeup_but, 0); // 0 means LOW
+    }
+
+    Serial.println("Going to sleep now...");
+    Serial.flush();
+    delay(100); // Give serial monitor time to flush
+
+    // Enter deep sleep
+    esp_deep_sleep_start();
+>>>>>>> Lilygo-T-HMI
   }
-#endif
+#endif  // SHUTDOWN
+
 
 #ifdef HAS_C5_SD
   SPIClass sharedSPI(SPI);
@@ -290,12 +284,36 @@ uint32_t currentTime  = 0;
 
 void setup()
 {
+
+  // https://github.com/Xinyuan-LilyGO/T-HMI/issues/34
+  // T-HMI : latch power on if on battery
+  // Prevent StickCP2 from turning off when disconnect USB cable
+  #ifdef POWER_HOLD_PIN  
+    pinMode(POWER_HOLD_PIN, OUTPUT);
+    digitalWrite(POWER_HOLD_PIN, HIGH);
+  #endif
+
+  #ifdef PWR_EN_PIN  // Enable power to peripherals
+    pinMode(PWR_EN_PIN, OUTPUT);
+    digitalWrite(PWR_EN_PIN, HIGH);
+  #endif
+
   randomSeed(esp_random());
 
   #ifndef DEVELOPER
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
+<<<<<<< HEAD
 
+=======
+  #ifdef ARDUINO_USB_MODE
+    Serial.println("ARDUINO_USB_MODE = " + (String)ARDUINO_USB_MODE);
+  #endif
+  #ifdef ARDUINO_USB_CDC_ON_BOOT
+    Serial.println("ARDUINO_USB_CDC_ON_BOOT = " + (String)ARDUINO_USB_CDC_ON_BOOT);
+  #endif
+  
+>>>>>>> Lilygo-T-HMI
   #ifndef HAS_IDF_3
     esp_spiram_init();
   #endif
@@ -308,6 +326,7 @@ void setup()
     digitalWrite(ACT_LED_PIN, LOW);
   #endif
 
+<<<<<<< HEAD
 // -D ARDUINO_USB_MODE=1
 //   -D ARDUINO_USB_CDC_ON_BOOT
   // Serial.setTxTimeoutMs(40);
@@ -325,12 +344,24 @@ void setup()
   #ifdef HAS_C5_SD
     sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
     delay(100);
+=======
+  #if defined(TFT_BL)
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH); // ???
+>>>>>>> Lilygo-T-HMI
   #endif
+
+    //brightnessInit();
+
+  while(!Serial && millis() < 2000) {
+    delay(500);
+  }
 
   #ifdef defined(MARAUDER_M5STICKC) && !defined(MARAUDER_M5STICKCP2)
     axp192_obj.begin();
   #endif
 
+<<<<<<< HEAD
   #if defined(MARAUDER_M5STICKCP2) // Prevent StickCP2 from turning off when disconnect USB cable
     pinMode(POWER_HOLD_PIN, OUTPUT);
     digitalWrite(POWER_HOLD_PIN, HIGH);
@@ -341,23 +372,36 @@ void setup()
   #endif
 
   backlightOff();
+=======
+  #if defined(HAS_SCREEN) && defined(TFT_BL)
+    pinMode(TFT_BL, OUTPUT);
+  #endif
+  
+  #ifdef HAS_SCREEN
+    backlightOff();
+  #endif
+
+>>>>>>> Lilygo-T-HMI
   #if BATTERY_ANALOG_ON == 1
     pinMode(BATTERY_PIN, OUTPUT);
     pinMode(CHARGING_PIN, INPUT);
   #endif
 
   // Preset SPI CS pins to avoid bus conflicts
-  #ifdef HAS_SCREEN
+  #if defined(HAS_SCREEN) && defined(TFT_CS)
     digitalWrite(TFT_CS, HIGH);
   #endif
+<<<<<<< HEAD
 
   #if defined(HAS_SD) && !defined(HAS_C5_SD)
+=======
+  
+  #if defined(HAS_SD) && defined(SD_CS) && !defined(HAS_C5_SD)
+>>>>>>> Lilygo-T-HMI
     pinMode(SD_CS, OUTPUT);
-
     delay(10);
 
     digitalWrite(SD_CS, HIGH);
-
     delay(10);
   #endif
 
@@ -371,6 +415,16 @@ void setup()
   #endif
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
+  #ifdef ESP_ARDUINO_VERSION_STR
+    Serial.print("Arduino ESP32 Core Version: ");
+    Serial.println(ESP_ARDUINO_VERSION_STR);
+  #elif defined(ESP_ARDUINO_VERSION)
+    Serial.printf("Arduino Core Major: %d, Minor: %d, Patch: %d\n", 
+	    ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
+  #endif
+
+
+
 
   #ifdef HAS_PSRAM
     if (!psramInit()) {
@@ -399,8 +453,7 @@ void setup()
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
   #endif
 
-  // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
-  #ifndef HAS_MINI_SCREEN
+  #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
     brightnessInit();
     backlightOff();
   #endif
@@ -418,7 +471,9 @@ void setup()
   #endif
 
 
-  backlightOn(); // Need this
+  #ifdef HAS_SCREEN
+    backlightOn(); // Need this
+  #endif
 
   #ifdef HAS_SCREEN
     // Do some stealth mode stuff
@@ -520,6 +575,7 @@ void setup()
 
   cli_obj.RunSetup();
 
+<<<<<<< HEAD
   #ifdef PM_ENABLE
     PM_obj.pm_config();
   PM_obj.set_wake_intr();
@@ -530,6 +586,8 @@ void setup()
 // #endif
 
 
+=======
+>>>>>>> Lilygo-T-HMI
 
 }
 
