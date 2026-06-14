@@ -238,7 +238,6 @@
     #endif
     #define HAS_BATTERY
     #define HAS_PSRAM
-    //#define HAS_BT
     #define HAS_MINI_KB
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
@@ -246,7 +245,9 @@
     #define HAS_MINI_SCREEN
     // #define HAS_GPS
     #define HAS_NIMBLE_2
-    // #define HAS_IDF_3
+    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      #define HAS_IDF_3
+    #endif
   #endif
 
   #ifdef MARAUDER_V4
@@ -281,7 +282,9 @@
     // #define HAS_GPS
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
-    #define HAS_IDF_3
+    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      #define HAS_IDF_3
+    #endif
     #define CYD_SOUND
   #endif
 
@@ -457,7 +460,9 @@
     #define HAS_CST820
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
-    #define HAS_IDF_3
+    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      #define HAS_IDF_3
+    #endif
     #define CYD_SOUND
   #endif
 
