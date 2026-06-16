@@ -30,6 +30,10 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 #include "Buffer.h"
 
+#ifdef I2C_FREQ
+  #include "Wire.h"
+#endif
+
 #ifdef CYD_SOUND
     #include "Sound_CYD.h"
     Sound_CYD sound_obj;
@@ -470,6 +474,9 @@ void setup()
 //     gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK);
 // #endif
 
+#ifdef I2C_FREQ
+  Wire.setClock(I2C_FREQ);           // reset I2C_FREQ incase it was chamged
+#endif
 
 
 }

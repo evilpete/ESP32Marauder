@@ -130,6 +130,10 @@
 
   //// END HARDWARE NAMES
 
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    #define HAS_IDF_3
+  #endif
+
  //// BOARD FEATURES
   #if defined(DUAL_MINI_C5)
     #define MARAUDER_MINI_V3
@@ -251,9 +255,6 @@
     #define HAS_MINI_SCREEN
     // #define HAS_GPS
     #define HAS_NIMBLE_2
-    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-      #define HAS_IDF_3
-    #endif
   #endif
 
   #ifdef MARAUDER_V4
@@ -1934,10 +1935,12 @@
 
       #define I2C_SDA 33
       #define I2C_SCL 32
+
+      #define I2C_FREQ 10000    // 10K instead of 100K
       #define SOUND_PIN 26
 
-      #define CST820_SDA 33
-      #define CST820_SCL 32
+      #define CST820_SDA I2C_SDA
+      #define CST820_SCL I2C_SCL
       #define CST820_RST 25
       #define CST820_INT 21
 
