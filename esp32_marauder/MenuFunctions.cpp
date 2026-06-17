@@ -1693,15 +1693,9 @@ void MenuFunctions::RunSetup()
   this->addNodes(&mainMenu, text_table1[30], TFTLIGHTGREY, NULL, REBOOT, []() {
     ESP.restart();
   });
-  #ifdef POWER_HOLD_PIN
     this->addNodes(&mainMenu, "Power Off", TFTLIGHTGREY, NULL, SHUTDOWN, []() {
         shutdown();
     });
-  #elif defined(DEEPSLEEP)
-    this->addNodes(&mainMenu, "Deep Sleep", TFTLIGHTGREY, NULL, SHUTDOWN, []() {
-        DeepSleep(0);
-      });
-  #endif
 
   // Build WiFi Menu
   wifiMenu.parentMenu = &mainMenu; // Main Menu is second menu parent

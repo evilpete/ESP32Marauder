@@ -155,6 +155,7 @@ uint32_t currentTime  = 0;
 
   void DeepSleep(int8_t wakeup_but) {
 
+    wakeup_but = -1;
     // 1. Disconnect from the network gracefully
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
