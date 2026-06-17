@@ -1,6 +1,8 @@
 
 #ifdef HAS_RTC
 
+#include "configs.h"
+
 #include "RTC.h"
 
 // https://github.com/adafruit/RTClib

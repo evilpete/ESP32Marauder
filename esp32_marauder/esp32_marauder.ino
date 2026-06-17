@@ -1,6 +1,6 @@
 /* FLASH SETTINGS
 Board: LOLIN D32
-Flash Frequency: 80MHz
+ Frequency: 80MHz
 Partition Scheme: Minimal SPIFFS
 https://www.online-utility.org/image/convert/to/XBM
 */
@@ -43,12 +43,16 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #ifdef HAS_FLIPPER_LED
   #include "flipperLED.h"
-#elif defined(XIAO_ESP32_S3)
+  flipperLED led_obj;
+#elif defined(HAS_XIAO_LED) || defined(XIAO_ESP32_S3)
   #include "xiaoLED.h"
-#elif defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+  xiaoLED led_obj;
+#elif defined(HAS_STICKC_LED) || defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
   #include "stickcLED.h"
+  stickcLED led_obj;
 #elif defined(HAS_NEOPIXEL_LED)
   #include "LedInterface.h"
+  LedInterface led_obj;
 #endif
 
 #include "settings.h"
@@ -130,25 +134,13 @@ CommandLine cli_obj;
   SDInterface sd_obj;
 #endif
 
-#ifdef MARAUDER_M5STICKC
-  AXP192 axp192_obj;
-#endif
-
-#ifdef HAS_FLIPPER_LED
-  flipperLED flipper_led;
-#elif defined(XIAO_ESP32_S3)
-  xiaoLED xiao_led;
-#elif defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
-  stickcLED stickc_led;
-#elif defined(HAS_NEOPIXEL_LED)
-  LedInterface led_obj;
-#endif
 
 const String PROGMEM version_number = MARAUDER_VERSION;
 
-#ifdef HAS_NEOPIXEL_LED
-  Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
-#endif
+
+// #ifdef HAS_NEOPIXEL_LED
+//   Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
+// #endif
 
 uint32_t currentTime  = 0;
 
@@ -227,9 +219,6 @@ uint32_t currentTime  = 0;
 void setup()
 {
 
-  // https://github.com/Xinyuan-LilyGO/T-HMI/issues/34
-  // T-HMI : latch power on if on battery
-  // Prevent StickCP2 from turning off when disconnect USB cable
   #ifdef POWER_HOLD_PIN  
     pinMode(POWER_HOLD_PIN, OUTPUT);
     digitalWrite(POWER_HOLD_PIN, HIGH);
@@ -277,27 +266,17 @@ void setup()
        delay(10);
   #endif
 
-  log_i("Serial.setTxTimeoutMs = 40");
+  #ifdef HAS_C5_SD
+    sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
+    delay(100);
+  #endif
+
 
   #if defined(TFT_BL)
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH); // ???
   #endif
 
-    //brightnessInit();
-
-  while(!Serial && millis() < 2000) {
-    delay(500);
-  }
-
-  #ifdef defined(MARAUDER_M5STICKC) && !defined(MARAUDER_M5STICKCP2)
-    axp192_obj.begin();
-  #endif
-
-  #if defined(HAS_SCREEN) && defined(TFT_BL)
-    pinMode(TFT_BL, OUTPUT);
-  #endif
-  
   #ifdef HAS_SCREEN
     backlightOff();
   #endif
@@ -451,15 +430,7 @@ void setup()
   #endif
 
   // Do some LED stuff
-  #ifdef HAS_FLIPPER_LED
-    flipper_led.RunSetup();
-  #elif defined(XIAO_ESP32_S3)
-    xiao_led.RunSetup();
-  #elif defined(MARAUDER_M5STICKC)
-    stickc_led.RunSetup();
-  #elif defined(HAS_NEOPIXEL_LED)
-    led_obj.RunSetup();
-  #endif
+  led_obj.RunSetup();
 
   #ifdef HAS_GPS
     gps_obj.begin();
@@ -555,15 +526,12 @@ void loop()
       menu_function_obj.main(currentTime);
     #endif
   }
-  #ifdef HAS_FLIPPER_LED
-    flipper_led.main();
-  #elif defined(XIAO_ESP32_S3)
-    xiao_led.main();
-  #elif defined(MARAUDER_M5STICKC)
-    stickc_led.main();
-  #elif defined(HAS_NEOPIXEL_LED)
+
+  /*
+  #ifdef HAS_LED
     led_obj.main(currentTime);
   #endif
+  */
 
   #ifdef HAS_SCREEN
     delay(1);

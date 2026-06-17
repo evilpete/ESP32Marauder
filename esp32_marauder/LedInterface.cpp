@@ -1,8 +1,9 @@
 #include "LedInterface.h"
 
+#ifdef HAS_NEOPIXEL_LED
 
 LedInterface::LedInterface() {
-
+  // Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
 }
 
 void LedInterface::RunSetup() {
@@ -55,6 +56,9 @@ void LedInterface::RunSetup() {
 }
 
 void LedInterface::main(uint32_t currentTime) {
+}
+
+/*
   if ((!settings_obj.loadSetting<bool>("EnableLED")) ||
       (this->current_mode == MODE_OFF)) {
     this->ledOff();
@@ -65,18 +69,19 @@ void LedInterface::main(uint32_t currentTime) {
     this->rainbow();
   }
   else if (this->current_mode == MODE_ATTACK) {
-    this->attackLed();
+    this->attackLED();
   }
   else if (this->current_mode == MODE_SNIFF) {
-    this->sniffLed();
+    this->sniffLED();
   }
   else if (this->current_mode == MODE_CUSTOM) {
     return;
   }
   else {
-    this->ledOff();
+    this->offLED();
   }
 };
+*/
 
 void LedInterface::setMode(uint8_t new_mode) {
   this->current_mode = new_mode;
@@ -93,25 +98,31 @@ void LedInterface::setColor(int r, int g, int b) {
   #endif
 }
 
-void LedInterface::sniffLed() {
+void LedInterface::sniffLED() {
+  if (!settings_obj.loadSetting<bool>("EnableLED"))
+    return;
 
-  Serial.println("Setting neopixel sniffLed...");
+  // this->current_mode == MODE_SNIFF;
   this->setColor(0, 0, 255);
 }
 
-void LedInterface::attackLed() {
-  Serial.println("Setting neopixel attackLed...");
+void LedInterface::attackLED() {
+  if (!settings_obj.loadSetting<bool>("EnableLED"))
+    return;
+
+  // this->current_mode == MODE_ATTACK;
   this->setColor(255, 0, 0);
 }
 
-void LedInterface::ledOff() {
-  Serial.println("Setting neopixel ledOff...");
+void LedInterface::offLED() {
+  // this->current_mode == MODE_OFF;
   this->setColor(0, 0, 0);
 }
 
 void LedInterface::rainbow() {
   #ifdef HAS_NEOPIXEL_LED
-  Serial.println("Setting neopixel rainbow...");
+  // Serial.println("Setting neopixel rainbow...");
+    // this->current_mode == MODE_RAINBOW;
     strip.setPixelColor(0, this->Wheel((0 * 256 / 100 + this->wheel_pos) % 256));
     strip.show();
 
@@ -138,3 +149,4 @@ uint32_t LedInterface::Wheel(byte WheelPos) {
     return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
   #endif
 }
+#endif  // HAS_NEOPIXEL_LED

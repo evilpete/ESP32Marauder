@@ -143,6 +143,11 @@
     //#define FLIPPER_ZERO_HAT
     #define HAS_MINI_KB
     #define HAS_BATTERY
+      #if defined(MARAUDER_M5STICKC)
+        #define HAS_AXP192
+      #else
+        #define HAS_TP4057
+      #endif
     #define HAS_BT
     #define HAS_BUTTONS
     //#define HAS_NEOPIXEL_LED
@@ -174,6 +179,7 @@
       #define HAS_BATTERY
       #define BATTERY_ADC_PIN 10
       #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     #endif
   #endif
 
@@ -184,6 +190,7 @@
     #define HAS_BT
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
@@ -225,6 +232,7 @@
     #define HAS_BT_REMOTE
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -241,7 +249,7 @@
     #ifdef MARAUDER_REV_FEATHER_S3
       #define MARAUDER_REV_FEATHER
       #define HAS_BT
-      #define HAS_RTC
+      // #define HAS_RTC
       #define HAS_TEMP_SENSOR
       #define HAS_SD
       #define USE_SD
@@ -251,6 +259,8 @@
     #define HAS_MINI_KB
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
+    //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
     // #define HAS_GPS
@@ -261,9 +271,11 @@
     #define HAS_TOUCH
     //#define FLIPPER_ZERO_HAT
     #define HAS_BATTERY
+      #define HAS_IP5306
     #define HAS_BT
     //#define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -299,10 +311,12 @@
     #define HAS_TOUCH
     //#define FLIPPER_ZERO_HAT
     #define HAS_BATTERY
+      #define HAS_IP5306
     #define HAS_BT
     #define HAS_BT_REMOTE
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -318,6 +332,7 @@
   #ifdef MARAUDER_CYD_MICRO
     #define HAS_TOUCH
     #define HAS_FLIPPER_LED
+    #define HAS_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
@@ -339,6 +354,7 @@
   #ifdef MARAUDER_CYD_2USB
     #define HAS_TOUCH
     #define HAS_FLIPPER_LED
+    #define HAS_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
@@ -362,6 +378,7 @@
   #ifdef MARAUDER_CYD_3_5_INCH
     #define HAS_TOUCH
     #define HAS_FLIPPER_LED
+    #define HAS_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
@@ -385,6 +402,7 @@
   #ifdef MARAUDER_CYD_GUITION
     #define HAS_TOUCH
     #define HAS_FLIPPER_LED
+    #define HAS_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
@@ -410,6 +428,7 @@
     #define HAS_BT
     //#define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -438,6 +457,7 @@
 
   #ifdef MARAUDER_FLIPPER
     #define HAS_FLIPPER_LED
+    #define HAS_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     //#define HAS_BT
@@ -475,6 +495,7 @@
 
   #ifdef MARAUDER_MULTIBOARD_S3
     #define HAS_FLIPPER_LED
+    #define HAS_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
@@ -495,6 +516,7 @@
     #define HAS_BT
     //#define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     #define HAS_SD
@@ -511,6 +533,7 @@
     #define HAS_BT
     //#define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     #define HAS_SD
@@ -525,6 +548,9 @@
     #define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
+    #define HAS_XIAO_LED
+    #define HAS_LED
+
     //#define HAS_BUTTONS
     //#define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
@@ -569,6 +595,7 @@
     #define HAS_BT
     //#define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     #define HAS_GPS
@@ -636,6 +663,7 @@
     #define HAS_BT
     //#define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
+    #define HAS_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     //#define HAS_MINI_SCREEN
@@ -650,7 +678,7 @@
 
   //// POWER MANAGEMENT
   #ifdef HAS_PWR_MGMT
-    #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+    #if defined(HAS_AXP192)
       #include "AXP192.h"
     #endif
 
@@ -1079,6 +1107,8 @@
   #if defined(MARAUDER_M5STICKCP2)
       #define CHAN_PER_PAGE 7
 
+
+      #define HAS_LED
       #define MARAUDER_M5STICKC // From now on, everything is the same, except for one check in esp32_marauder.ino amd stickc_led.cpp/h
 
       #define SCREEN_CHAR_WIDTH 40
@@ -2635,6 +2665,7 @@
     #define BANNER_TIME 50
     
     #define COMMAND_PREFIX "!"
+    #define HAS_LED
     
     // Keypad start position, key sizes and spacing
     #define KEY_X (TFT_WIDTH/2) // Centre of key
@@ -2959,8 +2990,11 @@
   #endif
   //// END MEMORY LOWER LIMIT STUFF
 
+  // HAS_FLIPPER_LED XIAO_ESP32_S3 HAS_XIAO_LED HAS_STICKC_LED HAS_NEOPIXEL_LED
   //// NEOPIXEL STUFF  
   #ifdef HAS_NEOPIXEL_LED
+
+    #define HAS_LED
     
     #if defined(ESP32_LDDB)
       #define PIN 17
@@ -3109,74 +3143,59 @@
   //// BATTERY STUFF
   #ifdef HAS_BATTERY
 
-    #ifdef MARAUDER_V4
+    #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2) 
       #define I2C_SDA 33
       #define I2C_SCL 22
-    #endif
 
-    #ifdef MARAUDER_V6
+    #elif defined(MARAUDER_V4) || defined(MARAUDER_V6) || defined(MARAUDER_V6_1) || defined(MARAUDER_KIT)
       #define I2C_SDA 33
       #define I2C_SCL 22
-    #endif
+      #define HAS_IP5306
 
-    #ifdef MARAUDER_V6_1
-      #define I2C_SDA 33
-      #define I2C_SCL 22
-    #endif
-
-    #ifdef MARAUDER_M5STICKC
-      #define I2C_SDA 33
-      #define I2C_SCL 22
-    #endif
-
-    #ifdef MARAUDER_KIT
-      #define I2C_SDA 33
-      #define I2C_SCL 22
-    #endif
-
-    #ifdef MARAUDER_MINI
+    #elif defined(MARAUDER_MINI)
       #define I2C_SDA 33
       #define I2C_SCL 26
-    #endif
 
-    #ifdef MARAUDER_V7
+    #elif defined(MARAUDER_V7)
       #define I2C_SDA 33
       #define I2C_SCL 16
-    #endif
+      #define HAS_IP5306
 
     #ifdef MARAUDER_CYD_24
       #define I2C_SDA 33
       #define I2C_SCL 36
     #endif
 
-    #ifdef MARAUDER_V7_1
+    #elif defined(MARAUDER_V7_1)
       #define I2C_SDA 33
       #define I2C_SCL 27
-    #endif
 
-    #ifdef MARAUDER_CYD_MICRO
+    #elif defined(MARAUDER_CYD_MICRO)
       #define I2C_SDA 22
       #define I2C_SCL 27
-    #endif
 
-    #ifdef MARAUDER_CYD_2USB
+    #elif defined(MARAUDER_CYD_2USB)
       #define I2C_SDA 22
       #define I2C_SCL 27
-    #endif
 
-    #ifdef MARAUDER_CYD_3_5_INCH
+    #elif defined(MARAUDER_CYD_3_5_INCH)
       #define I2C_SDA 32
       #define I2C_SCL 25
-    #endif
 
-    #ifdef MARAUDER_CYD_GUITION
+    #elif defined(MARAUDER_CYD_GUITION)
       #define I2C_SDA 22
       #define I2C_SCL 21
-    #endif
 
-    #ifdef MARAUDER_V8
+    #elif defined(MARAUDER_V8)
       #define I2C_SCL 4
       #define I2C_SDA 5
+
+    #elif defined(MARAUDER_REV_FEATHER)
+      #define I2C_SCL 4
+      #define I2C_SDA 3
+      #define HAS_MAX1704X
+      #undef HAS_AXP2101
+      #undef HAS_IP5306
     #endif
 
     #ifdef MARAUDER_REV_FEATHER
@@ -3194,7 +3213,38 @@
       #define BATTERY_ADC_PIN 5
     #endif
 
-  #endif
+    //  If we know what we have, we can delete what we're not using
+    #ifdef BATTERY_ADC_PIN
+      #undef HAS_AXP2101
+      #undef HAS_IP5306
+      #undef HAS_MAX1704X
+      #undef HAS_AXP192
+
+    // No driver for this LiPo charger
+    #elif defined(HAS_TP4057)
+      #undef HAS_AXP2101
+      #undef HAS_IP5306
+      #undef HAS_MAX1704X
+      #undef HAS_AXP192
+
+    #elif defined(HAS_AXP192)
+      #undef HAS_AXP2101
+      #undef HAS_IP5306
+      #undef HAS_MAX1704X
+
+    #elif defined(HAS_AXP2101)
+      #undef HAS_IP5306
+      #undef HAS_MAX1704X
+
+
+    #else       // punt
+       // #define HAS_AXP2101
+       #define HAS_IP5306
+       #define HAS_MAX1704X
+       #define HAS_AXP192
+    #endif
+
+  #endif  // HAS_BATTERY
 
   //// MARAUDER TITLE STUFF
   #ifdef MARAUDER_V4
@@ -3363,6 +3413,9 @@
   //// FUNNY FLIPPER LED STUFF
 
   #ifdef HAS_FLIPPER_LED
+
+    #define HAS_LED
+
     #ifdef MARAUDER_FLIPPER
       #define B_PIN 4
       #define G_PIN 5
@@ -3433,3 +3486,4 @@
   #endif
 
 #endif
+
