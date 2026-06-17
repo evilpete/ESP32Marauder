@@ -3051,6 +3051,33 @@ void WiFiScan::RunPortScanAll(uint8_t scan_mode, uint16_t color) {
   initTime = millis();
 }
 
+void WiFiScan::RunSaveAll() {
+
+  if (!sd_obj.supported)
+    return;
+
+  if (airtags->size())
+      RunSaveATList();
+
+  if (access_points->size())
+      RunSaveAPList();
+
+  if (ssids->size())
+      RunSaveSSIDList();
+}
+
+void WiFiScan::RunLoadAll() {
+
+  if (!sd_obj.supported)
+    return;
+
+  if (SD.exists("/Airtags_0.log"))
+    RunLoadATList();
+
+  if (SD.exists("/APs_0.log"))
+    RunLoadAPList();
+}
+
 void WiFiScan::RunLoadATList() {
   #ifdef HAS_SD
     // Prepare to access the file
@@ -3154,6 +3181,35 @@ void WiFiScan::RunSaveATList(bool save_as) {
       Serial.println((String)airtags->size());
     }
   #endif
+}
+
+static int APcompare(AccessPoint &a, AccessPoint &b) {
+    return memcmp(a.bssid, b.bssid, 6);
+}
+
+// Sort APList by BSSID
+void WiFiScan::RunSortAPList() {
+
+    access_points->sort(APcompare);
+
+    for (int i = 0; i < access_points->size(); i++) {
+      const AccessPoint& acp = access_points->get(i);  // alias to existing list element
+      for (int j = 0; j < acp.stations->size(); j++) {
+        (*stations)[acp.stations->get(j)].ap = i;
+      }
+    }
+
+    //  data debug Validation
+    /*
+    for (int i = 0; i < access_points->size(); i++) {
+      const AccessPoint& acp = access_points->get(i);
+      Serial.printf("%d, %2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx\n", i, acp.bssid[0], acp.bssid[1], acp.bssid[2], acp.bssid[3], acp.bssid[4], acp.bssid[5]);
+      for (int j = 0; j < acp.stations->size(); j++) {
+        const Station& sn = (*stations)[acp.stations->get(j)];
+        Serial.printf("\t%hu: %hu %2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx\n", i, sn.ap,
+          sn.mac[0], sn.mac[1], sn.mac[2], sn.mac[3], sn.mac[4], sn.mac[5]);
+      }
+    }*/
 }
 
 void WiFiScan::RunLoadAPList() {
@@ -7174,7 +7230,7 @@ void WiFiScan::beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type
 
           probe_req_essid = wifi_scan_obj.checkEmptyProbe(probe_req_essid);
           #ifdef CYD_SOUND
-            sound_obj.geigerClick();
+            sound_obj.geigerClick();  // WIFI_PKT_MGMT
           #endif
 
           display_string.concat(probe_req_essid);
@@ -7340,7 +7396,7 @@ void WiFiScan::beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type
 
           Serial.println(display_string);
           #ifdef CYD_SOUND
-            sound_obj.geigerClick();
+            sound_obj.geigerClick();  // BT Packet
           #endif
 
           buffer_obj.append(snifferPacket, len);

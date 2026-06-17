@@ -457,25 +457,28 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
     jsonBuffer["Settings"][5]["range"]["min"] = false;
     jsonBuffer["Settings"][5]["range"]["max"] = true;
 
+    uint8_t i = 6;
 // #ifdef CYD_SOUND
-    jsonBuffer["Settings"][6]["name"] = "EnableSND";
-    jsonBuffer["Settings"][6]["type"] = "bool";
-    jsonBuffer["Settings"][6]["value"] = true;
-    jsonBuffer["Settings"][6]["range"]["min"] = false;
-    jsonBuffer["Settings"][6]["range"]["max"] = true;
+    jsonBuffer["Settings"][i]["name"] = "EnableSND";
+    jsonBuffer["Settings"][i]["type"] = "bool";
+    jsonBuffer["Settings"][i]["value"] = true;
+    jsonBuffer["Settings"][i]["range"]["min"] = false;
+    jsonBuffer["Settings"][i]["range"]["max"] = true;
+    i++;
 // #endif
 
-    jsonBuffer["Settings"][7]["name"] = "ClientSSID";
-    jsonBuffer["Settings"][7]["type"] = "String";
-    jsonBuffer["Settings"][7]["value"] = "";
-    jsonBuffer["Settings"][7]["range"]["min"] = "";
-    jsonBuffer["Settings"][7]["range"]["max"] = "";
+    jsonBuffer["Settings"][i]["name"] = "ClientSSID";
+    jsonBuffer["Settings"][i]["type"] = "String";
+    jsonBuffer["Settings"][i]["value"] = "";
+    jsonBuffer["Settings"][i]["range"]["min"] = "";
+    jsonBuffer["Settings"][i]["range"]["max"] = "";
+    i++;
 
-    jsonBuffer["Settings"][8]["name"] = "ClientPW";
-    jsonBuffer["Settings"][8]["type"] = "String";
-    jsonBuffer["Settings"][8]["value"] = "";
-    jsonBuffer["Settings"][8]["range"]["min"] = "";
-    jsonBuffer["Settings"][8]["range"]["max"] = "";
+    jsonBuffer["Settings"][i]["name"] = "ClientPW";
+    jsonBuffer["Settings"][i]["type"] = "String";
+    jsonBuffer["Settings"][i]["value"] = "";
+    jsonBuffer["Settings"][i]["range"]["min"] = "";
+    jsonBuffer["Settings"][i]["range"]["max"] = "";
 
 
     serializeJson(jsonBuffer, settingsFile);

@@ -150,7 +150,6 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 
 uint32_t currentTime  = 0;
 
-#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
   void shutdown() {
     #ifdef POWER_HOLD_PIN
         // T-HMI
@@ -162,7 +161,7 @@ uint32_t currentTime  = 0;
         //  if plugged in we use DEEPSLEEP instead
         delay(500);
         Serial.println("DeepSleep");
-        DeepSleep();
+        DeepSleep(0);
     #else
         DeepSleep(0);
     #endif
@@ -177,11 +176,25 @@ uint32_t currentTime  = 0;
     // 2. Explicitly stop the WiFi driver to save power
     esp_wifi_stop();
 
+    // Should we isolate  pins with external pull-up resistors
+    // to minimize current consumption.
+    // #ifdef I2C_SDA
+    //   rtc_gpio_isolate(I2C_SDA);
+    //   rtc_gpio_isolate(I2C_SCL);
+    // #endif
+
+    // Code specific to the classic ESP32 (e.g., WROOM-32) goes here
+    // #ifdef CONFIG_IDF_TARGET_ESP32
+    // rtc_gpio_isolate(GPIO_NUM_12);
+    // 18 19 5 23 10 33 32 16 17 20 
+    esp_sleep_config_gpio_isolate();
+    
     if (wakeup_but >= 0) {
+      gpio_hold_dis((gpio_num_t) wakeup_but);
       pinMode(wakeup_but, INPUT_PULLUP);
 
       // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
-      esp_sleep_enable_ext0_wakeup((gpio_num_t) wakeup_but, 0); // 0 means LOW
+      esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
     }
 
     Serial.println("Going to sleep now...");
@@ -191,7 +204,6 @@ uint32_t currentTime  = 0;
     // Enter deep sleep
     esp_deep_sleep_start();
   }
-#endif  // SHUTDOWN
 
 
 #ifdef HAS_C5_SD

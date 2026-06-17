@@ -2538,6 +2538,10 @@ void MenuFunctions::RunSetup()
     this->changeMenu(&setMacMenu, true);
   });
 
+  this->addNodes(&wifiGeneralMenu, "Sort APs", TFTBLUE, NULL, GENERATE, [this]() {
+    wifi_scan_obj.RunSortAPList();
+  });
+
   this->addNodes(&wifiGeneralMenu, "Shutdown WiFi", TFTRED, NULL, 0, [this]() {
     WiFi.disconnect(true);
     delay(100);
