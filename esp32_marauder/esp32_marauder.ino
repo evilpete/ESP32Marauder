@@ -1,6 +1,6 @@
 /* FLASH SETTINGS
 Board: LOLIN D32
-Flash Frequency: 80MHz
+ Frequency: 80MHz
 Partition Scheme: Minimal SPIFFS
 https://www.online-utility.org/image/convert/to/XBM
 */
@@ -24,6 +24,10 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "SDInterface.h"
 #endif
 #include "Buffer.h"
+
+#ifdef HAS_BT
+#include "esp_bt.h"
+#endif
 
 #ifdef HAS_FLIPPER_LED
   #include "flipperLED.h"
@@ -75,6 +79,12 @@ Buffer buffer_obj;
 Settings settings_obj;
 CommandLine cli_obj;
 
+#ifdef HAS_SCREEN
+  extern void brightnessInit();
+  extern void backlightOff();
+  extern void backlightOn();
+#endif
+
 #ifdef HAS_GPS
   GpsInterface gps_obj;
 #endif
@@ -90,10 +100,6 @@ CommandLine cli_obj;
 
 #if defined(HAS_SD) && !defined(HAS_C5_SD)
   SDInterface sd_obj;
-#endif
-
-#ifdef MARAUDER_M5STICKC
-  AXP192 axp192_obj;
 #endif
 
 #ifdef HAS_FLIPPER_LED
@@ -114,110 +120,70 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 
 uint32_t currentTime  = 0;
 
-// PWM Brightness Control
-#ifdef HAS_SCREEN
-  #include <Preferences.h>
-  #define BL_CHANNEL 0
-  #define BL_FREQ 5000
-  #define BL_RESOLUTION 8
-  const uint8_t BL_LEVELS[] = {26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
-  const uint8_t BL_NUM_LEVELS = 10;
-  uint8_t bl_level_idx = 9; // default full brightness
-  Preferences bl_prefs;
-#endif
 
-// Helper macros for LEDC API compatibility (2.x vs 3.x board package)
-#ifdef HAS_SCREEN
-  #ifndef HAS_MINI_SCREEN
-    #if ESP_ARDUINO_VERSION_MAJOR >= 3
-      #define BL_SETUP()       ledcAttach(TFT_BL, BL_FREQ, BL_RESOLUTION)
-      #define BL_SET(duty)     ledcWrite(TFT_BL, (duty))
+// #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  void shutdown() {
+    #ifdef POWER_HOLD_PIN
+        // T-HMI
+        //  if on battery, can be turn off with the PWR_ON_PIN/POWER_HOLD_PIN if on battery
+        Serial.println("Set POWER_HOLD_PIN:  LOW");
+        Serial.flush();
+        digitalWrite(POWER_HOLD_PIN, LOW);
+
+        //  if plugged in we use DEEPSLEEP instead
+        delay(500);
+        Serial.println("DeepSleep");
+        DeepSleep();
     #else
-      #define BL_SETUP()       do { ledcSetup(BL_CHANNEL, BL_FREQ, BL_RESOLUTION); ledcAttachPin(TFT_BL, BL_CHANNEL); } while(0)
-      #define BL_SET(duty)     ledcWrite(BL_CHANNEL, (duty))
-    #endif
-  #endif
-#endif
-
-#ifndef HAS_MINI_SCREEN
-  void brightnessInit() {
-    #ifdef HAS_SCREEN
-      BL_SETUP();
-      bl_prefs.begin("backlight", false);
-      bl_level_idx = bl_prefs.getUChar("level", 9);
-      if (bl_level_idx >= BL_NUM_LEVELS) bl_level_idx = 9;
-      BL_SET(BL_LEVELS[bl_level_idx]);
+        DeepSleep(0);
     #endif
   }
 
-  void brightnessCycle() {
-    #ifdef HAS_SCREEN
-      bl_level_idx = (bl_level_idx + 1) % BL_NUM_LEVELS;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-      bl_prefs.putUChar("level", bl_level_idx);
-      Serial.print(F("[Brightness] Level "));
-      Serial.print(bl_level_idx + 1);
-      Serial.print(F("/"));
-      Serial.print(BL_NUM_LEVELS);
-      Serial.print(F(" ("));
-      Serial.print(BL_LEVELS[bl_level_idx] * 100 / 255);
-      Serial.println(F("%)"));
-    #endif
-  }
+  void DeepSleep(int8_t wakeup_but) {
 
-  uint8_t getBrightnessLevel() {
-    #ifdef HAS_SCREEN
-      return bl_level_idx;
-    #else
-      return 0;
-    #endif
-  }
+    const char good_Night_msg[] = "Going to sleep now...";
 
-  void brightnessSave(uint8_t level) {
-    #ifdef HAS_SCREEN
-      if (level >= BL_NUM_LEVELS) level = BL_NUM_LEVELS - 1;
-      bl_level_idx = level;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-      bl_prefs.putUChar("level", bl_level_idx);
-    #endif
-  }
+    Serial.println(good_Night_msg);
+    Serial.flush();
 
-  void backlightOn() {
     #ifdef HAS_SCREEN
-      BL_SET(BL_LEVELS[bl_level_idx]);
-    #endif
-  }
-
-  void backlightOff() {
-    #ifdef HAS_SCREEN
-      BL_SET(0);
-    #endif
-  }
-#else
-  void backlightOn() {
-    #ifdef HAS_SCREEN
-      #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, LOW);
+      display_obj.tft.fillScreen(TFT_BLACK);
+      #if !defined(MARAUDER_CARDPUTER) && !defined(MARAUDER_CARDPUTER_ADV)
+	display_obj.tft.drawCentreString(good_Night_msg, TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+      #else
+	display_obj.tft.drawCentreString(good_Night_msg, TFT_HEIGHT/2, TFT_WIDTH * 0.33, 4);
       #endif
+    #endif
+
+    // Disconnect from the network gracefully
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
     
-      #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, HIGH);
-      #endif
+    #ifdef HAS_BT
+      // This handles stopping and deinitializing BT gracefully
+      esp_bluedroid_disable();
+      esp_bt_controller_disable();
+      esp_bt_controller_deinit();
     #endif
-  }
 
-  void backlightOff() {
-    #ifdef HAS_SCREEN
-      #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, HIGH);
-      #endif
-    
-      #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, LOW);
-      #endif
-    #endif
+    // Explicitly stop the WiFi driver to save power
+
+    WiFi.disconnect();
+    esp_wifi_stop();
+
+    if (wakeup_but >= 0) {
+      pinMode(wakeup_but, INPUT_PULLUP);
+
+      // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
+      esp_sleep_enable_ext0_wakeup((gpio_num_t) wakeup_but, 0); // 0 means LOW
+    }
+
+    delay(1100); // Give serial monitor time to flush
+
+    // Enter deep sleep
+    esp_deep_sleep_start();
   }
-#endif
+// #endif  // SHUTDOWN
 
 #ifdef HAS_C5_SD
   SPIClass sharedSPI(SPI);
@@ -250,10 +216,6 @@ void setup()
   #ifdef HAS_C5_SD
     sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
     delay(100);
-  #endif
-
-  #ifdef defined(MARAUDER_M5STICKC) && !defined(MARAUDER_M5STICKCP2)
-    axp192_obj.begin();
   #endif
 
   #if defined(MARAUDER_M5STICKCP2) // Prevent StickCP2 from turning off when disconnect USB cable
@@ -347,7 +309,7 @@ void setup()
 
   settings_obj.begin();
 
-  const char* type = settings_obj.getSettingType("ChanHop");
+  const char* type = settings_obj.getSettingType("Probe GPS at Boot");
 
   if (type == nullptr || type[0] == '\0') {
     Serial.println(F("Current settings format not supported. Installing new default settings..."));
@@ -364,6 +326,10 @@ void setup()
 
     #endif
   #endif
+
+  #ifdef MSC_SHARE
+    MSC_Share MSC_obj
+  #endif // MSC_SHARE
 
   wifi_scan_obj.RunSetup();
 
@@ -394,7 +360,9 @@ void setup()
   #endif
 
   #ifdef HAS_GPS
-    gps_obj.begin();
+    if (!settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
+      gps_obj.begin();
+    }
   #endif
 
   #ifdef HAS_SCREEN  

@@ -43,8 +43,12 @@
 
 extern WiFiScan wifi_scan_obj;
 extern SDInterface sd_obj;
+// #ifdef HAS_BATTERY
 extern BatteryInterface battery_obj;
+// #endif
 extern Settings settings_obj;
+extern void shutdown();
+extern void DeepSleep(void DeepSleep(int8_t);
 
 #define FLASH_BUTTON 0
 
@@ -184,6 +188,9 @@ class MenuFunctions
     Menu cloneAPMacMenu;
     Menu setMacMenu;
     Menu selectProbeSSIDsMenu;
+
+    Menu adminMenu;
+    Menu probeSDMenu;
 
     // Bluetooth menu stuff
     Menu bluetoothSnifferMenu;

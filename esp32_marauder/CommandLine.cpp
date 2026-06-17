@@ -1,9 +1,10 @@
 #include "CommandLine.h"
 
-// Brightness functions defined in esp32_marauder.ino
+// Brightness functions defined in BackLight.cpp
 #ifndef HAS_MINI_SCREEN
   extern void brightnessCycle();
   extern uint8_t getBrightnessLevel();
+  extern const uint8_t BL_NUM_LEVELS;
 #endif
 
 void CommandLine::RunSetup() {
@@ -237,6 +238,10 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_NMEA_CMD);
     Serial.println(HELP_GPS_POI_CMD);
     Serial.println(HELP_GPS_TRACKER_CMD);
+      Serial.println(HELP_SHUTDOWN_CMD);
+    #ifdef MSC_SHARE
+      Serial.println(HELP_MSC_CMD);
+    #endif
     
     // WiFi sniff/scan
     Serial.println(HELP_EVIL_PORTAL_CMD);
@@ -527,9 +532,54 @@ void CommandLine::runCommand(String input) {
       }
     }
   }
+  #ifdef MSC_SHARE
+    else if (cmd_args.get(0) == MSC_CMD) {
+      int st_sw = this->argSearch(&cmd_args, "start");
+      int sp_sw = this->argSearch(&cmd_args, "stop");
+      int pa_sw  = this->argSearch(&cmd_args, "pause");
+      int re_sw  = this->argSearch(&cmd_args, "resume");
+
+      if (st_sw != -1) {
+       if (MSC_Share_obj.msc_started)
+         Serial.print(F("SD USB share already running");
+       else
+         MSC_Share_obj.RunSetup();
+
+      } else if (sp_sw != -1) {
+       if (MSC_Share_obj.msc_started)
+         MSC_Share_obj.end();
+       else
+         Serial.print(F("SD USB not running");
+
+      } else if (pa_sw != -1) {
+       if (MSC_Share_obj.msc_started)
+        MSC_Share_obj.msc_stop();
+       else
+         Serial.print(F("SD USB not running");
+
+      } else if (re_sw != -1) {
+       if (MSC_Share_obj.msc_started)
+        MSC_Share_obj.msc_start();
+       else
+         Serial.print(F("SD USB not running");
+
+      } else {
+       if (MSC_Share_obj.msc_started) {
+         if (MSC_Share_obj.msc_active)
+           Serial.print(F("SD USB Share is active");
+         else
+           Serial.print(F("SD USB not paused");
+       } else
+         Serial.print(F("SD USB not running");
+      }
+
+   #endif // MSC_SHARE
+
 
   else if (cmd_args.get(0) == REBOOT_CMD)
     ESP.restart();
+  else if (cmd_args.get(0) == SHUTDOWN_CMD)
+    shutdown();
 
   //// WiFi/Bluetooth Scan/Attack commands
   if (!wifi_scan_obj.scanning()) {
@@ -1096,7 +1146,8 @@ void CommandLine::runCommand(String input) {
             Serial.print(F("[Brightness] Set to level "));
             Serial.println(lvl);
           } else {
-            Serial.println(F("Level must be 0-9"));
+            Serial.print(F("Level must be 0-"));
+            Serial.println(BL_NUM_LEVELS);
           }
         } else {
           Serial.print(F("[Brightness] Current level: "));
@@ -1349,6 +1400,7 @@ void CommandLine::runCommand(String input) {
     int ap_sw = this->argSearch(&cmd_args, "-a");
     int pw_sw = this->argSearch(&cmd_args, "-p");
     int s_sw  = this->argSearch(&cmd_args, "-s");
+    int n_sw  = this->argSearch(&cmd_args, "-n");
 
     if ((ap_sw != -1) && (pw_sw != -1)) {
       int index = cmd_args.get(ap_sw + 1).toInt();
@@ -1363,6 +1415,13 @@ void CommandLine::runCommand(String input) {
           menu_function_obj.changeMenu(menu_function_obj.current_menu);
         #endif
       #endif
+    }
+    else if ((n_sw != -1) && (pw_sw != -1)) {
+      String password = cmd_args.get(pw_sw + 1);
+      String network = cmd_args.get(pw_sw + 1);
+      Serial.println("Using : " + (String)network + " Password: " + (String)password);
+      wifi_scan_obj.joinWiFi(network, password, false);
+
     }
     else if (s_sw != -1) {
       String ssid = settings_obj.loadSetting<String>("ClientSSID");

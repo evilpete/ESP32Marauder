@@ -9,7 +9,16 @@
 #ifdef HAS_C5_SD
   #include "FS.h"
 #endif
+
+#ifdef HAS_SDMMC
+  #include <SD_MMC.h>
+  extern fs::SDMMCFS& SD = SD_MMC;
+#else
+  #include "SD.h"
+#endif
+
 #include "SD.h"
+
 #ifdef HAS_C5_SD
   #include "SPI.h"
 #endif
@@ -22,6 +31,11 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_err.h"
+
+#if defined(MSC_SHARE)
+#include "MSC_Share.h"
+extern MSC_Share MSC_obj;
+#endif
 
 extern Buffer buffer_obj;
 extern Settings settings_obj;
@@ -48,6 +62,10 @@ class SDInterface {
       SDInterface(SPIClass* spi, int cs);
     #endif
 
+    void shutdownSD();     // NEW — cleanly tears down whichever backend is active
+    void reinitSD();       // NEW — brings it back up after MSC hands control back
+
+
     uint8_t cardType;
     //uint64_t cardSizeBT;
     //uint64_t cardSizeKB;
@@ -56,7 +74,7 @@ class SDInterface {
     bool supported = false;
 
     String card_sz;
-  
+
     bool initSD();
 
     LinkedList<String>* sd_files;

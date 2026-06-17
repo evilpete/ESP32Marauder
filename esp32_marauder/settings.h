@@ -31,6 +31,7 @@ class Settings {
       bool  EnableLED   = true;
       bool  EPDeauth    = false;
       bool  ChanHop     = false;
+      bool  ProbeGPS     = false;
       String ClientSSID = "";
       String ClientPW   = "";
     } _cache;
