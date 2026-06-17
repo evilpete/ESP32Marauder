@@ -6,6 +6,8 @@ https://www.online-utility.org/image/convert/to/XBM
 */
 
 #include "configs.h"
+#include "driver/gpio.h"
+
 
 #ifndef HAS_SCREEN
   #define MenuFunctions_h
@@ -150,22 +152,6 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 
 uint32_t currentTime  = 0;
 
-  void shutdown() {
-    #ifdef POWER_HOLD_PIN
-        // T-HMI
-        //  if on battery, can be turn off with the PWR_ON_PIN/POWER_HOLD_PIN if on battery
-        Serial.println("Set POWER_HOLD_PIN:  LOW");
-        Serial.flush();
-        digitalWrite(POWER_HOLD_PIN, LOW);
-
-        //  if plugged in we use DEEPSLEEP instead
-        delay(500);
-        Serial.println("DeepSleep");
-        DeepSleep(0);
-    #else
-        DeepSleep(0);
-    #endif
-  }
 
   void DeepSleep(int8_t wakeup_but) {
 
@@ -193,8 +179,18 @@ uint32_t currentTime  = 0;
       gpio_hold_dis((gpio_num_t) wakeup_but);
       pinMode(wakeup_but, INPUT_PULLUP);
 
-      // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
-      esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
+    // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
+    #if SOC_PM_SUPPORT_EXT_WAKEUP
+	// For classic ESP32 which supports EXT0 (e.g., ESP32)
+        esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
+    #elif SOC_PM_SUPPORT_GPIO_WAKEUP
+       // For newer chips that use generic GPIO wakeup (e.g., ESP32-C3, ESP32-S3)
+      esp_deep_sleep_enable_gpio_wakeup((1ULL << wakeup_but), ESP_GPIO_WAKEUP_GPIO_LOW);
+    #else
+      #warning "Unsupported sleep/wakeup architecture on this chip"
+    #endif
+
+
     }
 
     Serial.println("Going to sleep now...");
@@ -205,6 +201,21 @@ uint32_t currentTime  = 0;
     esp_deep_sleep_start();
   }
 
+  void shutdown() {
+    #ifdef POWER_HOLD_PIN
+        // T-HMI
+        //  if on battery, can be turn off with the PWR_ON_PIN/POWER_HOLD_PIN if on battery
+        Serial.println("Set POWER_HOLD_PIN:  LOW");
+        Serial.flush();
+        digitalWrite(POWER_HOLD_PIN, LOW);
+        //  if plugged in we use DEEPSLEEP instead
+        delay(500);
+        Serial.println("DeepSleep");
+        DeepSleep(0);
+    #else
+        DeepSleep(0);
+    #endif
+  }
 
 #ifdef HAS_C5_SD
   SPIClass sharedSPI(SPI);
