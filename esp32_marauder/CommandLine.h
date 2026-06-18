@@ -64,9 +64,8 @@ const char PROGMEM GPS_CMD[] = "gps";
 const char PROGMEM NMEA_CMD[] = "nmea";
 const char PROGMEM GPS_POI_CMD[] = "gpspoi";
 const char PROGMEM GPS_TRACKER_CMD[] = "gpstracker";
-#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
-  const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
-#endif
+const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
+const char PROGMEM RESCAN_SD[] = "rescan-sd";
 
 // WiFi sniff/scan
 const char PROGMEM EVIL_PORTAL_CMD[] = "evilportal";
@@ -148,6 +147,7 @@ const char PROGMEM HELP_NMEA_CMD[] = "nmea";
 #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
   const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
 #endif
+const char PROGMEM HELP_RESCAN_SD[] = "rescan-sd";
 
 // WiFi sniff/scan
 const char PROGMEM HELP_EVIL_PORTAL_CMD[] = "evilportal [-c start [-w html.html]/sethtml <html.html>]";
