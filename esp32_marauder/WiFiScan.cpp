@@ -2335,6 +2335,10 @@ void WiFiScan::StopScan(uint8_t scan_mode) {
     this->writeFooter(currentScanMode == GPS_POI);
   }
 
+  // #1111
+  if (probe_req_ssids)
+      probe_req_ssids->clear();
+
   // Close POI file if wardrive was active
   if (currentScanMode == WIFI_SCAN_WAR_DRIVE)
     this->closePoiFile();
@@ -2372,6 +2376,10 @@ void WiFiScan::StopScan(uint8_t scan_mode) {
 
       this->shutdownBLE();
       this->ble_scanning = false;
+
+      //1111
+      if (airtags) airtags->clear();
+      if (flippers) flippers->clear();
     #endif
   }
 
@@ -3442,6 +3450,11 @@ void WiFiScan::RunAPScan(uint8_t scan_mode, uint16_t color) {
     this->prepareScanStage(TFT_GREEN, TFT_BLACK);
   #endif
 
+  //1111
+  // Free inner stations LinkedList before deleting the AP list
+  for (int i = 0; i < access_points->size(); i++) {
+      delete access_points->get(i).stations;
+  }
   delete access_points;
   access_points = new LinkedList<AccessPoint>();
 

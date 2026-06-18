@@ -132,6 +132,8 @@
 
   #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
     #define HAS_IDF_3
+  #else
+    #undef HAS_IDF_3
   #endif
 
  //// BOARD FEATURES
