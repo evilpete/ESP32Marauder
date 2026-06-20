@@ -1,7 +1,8 @@
 
-// #ifdef HAS_BATTERY
-
 #include "BatteryInterface.h"
+
+#ifdef HAS_BATTERY
+
 #include "lang_var.h"
 BatteryInterface::BatteryInterface() {
 
@@ -28,12 +29,13 @@ void BatteryInterface::RunSetup() {
   byte addr;
 
   #ifdef HAS_BATTERY
+  Serial.println(F("BatteryInterface::RunSetup"));
 
     #ifdef BATTERY_ADC_PIN
         analogReadResolution(12);
         pinMode(BATTERY_ADC_PIN, INPUT);
         this->has_adc_battery = true;
-        // this->i2c_supported = true;
+        this->i2c_supported = true;
         Serial.println(F("Battery: ADC mode"));
 
     #elif defined(HAS_AXP2101) && defined(I2C_SDA)
@@ -83,6 +85,8 @@ void BatteryInterface::RunSetup() {
   #endif //  other i2c
 
     this->initTime = millis();
+  #else
+    Serial.println(F("BatteryInterface::RunSetup Else"));
   #endif // HAS_BATTERY
 }
 
@@ -145,4 +149,4 @@ int8_t BatteryInterface::getBatteryLevel() {
   return -1;
 }
 
-// #endif // HAS_BATTERY
+#endif // HAS_BATTERY

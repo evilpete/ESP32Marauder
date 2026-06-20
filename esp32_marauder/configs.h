@@ -251,12 +251,15 @@
     #ifdef MARAUDER_REV_FEATHER_S3
       #define MARAUDER_REV_FEATHER
       #define HAS_BT
-      // #define HAS_RTC
-      #define HAS_TEMP_SENSOR
-      #define HAS_SD
-      #define USE_SD
     #endif
+    #define HAS_RTC
+      #define HAS_PCF8523
+    #define HAS_TEMP_SENSOR
+      #define HAS_PCT2075
+    #define HAS_SD
+    #define USE_SD
     #define HAS_BATTERY
+      #define HAS_MAX1704X
     #define HAS_PSRAM
     #define HAS_MINI_KB
     #define HAS_BUTTONS
@@ -493,6 +496,7 @@
       #define HAS_IDF_3
     #endif
     #define CYD_SOUND
+      #define SOUND_PIN 26
   #endif
 
   #ifdef MARAUDER_MULTIBOARD_S3
@@ -3078,7 +3082,7 @@
       #define GPS_SERIAL_INDEX 2
       #define GPS_TX 4
       #define GPS_RX 13
-    #elif defined(MARAUDER_JC2432W328C)
+    #elif defined(MARAUDER_C2432W328C)
       #define GPS_SERIAL_INDEX 2
       #define GPS_TX 16
       #define GPS_RX 17
@@ -3142,7 +3146,7 @@
   //// END GPS STUFF
 
   //// BATTERY STUFF
-  #ifdef HAS_BATTERY
+  #if defined(HAS_BATTERY) || defined(HAS_TEMP_SENSOR)
 
     #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2) 
       #define I2C_SDA 33

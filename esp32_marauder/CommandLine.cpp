@@ -1362,9 +1362,9 @@ void CommandLine::runCommand(String input) {
     }
   }
   else if (cmd_args.get(0) == JOIN_CMD) {
-    int np_sw = this->argSearch(&cmd_args, "-n");
-    int ap_sw = this->argSearch(&cmd_args, "-a");
-    int pw_sw = this->argSearch(&cmd_args, "-p");
+    int np_sw = this->argSearch(&cmd_args, "-n");   // Network Name
+    int ap_sw = this->argSearch(&cmd_args, "-a");   // AP Index #
+    int pw_sw = this->argSearch(&cmd_args, "-p");   // Password
     int s_sw  = this->argSearch(&cmd_args, "-s");
 
     if ((ap_sw != -1) && (pw_sw != -1)) {

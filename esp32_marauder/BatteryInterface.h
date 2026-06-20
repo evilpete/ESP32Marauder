@@ -1,13 +1,14 @@
 #pragma once
 
-// #ifdef HAS_BATTERY
+#include "configs.h"
+
+#ifdef HAS_BATTERY
 
 #ifndef BatteryInterface_h
 #define BatteryInterface_h
 
 #include <Arduino.h>
 
-#include "configs.h"
 
 #ifdef HAS_MAX1704X
   #include "Adafruit_MAX1704X.h"
@@ -60,5 +61,5 @@ class BatteryInterface {
 
 #endif  // ifndef BatteryInterface_h
 
-// #endif // HAS_BATTERY
+#endif // HAS_BATTERY
 

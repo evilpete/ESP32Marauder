@@ -91,6 +91,8 @@ void Sound_CYD::click() {
     if (!settings_obj.loadSetting<bool>("EnableSND")) {
         return;
     }
+  //Serial.println("Sound_CYD::Click");
+
     gen_tone(400, 8);
 }
 
@@ -100,6 +102,7 @@ void Sound_CYD::geigerClick(uint8_t i) {
         return;
     }
 
+  //Serial.println("Sound_CYD::geigerClick");
     if (i) {
         gen_tone(250, 10);
     } else {

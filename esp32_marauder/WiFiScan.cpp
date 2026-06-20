@@ -3925,7 +3925,7 @@ void WiFiScan::RunInfo() {
     display_obj.tft.setTextSize(1);
     display_obj.tft.setTextColor(TFT_CYAN);
     display_obj.tft.println(text_table4[20]);
-    display_obj.tft.println(text_table4[21] + display_obj.version_number);
+    display_obj.tft.println(text_table4[21] + display_obj.version_number + "-mod");
     display_obj.tft.println("Build Date: " + String(__DATE__ " " __TIME__));
     display_obj.tft.println("Hardware:   " + (String)HARDWARE_NAME);
     #ifdef GIT_BRANCH

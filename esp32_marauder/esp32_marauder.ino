@@ -116,6 +116,11 @@ CommandLine cli_obj;
   GpsInterface gps_obj;
 #endif
 
+#ifdef HAS_TEMP_SENSOR
+  #include "Temp_Sensor.h"
+  TempSensor  tsensor_obj;
+#endif
+
 #ifdef HAS_RTC
   #include "RTC.h"
   RTC rtc_obj;
@@ -235,6 +240,15 @@ void setup()
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
 
+  Serial.begin(115200);  // 115200);
+  delay(2000);
+
+  #ifdef HAS_ACT_LED
+    pinMode(ACT_LED_PIN, OUTPUT);
+    delay(100);
+    digitalWrite(ACT_LED_PIN, LOW);
+  #endif
+
   #ifdef ARDUINO_USB_MODE
     Serial.println("ARDUINO_USB_MODE = " + (String)ARDUINO_USB_MODE);
   #endif
@@ -244,14 +258,6 @@ void setup()
   
   #ifndef HAS_IDF_3
     esp_spiram_init();
-  #endif
-
-  Serial.begin(115200);  // 115200);
-
-  #ifdef HAS_ACT_LED
-    pinMode(ACT_LED_PIN, OUTPUT);
-    delay(100);
-    digitalWrite(ACT_LED_PIN, LOW);
   #endif
 
 // -D ARDUINO_USB_MODE=1
@@ -331,7 +337,10 @@ void setup()
       // Do some SD stuff
       if(!sd_obj.initSD())
         Serial.println(F("SD Card NOT Supported"));
-
+      else:
+        Serial.println(F("SD Card SUPPORTED"));
+    #else
+        Serial.println(F("SD NOT Installed"));
     #endif
   #endif
 
@@ -396,7 +405,10 @@ void setup()
       // Do some SD stuff
       if(!sd_obj.initSD())
         Serial.println(F("SD Card NOT Supported"));
-
+      else
+        Serial.println(F("SD Card SUPPORTED"));
+    #else
+        Serial.println(F("SD NOT Installed"));
     #endif
   #endif
 
@@ -408,8 +420,17 @@ void setup()
     display_obj.tft.drawCentreString("Initializing...", TFT_WIDTH/2, TFT_HEIGHT * 0.82, 1);
   #endif
 
+
   #ifdef HAS_RTC
     rtc_obj.RunSetup();
+  #else
+    Serial.println(F("RTC NOT Installed"));
+  #endif
+
+  #ifdef HAS_TEMP_SENSOR
+    tsensor_obj.RunSetup();
+  #else
+    Serial.println(F("TEMP_SENSOR NOT Installed"));
   #endif
 
   evil_portal_obj.setup();

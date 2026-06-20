@@ -118,8 +118,8 @@ uint8_t bl_level_idx = 9; // default brightness
 #elif !defined(HAS_MINI_SCREEN) 
 
   // PWM Brightness Control
-  const uint8_t BL_LEVELS[] = {26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
-  const uint8_t BL_NUM_LEVELS = 10;
+  const uint8_t BL_LEVELS[] = {26, 51, 77, 102, 128, 153, 179, 204, 230, 255, 255};
+  const uint8_t BL_NUM_LEVELS = 11;
 
   #define BL_CHANNEL 0
   #define BL_FREQ 5000

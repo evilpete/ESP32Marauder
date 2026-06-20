@@ -1,7 +1,7 @@
+#include "configs.h"
 
 #ifdef HAS_RTC
 
-#include "configs.h"
 
 #include "RTC.h"
 
@@ -14,12 +14,34 @@
 
 
 void RTC::RunSetup() {
+
+  Serial.println("RTC::RunSetup");
+
+  #ifdef I2C_SCL
+    Wire.setPins(I2C_SDA, I2C_SCL);
+    Wire.begin();
+  #endif
+
   supported = rtclock.begin();
 
   if (!supported) {
     log_w("Couldn't find RTC");
-    return;
+    // return supported;
   }
+
+  #ifdef HAS_PCF8523
+    PCF8523_setup();
+  #elif defined(DS1307)
+    DS1307_setup();
+  #endif
+
+}
+
+
+#ifdef HAS_PCF8523
+
+bool RTC::PCF8523_setup() {
+
 
   if (! rtclock.initialized() || rtclock.lostPower()) {
     Serial.println(F("RTC NOT initialized"));
@@ -39,11 +61,40 @@ void RTC::RunSetup() {
   rtclock.start();
 
   Serial.println(dt_string());
+
+  return supported;
 }
+
+// float RTC::getTemperature() { return 0.0;  }
+
+#elif defined(DS1307)
+
+bool RTC::DS1307_setup() {
+
+    if (! rtclock.isrunning()) {
+      Serial.println(F("RTC NOT initialized"));
+      Serial.flush();
+      log_w("RTC is NOT initialized");
+      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    } else {
+      synced = true;
+      syncFromRTC();
+      Serial.println(F("SystemTime set from RTC"));
+    }
+}
+
+
+
+// float RTC:getTemperature() { rtclock.getTemperature(); }
+
+#endif
 
 void RTC::syncFromRTC() {
   // 1. Read time from the PCF8523
-  DateTime now = rtclock.now();
+  
+  #ifdef HAS_PCF8523 
+    DateTime now = rtclock.now();
+  #endif
 
   // 2. Populate the standard C tm structure
   struct tm tm_time;
@@ -142,8 +193,11 @@ bool RTC::sync_rtc_ntp() {
     timeStruct->tm_sec          // Second
   );
 
-  rtclock.adjust(ntpTime);
-  Serial.println("PCF8523 RTC updated with NTP time.");
+  #ifdef HAS_PCF8523
+    rtclock.adjust(ntpTime);
+    Serial.println("PCF8523 RTC updated with NTP time.");
+    // log_d("PCF8523 RTC updated with NTP time.");
+  #endif
 
   /*
   rtclock.adjust(DateTime(
@@ -219,6 +273,7 @@ String RTC::millis_dt_string() {   // punt
 
   return timeString;
 }
+
 
 #endif //HAS_RTC
 

@@ -117,7 +117,7 @@ const char PROGMEM MAC_CMD_B[] = "randstamac";
 const char PROGMEM MAC_CMD_C[] = "cloneapmac";
 const char PROGMEM MAC_CMD_D[] = "clonestamac";
 const char PROGMEM ADD_CMD[] = "add";
-const char PROGMEM RTC_NTP_SYNC[] = "rtc_ntp_sync";
+const char PROGMEM NTP_SYNC[] = "ntp_sync";
 
 // Bluetooth sniff/scan
 const char PROGMEM BT_SPAM_CMD[] = "blespam";
@@ -189,14 +189,14 @@ const char PROGMEM HELP_SSID_CMD_B[] = "ssid -r <index>";
 const char PROGMEM HELP_SAVE_CMD[] = "save -a/-s";
 const char PROGMEM HELP_LOAD_CMD[] = "load -a/-s";
 const char PROGMEM HELP_SORT_CMD[] = "sort";
-const char PROGMEM HELP_JOIN_CMD[] = "join -a <index> -p <password>/-s";
+const char PROGMEM HELP_JOIN_CMD[] = "join (-a <index> -p <password>/-s";
 const char PROGMEM HELP_MAC_CMD_A[] = "randapmac";
 const char PROGMEM HELP_MAC_CMD_B[] = "randstamac";
 const char PROGMEM HELP_MAC_CMD_C[] = "cloneapmac [-a <index>]";
 const char PROGMEM HELP_MAC_CMD_D[] = "clonestamac [-s <index>]";
 const char PROGMEM HELP_ADD_CMD_A[] = "add -a -b <mac> [-ch <channel>] [-e <ssid>]";
 const char PROGMEM HELP_ADD_CMD_B[] = "add -c -b <mac> -ap <ap_index>";
-const char PROGMEM HELP_RTC_NTP_SYNC[] = "rtc_ntp_sync";
+const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
 
 // Bluetooth sniff/scan
 const char PROGMEM HELP_BT_SNIFF_CMD[] = "sniffbt [-t] <airtag/flipper/flock/meta>";
