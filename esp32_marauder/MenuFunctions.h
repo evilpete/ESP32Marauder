@@ -22,6 +22,13 @@
 #include "SDInterface.h"
 #include "settings.h"
 
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+  extern MSC_Share MSC_Share_obj;
+#else
+#warning "MSC_SHARE not definded"
+#endif
+
 #ifdef HAS_BUTTONS
   #include "Switches.h"
   #if (U_BTN >= 0)
@@ -48,7 +55,7 @@ extern BatteryInterface battery_obj;
 // #endif
 extern Settings settings_obj;
 extern void shutdown();
-extern void DeepSleep(void DeepSleep(int8_t);
+extern void DeepSleep(int8_t);
 
 #define FLASH_BUTTON 0
 
@@ -190,7 +197,8 @@ class MenuFunctions
     Menu selectProbeSSIDsMenu;
 
     Menu adminMenu;
-    Menu probeSDMenu;
+    Menu adminSubMenu;
+    Menu CpuFreqMenu;
 
     // Bluetooth menu stuff
     Menu bluetoothSnifferMenu;

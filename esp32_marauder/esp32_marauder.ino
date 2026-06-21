@@ -25,8 +25,13 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 #include "Buffer.h"
 
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+#endif // MSC_SHARE
+
 #ifdef HAS_BT
 #include "esp_bt.h"
+// #include "esp_bt_main.h"
 #endif
 
 #ifdef HAS_FLIPPER_LED
@@ -79,11 +84,12 @@ Buffer buffer_obj;
 Settings settings_obj;
 CommandLine cli_obj;
 
-#ifdef HAS_SCREEN
+
+// #ifdef HAS_SCREEN
   extern void brightnessInit();
   extern void backlightOff();
   extern void backlightOn();
-#endif
+// #endif
 
 #ifdef HAS_GPS
   GpsInterface gps_obj;
@@ -100,6 +106,10 @@ CommandLine cli_obj;
 
 #if defined(HAS_SD) && !defined(HAS_C5_SD)
   SDInterface sd_obj;
+#endif
+
+#ifdef MSC_SHARE
+    MSC_Share MSC_Share_obj;
 #endif
 
 #ifdef HAS_FLIPPER_LED
@@ -121,7 +131,59 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 uint32_t currentTime  = 0;
 
 
-// #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  void DeepSleep(int8_t wakeup_but = -1) {
+
+    // 1. Disconnect from the network gracefully
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    esp_wifi_stop();
+
+    #ifdef HAS_BT
+      // This handles stopping and deinitializing BT gracefully
+      // esp_bluedroid_disable();
+      esp_bt_controller_disable();
+      esp_bt_controller_deinit();
+    #endif
+
+    // Should we isolate  pins with external pull-up resistors
+    // to minimize current consumption.
+    // #ifdef I2C_SDA
+    //   rtc_gpio_isolate(I2C_SDA);
+    //   rtc_gpio_isolate(I2C_SCL);
+    // #endif
+
+    // Code specific to the classic ESP32 (e.g., WROOM-32) goes here
+    // #ifdef CONFIG_IDF_TARGET_ESP32
+    // rtc_gpio_isolate(GPIO_NUM_12);
+    // 18 19 5 23 10 33 32 16 17 20 
+    esp_sleep_config_gpio_isolate();
+    
+    if (wakeup_but >= 0) {
+      gpio_hold_dis((gpio_num_t) wakeup_but);
+      pinMode(wakeup_but, INPUT_PULLUP);
+
+    // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
+    #if SOC_PM_SUPPORT_EXT_WAKEUP
+	// For classic ESP32 which supports EXT0 (e.g., ESP32)
+        esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
+    #elif SOC_PM_SUPPORT_GPIO_WAKEUP
+       // For newer chips that use generic GPIO wakeup (e.g., ESP32-C3, ESP32-S3)
+      esp_deep_sleep_enable_gpio_wakeup((1ULL << wakeup_but), ESP_GPIO_WAKEUP_GPIO_LOW);
+    #else
+      #warning "Unsupported sleep/wakeup architecture on this chip"
+    #endif
+
+
+    }
+
+    Serial.println("Going to sleep now...");
+    Serial.flush();
+    delay(100); // Give serial monitor time to flush
+
+    // Enter deep sleep
+    esp_deep_sleep_start();
+  }
+
   void shutdown() {
     #ifdef POWER_HOLD_PIN
         // T-HMI
@@ -138,51 +200,6 @@ uint32_t currentTime  = 0;
         DeepSleep(0);
     #endif
   }
-
-  void DeepSleep(int8_t wakeup_but) {
-
-    const char good_Night_msg[] = "Going to sleep now...";
-
-    Serial.println(good_Night_msg);
-    Serial.flush();
-
-    #ifdef HAS_SCREEN
-      display_obj.tft.fillScreen(TFT_BLACK);
-      #if !defined(MARAUDER_CARDPUTER) && !defined(MARAUDER_CARDPUTER_ADV)
-	display_obj.tft.drawCentreString(good_Night_msg, TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
-      #else
-	display_obj.tft.drawCentreString(good_Night_msg, TFT_HEIGHT/2, TFT_WIDTH * 0.33, 4);
-      #endif
-    #endif
-
-    // Disconnect from the network gracefully
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
-    
-    #ifdef HAS_BT
-      // This handles stopping and deinitializing BT gracefully
-      esp_bluedroid_disable();
-      esp_bt_controller_disable();
-      esp_bt_controller_deinit();
-    #endif
-
-    // Explicitly stop the WiFi driver to save power
-
-    WiFi.disconnect();
-    esp_wifi_stop();
-
-    if (wakeup_but >= 0) {
-      pinMode(wakeup_but, INPUT_PULLUP);
-
-      // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
-      esp_sleep_enable_ext0_wakeup((gpio_num_t) wakeup_but, 0); // 0 means LOW
-    }
-
-    delay(1100); // Give serial monitor time to flush
-
-    // Enter deep sleep
-    esp_deep_sleep_start();
-  }
 // #endif  // SHUTDOWN
 
 #ifdef HAS_C5_SD
@@ -190,8 +207,66 @@ uint32_t currentTime  = 0;
   SDInterface sd_obj = SDInterface(&sharedSPI, SD_CS);
 #endif
 
+void print_reset_reason() {
+  esp_reset_reason_t reason = esp_reset_reason();
+
+
+  Serial.print(F("Last reset reason: "));
+  switch (reason) {
+    case ESP_RST_UNKNOWN:
+      Serial.println(F("Unknown"));
+      break;
+    case ESP_RST_POWERON:
+      Serial.println(F("Power-on event"));
+      break;
+    case ESP_RST_EXT:
+      Serial.println(F("External pin (Reset button)"));
+      break;
+    case ESP_RST_SW:
+      Serial.println(F("Software reset (e.g., esp_restart())"));
+      break;
+    case ESP_RST_PANIC:
+      Serial.println(F("Software reset due to exception/crash"));
+      break;
+    case ESP_RST_INT_WDT:
+      Serial.println(F("Interrupt Watchdog"));
+      break;
+    case ESP_RST_TASK_WDT:
+      Serial.println(F("Task Watchdog"));
+      break;
+    case ESP_RST_WDT:
+      Serial.println(F("Other Watchdog"));
+      break;
+    case ESP_RST_DEEPSLEEP:
+      Serial.println(F("Exited Deep Sleep"));
+      break;
+    case ESP_RST_BROWNOUT:
+      Serial.println(F("Brownout (Low Voltage)"));
+      break;
+    case ESP_RST_SDIO:
+      Serial.println(F("Reset over SDIO"));
+      break;
+    default:
+      Serial.println(F("Unrecognized reset reason"));
+      break;
+  }
+}
+
+
 void setup()
 {
+  randomSeed(esp_random());
+
+  #ifdef POWER_HOLD_PIN  
+    pinMode(POWER_HOLD_PIN, OUTPUT);
+    digitalWrite(POWER_HOLD_PIN, HIGH);
+  #endif
+
+  #ifdef PWR_EN_PIN  // Enable power to peripherals
+    pinMode(PWR_EN_PIN, OUTPUT);
+    digitalWrite(PWR_EN_PIN, HIGH);
+  #endif
+
   randomSeed(esp_random());
   
   #ifndef DEVELOPER
@@ -210,24 +285,25 @@ void setup()
     digitalWrite(ACT_LED_PIN, LOW);
   #endif
 
-  while(!Serial)
+  // while(!Serial)
+  while(!Serial && millis() < 5000)
     delay(10);
+
+  #ifdef DEVELOPER
+    print_reset_reason();
+  #endif
 
   #ifdef HAS_C5_SD
     sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
     delay(100);
   #endif
 
-  #if defined(MARAUDER_M5STICKCP2) // Prevent StickCP2 from turning off when disconnect USB cable
-    pinMode(POWER_HOLD_PIN, OUTPUT);
-    digitalWrite(POWER_HOLD_PIN, HIGH);
-  #endif
-  
   #ifdef HAS_SCREEN
     pinMode(TFT_BL, OUTPUT);
   #endif
   
   backlightOff();
+
   #if BATTERY_ANALOG_ON == 1
     pinMode(BATTERY_PIN, OUTPUT);
     pinMode(CHARGING_PIN, INPUT);
@@ -238,7 +314,7 @@ void setup()
     digitalWrite(TFT_CS, HIGH);
   #endif
   
-  #if defined(HAS_SD) && !defined(HAS_C5_SD)
+  #if (defined(HAS_SD) || !defined(HAS_C5_SD)) && defined(SD_CS)
     pinMode(SD_CS, OUTPUT);
 
     delay(10);
@@ -282,6 +358,7 @@ void setup()
   #endif
 
   #ifdef HAS_SCREEN
+    display_obj.tft.fillScreen(TFT_BLACK);
     #if !defined(MARAUDER_CARDPUTER) && !defined(MARAUDER_CARDPUTER_ADV)
       display_obj.tft.drawCentreString("ESP32 Marauder", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 1);
       display_obj.tft.drawCentreString("JustCallMeKoko", TFT_WIDTH/2, TFT_HEIGHT * 0.5, 1);
@@ -327,9 +404,6 @@ void setup()
     #endif
   #endif
 
-  #ifdef MSC_SHARE
-    MSC_Share MSC_obj
-  #endif // MSC_SHARE
 
   wifi_scan_obj.RunSetup();
 
