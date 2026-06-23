@@ -3955,8 +3955,9 @@ void WiFiScan::RunInfo() {
     display_obj.tft.println(text_table4[21] + display_obj.version_number);
     display_obj.tft.println("Hardware: " + (String)HARDWARE_NAME);
     display_obj.tft.println(text_table4[22] + (String)esp_get_idf_version());
-    display_obj.tft.println("Flash Sise: " + (String)flashSize);
-    display_obj.tft.println("PSRAM Sise: " + (String) psramtat);
+    display_obj.tft.println("Flash Size: " + (String)flashSize);
+    display_obj.tft.println("PSRAM Size: " + (String) psramtat);
+    display_obj.tft.println("CpuFrequency = " + (String)getCpuFrequencyMhz() + " Mhz");
 
   #endif
 
@@ -3966,6 +3967,7 @@ void WiFiScan::RunInfo() {
   Serial.println(text_table4[22] + (String)esp_get_idf_version());
   Serial.println("Flash Sise: " + (String)flashSize);
   Serial.println("PSRAM Sise: " + (String) psramtat);
+  Serial.println("CpuFrequency = " + (String)getCpuFrequencyMhz() + " Mhz");
 
   if (this->wsl_bypass_enabled) {
     #ifdef HAS_SCREEN
