@@ -32,6 +32,8 @@ void Settings::_buildCache() {
     else if (strcmp(name, "EnableSND") == 0)
       _cache.EnableSND = json["Settings"][i]["value"].as<bool>();
 #endif
+    else if (strcmp(name, "Probe GPS at Boot") == 0)
+      _cache.ProbeGPS = json["Settings"][i]["value"].as<bool>();
     else if (strcmp(name, "ClientSSID") == 0)
       _cache.ClientSSID = json["Settings"][i]["value"].as<String>();
     else if (strcmp(name, "ClientPW") == 0)
@@ -160,6 +162,8 @@ template <> bool Settings::loadSetting<bool>(const char* key) {
   if (strcmp(key, "EnableSND") == 0)
     return _cache.EnableSND;
 #endif
+  if (strcmp(key, "Probe GPS at Boot") == 0)
+    return _cache.ProbeGPS;
 
   // Unknown bool key: fall back to JSON so the setting can be auto-created.
   DynamicJsonDocument json(JSON_SETTING_SIZE);
@@ -208,6 +212,8 @@ template <> uint8_t Settings::loadSetting<uint8_t>(const char* key) {
   if (strcmp(key, "EnableSND") == 0)
     return (uint8_t)_cache.EnableSND;
 #endif
+  if (strcmp(key, "Probe GPS at Boot") == 0)
+    return (uint8_t)_cache.ProbeGPS;
 
   DynamicJsonDocument json(JSON_SETTING_SIZE);
   deserializeJson(json, this->json_settings_string);
@@ -274,6 +280,8 @@ template <> bool Settings::saveSetting<bool>(const char* key, bool value) {
       else if (strcmp(key, "EnableSND") == 0)
         _cache.EnableSND = value;
 #endif
+      else if (strcmp(key, "Probe GPS at Boot") == 0)
+        _cache.ProbeGPS = value;
 
       this->printJsonSettings(settings_string);
 
@@ -457,15 +465,21 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
     jsonBuffer["Settings"][5]["range"]["min"] = false;
     jsonBuffer["Settings"][5]["range"]["max"] = true;
 
-    uint8_t i = 6;
-// #ifdef CYD_SOUND
+    jsonBuffer["Settings"][6]["name"] = "Probe GPS at Boot";
+    jsonBuffer["Settings"][6]["type"] = "bool";
+    jsonBuffer["Settings"][6]["value"] = false;
+    jsonBuffer["Settings"][6]["range"]["min"] = false;
+    jsonBuffer["Settings"][6]["range"]["max"] = true;
+
+    uint8_t i = 7;
+#ifdef CYD_SOUND
     jsonBuffer["Settings"][i]["name"] = "EnableSND";
     jsonBuffer["Settings"][i]["type"] = "bool";
     jsonBuffer["Settings"][i]["value"] = true;
     jsonBuffer["Settings"][i]["range"]["min"] = false;
     jsonBuffer["Settings"][i]["range"]["max"] = true;
     i++;
-// #endif
+#endif
 
     jsonBuffer["Settings"][i]["name"] = "ClientSSID";
     jsonBuffer["Settings"][i]["type"] = "String";
@@ -479,7 +493,6 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
     jsonBuffer["Settings"][i]["value"] = "";
     jsonBuffer["Settings"][i]["range"]["min"] = "";
     jsonBuffer["Settings"][i]["range"]["max"] = "";
-
 
     serializeJson(jsonBuffer, settingsFile);
     serializeJson(jsonBuffer, settings_string);

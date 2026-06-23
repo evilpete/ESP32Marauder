@@ -6,6 +6,9 @@
 
 
   #define configs_h
+  #include "soc/soc_caps.h"
+
+  #include "esp_arduino_version.h"
 
   #define POLISH_POTATO
 
@@ -146,10 +149,18 @@
     #define HAS_MINI_KB
     #define HAS_BATTERY
       #if defined(MARAUDER_M5STICKC)
+            #define HAS_BM8563
         #define HAS_AXP192
       #else
         #define HAS_TP4057
       #endif
+
+    #if defined(MARAUDER_M5STICKCP2)
+      #define HAS_RTC8563
+    #elif defined(MARAUDER_M5STICKC)
+      #define HAS_BM8563
+    #endif
+
     #define HAS_BT
     #define HAS_BUTTONS
     //#define HAS_NEOPIXEL_LED
@@ -261,6 +272,7 @@
     #define HAS_BATTERY
       #define HAS_MAX1704X
     #define HAS_PSRAM
+    //#define HAS_BT
     #define HAS_MINI_KB
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
@@ -268,8 +280,8 @@
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
-    // #define HAS_GPS
-    #define HAS_NIMBLE_2
+    #define HAS_TEMP_SENSOR
+    #define HAS_GPS
   #endif
 
   #ifdef MARAUDER_V4
@@ -566,10 +578,10 @@
     //#define HAS_GPS
   #endif
 
-
   #ifdef MARAUDER_CYD_HMI
     #define HAS_TOUCH
     #define HAS_BT
+    #define HAS_PWR_MGMT
     #define HAS_BATTERY
       #define BATTERY_ADC_PIN 5
     #define HAS_BUTTONS
@@ -578,6 +590,8 @@
     #define HAS_SDMMC
       #define HAS_SD
       #define USE_SD
+    #define MSC_SHARE
+      #define USE_MMC_WRITE_SECTORS
     #define HAS_CYD_TOUCH
     #define HAS_AW9364
     #define HAS_PSRAM
@@ -700,6 +714,13 @@
     #endif
 
   #endif
+
+  #ifdef MARAUDER_CYD_HMI
+    #define PWR_EN_PIN  10    // power to peripherals
+    #define PWR_ON_PIN  14    // Batt power to board
+    #define POWER_HOLD_PIN PWR_ON_PIN
+  #endif
+
   //// END POWER MANAGEMENT
 
   //// BUTTON DEFINITIONS
@@ -1819,6 +1840,72 @@
       #define KIT_LED_BUILTIN 13
     #endif
 
+
+    #if defined(MARAUDER_CYD_HMI)
+       #define CHAN_PER_PAGE 7
+       #define SCREEN_CHAR_WIDTH 40
+      #define HAS_ILI9341
+       #define HAS_ST7789
+
+      #define TFT_BL 38
+      #define BANNER_TEXT_SIZE 2
+
+      // #define I2C_SDA 33
+      // #define I2C_SCL 32
+
+      #ifndef TFT_WIDTH
+        #define TFT_WIDTH 240
+      #endif
+
+      #ifndef TFT_HEIGHT
+        #define TFT_HEIGHT 320
+      #endif
+
+      #define GRAPH_VERT_LIM TFT_HEIGHT/2 - 1
+      #define EXT_BUTTON_WIDTH 30
+      #define SCREEN_BUFFER
+      #define MAX_SCREEN_BUFFER 21
+
+      #define SCREEN_ORIENTATION 0
+      #define CHAR_WIDTH 12
+      #define SCREEN_WIDTH TFT_WIDTH
+      #define SCREEN_HEIGHT TFT_HEIGHT
+      #define HEIGHT_1 TFT_WIDTH
+      #define WIDTH_1 TFT_HEIGHT
+      #define STANDARD_FONT_CHAR_LIMIT (TFT_WIDTH/6) // number of characters on a single line with normal font
+      #define TEXT_HEIGHT 16 // Height of text to be printed and scrolled
+      #define BOT_FIXED_AREA 0 // Number of lines in bottom fixed area (lines counted from bottom of screen)
+      #define TOP_FIXED_AREA 48 // Number of lines in top fixed area (lines counted from top of screen)
+      #define YMAX 320 // Bottom of screen area
+      #define minimum(a,b)     (((a) < (b)) ? (a) : (b))
+      #define MENU_FONT &FreeMono9pt7b // Winner
+      //#define MENU_FONT &FreeMonoBold9pt7b
+      //#define MENU_FONT &FreeSans9pt7b
+      //#define MENU_FONT &FreeSansBold9pt7b
+      #define BUTTON_SCREEN_LIMIT 12
+      #define BUTTON_ARRAY_LEN BUTTON_SCREEN_LIMIT
+      #define STATUS_BAR_WIDTH 16
+      #define LVGL_TICK_PERIOD 6
+
+      #define FRAME_X 100
+      #define FRAME_Y 64
+      #define FRAME_W 120
+      #define FRAME_H 50
+
+      // Red zone size
+      #define REDBUTTON_X FRAME_X
+      #define REDBUTTON_Y FRAME_Y
+      #define REDBUTTON_W (FRAME_W/2)
+      #define REDBUTTON_H FRAME_H
+
+      // Green zone size
+      #define GREENBUTTON_X (REDBUTTON_X + REDBUTTON_W)
+      #define GREENBUTTON_Y FRAME_Y
+      #define GREENBUTTON_W (FRAME_W/2)
+      #define GREENBUTTON_H FRAME_H
+      #define STATUSBAR_COLOR 0x4A49
+    #endif
+
     #if defined(MARAUDER_CYD_GUITION)
       #define CHAN_PER_PAGE 7
 
@@ -2555,6 +2642,25 @@
     //#define BUTTON_ARRAY_LEN 5
   #endif
 
+  #if defined(MARAUDER_CYD_HMI)
+    #define BANNER_TIME 100
+
+    #define COMMAND_PREFIX "!"
+
+    // Keypad start position, key sizes and spacing
+    #define KEY_X 120 // Centre of key
+    #define KEY_Y 50
+    #define KEY_W 240 // Width and height
+    #define KEY_H 22
+    #define KEY_SPACING_X 0 // X and Y gap
+    #define KEY_SPACING_Y 1
+    #define KEY_TEXTSIZE 1   // Font size multiplier
+    #define ICON_W 22
+    #define ICON_H 22
+    #define BUTTON_PADDING 22
+    //#define BUTTON_ARRAY_LEN 5
+  #endif
+
   #if defined(MARAUDER_CYD_GUITION)
     #define BANNER_TIME 100
     
@@ -2778,6 +2884,7 @@
       #define SD_MODE1BIT  true
     #endif
 
+  //// SD DEFINITIONS
   #elif defined(USE_SD)
 
     #ifdef MARAUDER_V4
@@ -2834,7 +2941,7 @@
     #endif
 
     #ifdef MARAUDER_REV_FEATHER
-      #define SD_CS 10
+      #define SD_CS 10      // Adalogger-FeatherWing
     #endif
 
     #ifdef MARAUDER_M5STICKC
@@ -2885,6 +2992,10 @@
 
   //// END SD DEFINITIONS
 
+  #if defined(SOC_USB_OTG_SUPPORTED) && (defined(HAS_SD) || defined(HAS_SDMMC))
+    #define MSC_SHARE
+  #endif
+
   //// SPACE SAVING COLORS
   #define TFTWHITE     1
   #define TFTCYAN      2
@@ -2904,6 +3015,9 @@
   #define TFTDARKGREY  16
   #define TFTSKYBLUE   17
   #define TFTLIME      18
+  #define TFTGREENYEL  19
+  #define TFTDARKCYAN  20
+  #define TFTPINK      21
   //// END SPACE SAVING COLORS
 
   #define TFT_FARTGRAY 0x528a
@@ -2964,6 +3078,8 @@
   #elif defined(MARAUDER_CYD_24)
     #define MEM_LOWER_LIM 10000
   #elif defined(MARAUDER_CYD_3_5_INCH)
+    #define MEM_LOWER_LIM 10000
+  #elif defined(MARAUDER_CYD_HMI)
     #define MEM_LOWER_LIM 10000
   #elif defined(MARAUDER_CYD_GUITION)
     #define MEM_LOWER_LIM 10000
@@ -3201,6 +3317,9 @@
       #define HAS_MAX1704X
       #undef HAS_AXP2101
       #undef HAS_IP5306
+
+    #elif defined(MARAUDER_CYD_HMI)
+      #define BATTERY_ADC_PIN 5
     #endif
 
     #ifdef MARAUDER_REV_FEATHER
@@ -3268,6 +3387,8 @@
   #elif defined(MARAUDER_CYD_2USB)
     #define MARAUDER_TITLE_BYTES 13578
   #elif defined(MARAUDER_CYD_3_5_INCH)
+    #define MARAUDER_TITLE_BYTES 13578
+  #elif defined(MARAUDER_CYD_HMI)
     #define MARAUDER_TITLE_BYTES 13578
   #elif defined(MARAUDER_CYD_GUITION)
     #define MARAUDER_TITLE_BYTES 13578

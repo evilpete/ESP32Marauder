@@ -41,6 +41,15 @@ https://www.online-utility.org/image/convert/to/XBM
     Sound_CYD sound_obj;
 #endif
 
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+#endif // MSC_SHARE
+
+#ifdef HAS_BT
+#include "esp_bt.h"
+// #include "esp_bt_main.h"
+#endif
+
 #ifdef HAS_FLIPPER_LED
   #include "flipperLED.h"
   flipperLED led_obj;
@@ -106,11 +115,12 @@ Buffer buffer_obj;
 Settings settings_obj;
 CommandLine cli_obj;
 
-#ifdef HAS_SCREEN
+
+// #ifdef HAS_SCREEN
   extern void brightnessInit();
   extern void backlightOff();
   extern void backlightOn();
-#endif
+// #endif
 
 #ifdef HAS_GPS
   GpsInterface gps_obj;
@@ -139,6 +149,19 @@ CommandLine cli_obj;
   SDInterface sd_obj;
 #endif
 
+#ifdef MSC_SHARE
+    MSC_Share MSC_Share_obj;
+#endif
+
+#ifdef HAS_FLIPPER_LED
+  flipperLED flipper_led;
+#elif defined(XIAO_ESP32_S3)
+  xiaoLED xiao_led;
+#elif defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+  stickcLED stickc_led;
+#elif defined(HAS_NEOPIXEL_LED)
+  LedInterface led_obj;
+#endif
 
 const String PROGMEM version_number = MARAUDER_VERSION;
 
@@ -150,15 +173,19 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 uint32_t currentTime  = 0;
 
 
-  void DeepSleep(int8_t wakeup_but) {
+  void DeepSleep(int8_t wakeup_but = -1) {
 
-    wakeup_but = -1;
     // 1. Disconnect from the network gracefully
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
-
-    // 2. Explicitly stop the WiFi driver to save power
     esp_wifi_stop();
+
+    #ifdef HAS_BT
+      // This handles stopping and deinitializing BT gracefully
+      // esp_bluedroid_disable();
+      esp_bt_controller_disable();
+      esp_bt_controller_deinit();
+    #endif
 
     // Should we isolate  pins with external pull-up resistors
     // to minimize current consumption.
@@ -177,17 +204,16 @@ uint32_t currentTime  = 0;
       gpio_hold_dis((gpio_num_t) wakeup_but);
       pinMode(wakeup_but, INPUT_PULLUP);
 
-    // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
-    #if SOC_PM_SUPPORT_EXT_WAKEUP
-	// For classic ESP32 which supports EXT0 (e.g., ESP32)
-        esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
-    #elif SOC_PM_SUPPORT_GPIO_WAKEUP
-       // For newer chips that use generic GPIO wakeup (e.g., ESP32-C3, ESP32-S3)
-      esp_deep_sleep_enable_gpio_wakeup((1ULL << wakeup_but), ESP_GPIO_WAKEUP_GPIO_LOW);
-    #else
-      #warning "Unsupported sleep/wakeup architecture on this chip"
-    #endif
-
+      // Configure the wake-up source: wake up when GPIO 0 goes LOW (button press)
+      #if SOC_PM_SUPPORT_EXT_WAKEUP
+	  // For classic ESP32 which supports EXT0 (e.g., ESP32)
+	  esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
+      #elif SOC_PM_SUPPORT_GPIO_WAKEUP
+	 // For newer chips that use generic GPIO wakeup (e.g., ESP32-C3, ESP32-S3)
+	esp_deep_sleep_enable_gpio_wakeup((1ULL << wakeup_but), ESP_GPIO_WAKEUP_GPIO_LOW);
+      #else
+	#warning "Unsupported sleep/wakeup architecture on this chip"
+      #endif
 
     }
 
@@ -206,20 +232,67 @@ uint32_t currentTime  = 0;
         Serial.println("Set POWER_HOLD_PIN:  LOW");
         Serial.flush();
         digitalWrite(POWER_HOLD_PIN, LOW);
+
         //  if plugged in we use DEEPSLEEP instead
         delay(500);
         Serial.println("DeepSleep");
-        DeepSleep(0);
+        DeepSleep();
     #else
         DeepSleep(0);
     #endif
   }
-
+// #endif  // SHUTDOWN
 
 #ifdef HAS_C5_SD
   SPIClass sharedSPI(SPI);
   SDInterface sd_obj = SDInterface(&sharedSPI, SD_CS);
 #endif
+
+void print_reset_reason() {
+  esp_reset_reason_t reason = esp_reset_reason();
+
+
+  Serial.print(F("Last reset reason: "));
+  switch (reason) {
+    case ESP_RST_UNKNOWN:
+      Serial.println(F("Unknown"));
+      break;
+    case ESP_RST_POWERON:
+      Serial.println(F("Power-on event"));
+      break;
+    case ESP_RST_EXT:
+      Serial.println(F("External pin (Reset button)"));
+      break;
+    case ESP_RST_SW:
+      Serial.println(F("Software reset (e.g., esp_restart())"));
+      break;
+    case ESP_RST_PANIC:
+      Serial.println(F("Software reset due to exception/crash"));
+      break;
+    case ESP_RST_INT_WDT:
+      Serial.println(F("Interrupt Watchdog"));
+      break;
+    case ESP_RST_TASK_WDT:
+      Serial.println(F("Task Watchdog"));
+      break;
+    case ESP_RST_WDT:
+      Serial.println(F("Other Watchdog"));
+      break;
+    case ESP_RST_DEEPSLEEP:
+      Serial.println(F("Exited Deep Sleep"));
+      break;
+    case ESP_RST_BROWNOUT:
+      Serial.println(F("Brownout (Low Voltage)"));
+      break;
+    case ESP_RST_SDIO:
+      Serial.println(F("Reset over SDIO"));
+      break;
+    default:
+      Serial.println(F("Unrecognized reset reason"));
+      break;
+  }
+}
+
 
 void setup()
 {
@@ -249,27 +322,12 @@ void setup()
     digitalWrite(ACT_LED_PIN, LOW);
   #endif
 
-  #ifdef ARDUINO_USB_MODE
-    Serial.println("ARDUINO_USB_MODE = " + (String)ARDUINO_USB_MODE);
-  #endif
-  #ifdef ARDUINO_USB_CDC_ON_BOOT
-    Serial.println("ARDUINO_USB_CDC_ON_BOOT = " + (String)ARDUINO_USB_CDC_ON_BOOT);
-  #endif
-  
-  #ifndef HAS_IDF_3
-    esp_spiram_init();
-  #endif
+  // while(!Serial)
+  while(!Serial && millis() < 5000)
+    delay(10);
 
-// -D ARDUINO_USB_MODE=1
-//   -D ARDUINO_USB_CDC_ON_BOOT
-  // Serial.setTxTimeoutMs(40);
-  #if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT == 1
-  // Serial.setTxTimeoutMs(40);
-    while(!Serial && millis() < 5000)
-       delay(10);
-  #else
-    while(!Serial)
-       delay(10);
+  #ifdef DEVELOPER
+    print_reset_reason();
   #endif
 
   #ifdef HAS_C5_SD
@@ -277,8 +335,7 @@ void setup()
     delay(100);
   #endif
 
-
-  #if defined(TFT_BL)
+  #ifdef HAS_SCREEN
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH); // ???
   #endif
@@ -362,6 +419,7 @@ void setup()
   #endif
 
   #ifdef HAS_SCREEN
+    display_obj.tft.fillScreen(TFT_BLACK);
     #if !defined(MARAUDER_CARDPUTER) && !defined(MARAUDER_CARDPUTER_ADV)
       display_obj.tft.drawCentreString("ESP32 Marauder", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 1);
       display_obj.tft.drawCentreString("JustCallMeKoko", TFT_WIDTH/2, TFT_HEIGHT * 0.5, 1);
@@ -391,7 +449,7 @@ void setup()
 
   settings_obj.begin();
 
-  const char* type = settings_obj.getSettingType("ChanHop");
+  const char* type = settings_obj.getSettingType("Probe GPS at Boot");
 
   if (type == nullptr || type[0] == '\0') {
     Serial.println(F("Current settings format not supported. Installing new default settings..."));
@@ -456,7 +514,9 @@ void setup()
   #endif
 
   #ifdef HAS_GPS
-    gps_obj.begin();
+    if (!settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
+      gps_obj.begin();
+    }
   #endif
 
   #ifdef HAS_SCREEN

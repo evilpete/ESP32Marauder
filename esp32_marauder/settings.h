@@ -36,6 +36,7 @@ class Settings {
       #ifdef CYD_SOUND
           bool  EnableSND   = true;
       #endif
+      bool  ProbeGPS     = false;
       String ClientSSID = "";
       String ClientPW   = "";
     } _cache;

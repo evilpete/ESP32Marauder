@@ -34,6 +34,12 @@ extern Settings settings_obj;
 #if defined(HAS_NEOPIXEL_LED)
   extern LedInterface led_obj;
 #endif
+
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+    extern MSC_Share MSC_Share_obj;
+#endif
+
 extern LinkedList<AccessPoint>* access_points;
 extern LinkedList<AirTag>* airtags;
 extern LinkedList<ssid>* ssids;
@@ -43,10 +49,8 @@ extern LinkedList<ProbeReqSsid>* probe_req_ssids;
 extern const String PROGMEM version_number;
 extern const String PROGMEM board_target;
 
-#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
-  extern void shutdown();
-  extern void DeepSleep(int8_t wakeup_but);
-#endif
+extern void shutdown();
+extern void DeepSleep(int8_t wakeup_but);
 
 //// Commands
 
@@ -65,7 +69,12 @@ const char PROGMEM NMEA_CMD[] = "nmea";
 const char PROGMEM GPS_POI_CMD[] = "gpspoi";
 const char PROGMEM GPS_TRACKER_CMD[] = "gpstracker";
 const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
-const char PROGMEM RESCAN_SD[] = "rescan-sd";
+
+const char PROGMEM RESCANSD_CMD[] = "rescansd";
+#ifdef MSC_SHARE
+  const char PROGMEM MSC_CMD[] = "msc";
+#endif
+const char PROGMEM CPUFREQ_CMD[] = "cpufreq";
 
 // WiFi sniff/scan
 const char PROGMEM EVIL_PORTAL_CMD[] = "evilportal";
@@ -144,10 +153,14 @@ const char PROGMEM HELP_GPS_CMD[] = "gps [-t] [-g] <fix/sat/lon/lat/alt/date/acc
 const char PROGMEM HELP_GPS_POI_CMD[] = "gpspoi -s/-m/-e";
 const char PROGMEM HELP_GPS_TRACKER_CMD[] = "gpstracker -c <start/stop>";
 const char PROGMEM HELP_NMEA_CMD[] = "nmea";
-#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
-  const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
+const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
+
+
+const char PROGMEM HELP_RESCANSD_CMD[] = "rescansd : rescan for SD card";
+#ifdef MSC_SHARE
+  const char PROGMEM HELP_MSC_CMD[] = "msc [start | stop | pause | resume] : Share SD over USB"; 
 #endif
-const char PROGMEM HELP_RESCAN_SD[] = "rescan-sd";
+const char PROGMEM HELP_CPUFREQ_CMD[] = "cpufreq [240 | 160 | 80 | 40 | 20]"; 
 
 // WiFi sniff/scan
 const char PROGMEM HELP_EVIL_PORTAL_CMD[] = "evilportal [-c start [-w html.html]/sethtml <html.html>]";

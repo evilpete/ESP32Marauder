@@ -239,9 +239,14 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_NMEA_CMD);
     Serial.println(HELP_GPS_POI_CMD);
     Serial.println(HELP_GPS_TRACKER_CMD);
-    #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
-      Serial.println(HELP_SHUTDOWN_CMD);
+    Serial.println(HELP_SHUTDOWN_CMD);
+
+    Serial.println(HELP_RESCANSD_CMD);
+
+    #ifdef MSC_SHARE
+      Serial.println(HELP_MSC_CMD);
     #endif
+    Serial.println(HELP_CPUFREQ_CMD);
     
     // WiFi sniff/scan
     Serial.println(HELP_EVIL_PORTAL_CMD);
@@ -539,12 +544,91 @@ void CommandLine::runCommand(String input) {
     }
   }
 
+  else if (cmd_args.get(0) == HELP_RESCANSD_CMD) {
+      sd_obj.initSD();
+  }
+
+  #ifdef MSC_SHARE
+    else if (cmd_args.get(0) == MSC_CMD) {
+      int st_sw = this->argSearch(&cmd_args, "start");
+      int sp_sw = this->argSearch(&cmd_args, "stop");
+      int pa_sw  = this->argSearch(&cmd_args, "pause");
+      int re_sw  = this->argSearch(&cmd_args, "resume");
+
+      if (st_sw != -1) {
+        if (MSC_Share_obj.msc_started)
+          Serial.println(F("MSC Share already running"));
+        else {
+          MSC_Share_obj.RunSetup();
+          Serial.println(F("MSC Share Started"));
+        }
+
+      } else if (sp_sw != -1) {
+        if (MSC_Share_obj.msc_started) {
+          MSC_Share_obj.ShareEnd();
+          Serial.println(F("MSC Share Stopped"));
+        } else 
+          Serial.println(F("MSC Share USB not running"));
+
+      } else if (pa_sw != -1) {
+        if (MSC_Share_obj.msc_started) {
+          MSC_Share_obj.msc_pause();
+          Serial.println(F("MSC Share Paused"));
+        } else
+          Serial.println(F("MSC Share USB not running"));
+
+      } else if (re_sw != -1) {
+        if (MSC_Share_obj.msc_started) {
+          MSC_Share_obj.msc_start();
+           Serial.println(F("MSC Share Unpaused"));
+         } else
+           Serial.println(F("MSC Share USB not running"));
+
+      } else {
+       if (MSC_Share_obj.msc_started) {
+         if (MSC_Share_obj.msc_active)
+           Serial.println(F("MSC Share is active"));
+         else
+           Serial.println(F("MSC Share is paused"));
+       } else
+         Serial.println(F("MSC not running"));
+      }
+
+    }
+   #endif // MSC_SHARE
+    else if (cmd_args.get(0) == CPUFREQ_CMD) {
+      int a_sw = this->argSearch(&cmd_args, "240");
+      int b_sw = this->argSearch(&cmd_args, "160");
+      int c_sw = this->argSearch(&cmd_args, "80");
+      int d_sw = this->argSearch(&cmd_args, "40");
+      int e_sw = this->argSearch(&cmd_args, "20");
+
+      if (a_sw != -1) {
+        setCpuFrequencyMhz(240);
+        Serial.println(F("Set CPU to 240Mhz"));
+      } else if (b_sw != -1) {
+        setCpuFrequencyMhz(160);
+        Serial.println(F("Set CPU to 160Mhz"));
+      } else if (c_sw != -1) {
+        setCpuFrequencyMhz(80);
+        Serial.println(F("Set CPU to 80Mhz"));
+      } else if (d_sw != -1) {
+        setCpuFrequencyMhz(40);
+        Serial.println(F("Set CPU to 40Mhz"));
+      } else if (e_sw != -1) {
+        setCpuFrequencyMhz(20);
+        Serial.println(F("Set CPU to 20Mhz"));
+      }
+      uint32_t cpuFreq = getCpuFrequencyMhz();
+      Serial.print(F("CpuFrequency = "));
+      Serial.print(getCpuFrequencyMhz());
+      Serial.println(F(" Mhz"));
+    }
+
   else if (cmd_args.get(0) == REBOOT_CMD)
     ESP.restart();
-  #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
   else if (cmd_args.get(0) == SHUTDOWN_CMD)
     shutdown();
-  #endif
 
   //// WiFi/Bluetooth Scan/Attack commands
   if (!wifi_scan_obj.scanning()) {
@@ -1366,6 +1450,7 @@ void CommandLine::runCommand(String input) {
     int ap_sw = this->argSearch(&cmd_args, "-a");   // AP Index #
     int pw_sw = this->argSearch(&cmd_args, "-p");   // Password
     int s_sw  = this->argSearch(&cmd_args, "-s");
+    int n_sw  = this->argSearch(&cmd_args, "-n");
 
     if ((ap_sw != -1) && (pw_sw != -1)) {
       int index = cmd_args.get(ap_sw + 1).toInt();

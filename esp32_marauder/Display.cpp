@@ -40,6 +40,7 @@ int8_t Display::menuButton(uint16_t *x, uint16_t *y, bool pressed, bool check_ho
   return -1;
 }
 
+
 uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
 
     #ifdef HAS_CST820
@@ -72,7 +73,6 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
           #if defined(MARAUDER_CYD_HMI)
             p.x = 4095 - p.x;   //  Temp Hack
           #endif
-
           //#ifdef HAS_CYD_PORTRAIT
           //  rot = 0;
           //#endif

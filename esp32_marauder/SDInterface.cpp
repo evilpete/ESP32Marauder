@@ -1,10 +1,20 @@
 #include "SDInterface.h"
 #include "lang_var.h"
 
+// #if defined(HAS_SDMMC)
+  // #include "diskio_sdmmc.h"    // ff_sdmmc_get_card()
+// #endif
+
+#if defined(HAS_SDMMC) && defined(USE_MMC_WRITE_SECTORS)
+  #include "driver/sdmmc_types.h"
+  extern sdmmc_card_t* _mmc_card = nullptr;
+#endif
+
 #ifdef HAS_C5_SD
   SDInterface::SDInterface(SPIClass* spi, int cs)
     : _spi(spi), _cs(cs) {}
 #endif
+
 
 bool SDInterface::initSD() {
   #ifdef HAS_SD
@@ -63,6 +73,7 @@ bool SDInterface::initSD() {
     #else
       if (!SD.begin(SD_CS)) {
     #endif
+      log_d("SD Card mount failed");
       Serial.println(F("Failed to mount SD Card"));
       this->supported = false;
       return false;
@@ -72,7 +83,19 @@ bool SDInterface::initSD() {
       this->cardType = SD.cardType();
 
       this->cardSizeMB = SD.cardSize() / (1024 * 1024);
-    
+
+      #if defined(HAS_SDMMC) && defined(USE_MMC_WRITE_SECTORS)
+        // Capture card pointer while we're here SD_MMC.begin() just set it up
+        // ff_sdmmc_get_card is public IDF API, no private member access needed
+
+        _mmc_card = sdmmc_get_card_handle();
+        if (_mmc_card) {
+          log_w("SDInterface: could not capture sdmmc_card_t pointer");
+        } else {
+          log_d("SDInterface: sdmmc_card captured OK");
+        }
+      #endif
+          
       if (this->supported) {
         const int NUM_DIGITS = log10(this->cardSizeMB) + 1;
 
@@ -166,6 +189,15 @@ void SDInterface::listDir(String str_dir){
     }
   }
 }
+
+void SDInterface::shutdownSD() {
+  SD.end();
+}
+
+void SDInterface::reinitSD() {
+  this->initSD();           // just re-run the existing init path, same as boot
+}
+
 
 void SDInterface::runUpdate(String file_name) {
   if (file_name == "")
