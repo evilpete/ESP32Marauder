@@ -50,7 +50,7 @@ extern const String PROGMEM version_number;
 extern const String PROGMEM board_target;
 
 extern void shutdown();
-extern void DeepSleep(int8_t wakeup_but);
+extern void DeepSleep(int8_t);
 
 //// Commands
 

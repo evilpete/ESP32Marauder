@@ -65,8 +65,6 @@ extern Settings settings_obj;
 extern void shutdown();
 extern void DeepSleep(int8_t);
 
-extern void shutdown();
-extern void DeepSleep(int8_t wakeup_but = -1);
 
 #define FLASH_BUTTON 0
 

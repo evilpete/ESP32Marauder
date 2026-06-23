@@ -232,7 +232,6 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_REBOOT_CMD);
     Serial.println(HELP_UPDATE_CMD_A);
     Serial.println(HELP_LS_CMD);
-    Serial.println(HELP_RESCAN_SD);
     Serial.println(HELP_LED_CMD);
     Serial.println(HELP_GPS_DATA_CMD);
     Serial.println(HELP_GPS_CMD);
@@ -466,11 +465,6 @@ void CommandLine::runCommand(String input) {
         sd_obj.listDir(cmd_args.get(1));
     #endif
   }
-  else if (cmd_args.get(0) == RESCAN_SD) {
-    #ifdef HAS_SD
-        sd_obj.initSD();
-    #endif
-  }
 
   // Channel command
   else if (cmd_args.get(0) == CH_CMD) {
@@ -544,8 +538,10 @@ void CommandLine::runCommand(String input) {
     }
   }
 
-  else if (cmd_args.get(0) == HELP_RESCANSD_CMD) {
-      sd_obj.initSD();
+  else if (cmd_args.get(0) == RESCANSD_CMD) {
+    #ifdef HAS_SD
+        sd_obj.initSD();
+    #endif
   }
 
   #ifdef MSC_SHARE
@@ -1856,13 +1852,13 @@ void CommandLine::runCommand(String input) {
   }
 
   #ifdef HAS_RTC
-  else if (cmd_args.get(0) == RTC_NTP_SYNC) {
+  else if (cmd_args.get(0) == NTP_SYNC) {
 
     if (!wifi_scan_obj.wifi_connected) {
       Serial.println(F("WIFI is not connected."));
       return;
     }
-    rtc_obj.sync_rtc_ntp();
+    rtc_obj.rtc_ntp();
   }
   #endif //  HAS_RTC
 

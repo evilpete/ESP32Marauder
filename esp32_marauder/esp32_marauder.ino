@@ -153,6 +153,7 @@ CommandLine cli_obj;
     MSC_Share MSC_Share_obj;
 #endif
 
+/*
 #ifdef HAS_FLIPPER_LED
   flipperLED flipper_led;
 #elif defined(XIAO_ESP32_S3)
@@ -162,6 +163,7 @@ CommandLine cli_obj;
 #elif defined(HAS_NEOPIXEL_LED)
   LedInterface led_obj;
 #endif
+*/
 
 const String PROGMEM version_number = MARAUDER_VERSION;
 

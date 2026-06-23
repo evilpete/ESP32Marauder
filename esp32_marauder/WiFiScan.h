@@ -918,8 +918,6 @@ class WiFiScan
     void RunSortAPList();
     void RunSaveATList(bool save_as = true);
     void RunLoadATList();
-    void RunLoadAll();
-    void RunSaveAll();
     void RunSetupGPSTracker(uint8_t scan_mode);
     void channelHop(bool filtered = false, bool ranged = false);
     uint8_t currentScanMode = 0;

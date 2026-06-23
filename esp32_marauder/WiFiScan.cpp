@@ -3019,33 +3019,6 @@ void WiFiScan::RunPortScanAll(uint8_t scan_mode, uint16_t color) {
   initTime = millis();
 }
 
-void WiFiScan::RunSaveAll() {
-
-  if (!sd_obj.supported)
-    return;
-
-  if (airtags->size())
-      RunSaveATList();
-
-  if (access_points->size())
-      RunSaveAPList();
-
-  if (ssids->size())
-      RunSaveSSIDList();
-}
-
-void WiFiScan::RunLoadAll() {
-
-  if (!sd_obj.supported)
-    return;
-
-  if (SD.exists("/Airtags_0.log"))
-    RunLoadATList();
-
-  if (SD.exists("/APs_0.log"))
-    RunLoadAPList();
-}
-
 void WiFiScan::RunLoadATList() {
   #ifdef HAS_SD
     // Prepare to access the file

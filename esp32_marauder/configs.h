@@ -263,9 +263,9 @@
       #define MARAUDER_REV_FEATHER
       #define HAS_BT
     #endif
-    #define HAS_RTC
-      #define HAS_PCF8523
-    #define HAS_TEMP_SENSOR
+    // #define HAS_RTC
+    //   #define HAS_PCF8523
+    // #define HAS_TEMP_SENSOR
       #define HAS_PCT2075
     #define HAS_SD
     #define USE_SD
@@ -280,7 +280,6 @@
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
-    #define HAS_TEMP_SENSOR
     #define HAS_GPS
   #endif
 
@@ -383,7 +382,7 @@
     #define HAS_FULL_SCREEN
     #define HAS_SD
     #define USE_SD
-    #define HAS_TEMP_SENSOR
+    // #define HAS_TEMP_SENSOR
     #define HAS_GPS
     #define HAS_CYD_TOUCH
     #define HAS_CYD_PORTRAIT
@@ -431,7 +430,7 @@
     #define HAS_FULL_SCREEN
     #define HAS_SD
     #define USE_SD
-    #define HAS_TEMP_SENSOR
+    // #define HAS_TEMP_SENSOR
     #define HAS_GPS
     //#define HAS_CYD_TOUCH
     //#define HAS_NIMBLE_2
