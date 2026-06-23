@@ -2989,11 +2989,11 @@ void MenuFunctions::RunSetup()
     this->changeMenu(&adminMenu, true);
     sd_obj.initSD();
   });
-#if defined(MSC_SHARE)
     adminSubMenu.parentMenu = &adminMenu;
     this->addNodes(&adminSubMenu, text09, TFTLIGHTGREY, 0, [this]() {
       this->changeMenu(adminSubMenu.parentMenu, true);
     });
+#if defined(MSC_SHARE)
 
     this->addNodes(&adminMenu, "Share SD", TFTCYAN, SD_UPDATE, [this]() {
         this->changeMenu(&adminSubMenu, true);
@@ -3074,9 +3074,9 @@ void MenuFunctions::RunSetup()
       });
   #endif //  HAS_GPS
 
+  #ifdef ADJ_CPUFREQ
       this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
-
           Serial.println(F("Set CPU to 240Mhz"));
           setCpuFrequencyMhz(240);
           display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
@@ -3108,6 +3108,14 @@ void MenuFunctions::RunSetup()
         display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
         display_obj.tft.drawCentreString("Set CPU 40Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
       });
+    #endif // ADJ_CPUFREQ
+
+    this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
+      this->changeMenu(&adminSubMenu, true);
+        display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+        display_obj.tft.drawCentreString(resetReasonName(), TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+        print_reset_reason();
+    });
 
 
 
@@ -4111,7 +4119,7 @@ void MenuFunctions::displayCurrentMenu(int start_index)
     extern void brightnessSave(uint8_t level);
     extern void brightnessSet(uint8_t level);
     extern uint8_t getBrightnessLevel();
-    extern const uint8_t BL_NUM_LEVELS;
+    extern uint8_t BL_NUM_LEVELS;
 
     uint8_t level = getBrightnessLevel();
 

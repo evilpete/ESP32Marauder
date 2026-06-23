@@ -16,9 +16,9 @@
 
 extern Settings settings_obj;
 
-// #ifdef HAS_NEOPIXEL_LED
-//   extern Adafruit_NeoPixel strip;
-// #endif
+#ifdef HAS_NEOPIXEL_LED
+   extern Adafruit_NeoPixel strip;
+#endif
 
 class LedInterface {
 
@@ -35,7 +35,7 @@ class LedInterface {
     uint8_t current_mode = MODE_OFF;
 
 
-    Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
+    // Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
   
   public:
     LedInterface();

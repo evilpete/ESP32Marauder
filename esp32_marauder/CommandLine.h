@@ -25,6 +25,8 @@
   extern Display display_obj;
 #endif
 
+extern void print_reset_reason();
+
 extern WiFiScan wifi_scan_obj;
 //extern Web web_obj;
 #ifdef HAS_SD
@@ -75,6 +77,7 @@ const char PROGMEM RESCANSD_CMD[] = "rescansd";
   const char PROGMEM MSC_CMD[] = "msc";
 #endif
 const char PROGMEM CPUFREQ_CMD[] = "cpufreq";
+const char PROGMEM RESET_REASON_CMD[] = "resetreasion";
 
 // WiFi sniff/scan
 const char PROGMEM EVIL_PORTAL_CMD[] = "evilportal";
@@ -161,6 +164,7 @@ const char PROGMEM HELP_RESCANSD_CMD[] = "rescansd : rescan for SD card";
   const char PROGMEM HELP_MSC_CMD[] = "msc [start | stop | pause | resume] : Share SD over USB"; 
 #endif
 const char PROGMEM HELP_CPUFREQ_CMD[] = "cpufreq [240 | 160 | 80 | 40 | 20]"; 
+const char PROGMEM HELP_RESET_REASON_CMD[] = "resetreasion : print reason for last reboot / crash";
 
 // WiFi sniff/scan
 const char PROGMEM HELP_EVIL_PORTAL_CMD[] = "evilportal [-c start [-w html.html]/sethtml <html.html>]";

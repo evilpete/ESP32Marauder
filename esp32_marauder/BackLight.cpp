@@ -2,13 +2,16 @@
 
 #include "configs.h"
 
+#include "Display.h"
 /*
   Three #ifdef blocks defining brightnessInit() brightnessOn brightnessOff... etc...
-    using HAS_AW9364
-    using ledcAttach
-    using just digitalWrite
-    and dummy/noop versions
+    ifdef HAS_AW9364
+    else ledcAttach
+    else just digitalWrite
+    else dummy/noop versions
 
+    // Every block provides the following
+     uint8_t BL_NUM_LEVELS
     void brightnessInit()
     void brightnessCycle()
     void backlightOn()
@@ -18,11 +21,11 @@
     void brightnessSave(uint8_t level)
 
 */
+
 #if defined(HAS_SCREEN) && !defined(TFT_BL)
   #warning "HAS_SCREEN is defined and TFT_BL is undefined"
 #endif
 
-extern const uint8_t BL_NUM_LEVELS;
 
 #if defined(HAS_SCREEN) && defined(TFT_BL)
 
@@ -34,7 +37,7 @@ uint8_t bl_level_idx = 9; // default brightness
 // AW9364: 4-Channel 1-wire Dimming LED Driver
 #if defined(HAS_AW9364)
 
-  const uint8_t BL_NUM_LEVELS = 16;
+   uint8_t BL_NUM_LEVELS = 16;
 
   void _setBrightness(uint8_t value)
   {
@@ -130,7 +133,7 @@ uint8_t bl_level_idx = 9; // default brightness
 
   // PWM Brightness Control
   const uint8_t BL_LEVELS[] = {26, 51, 77, 102, 128, 153, 179, 204, 230, 255, 255};
-  const uint8_t BL_NUM_LEVELS = 11;
+  uint8_t BL_NUM_LEVELS = 11;
 
   #define BL_CHANNEL 0
   #define BL_FREQ 5000
@@ -141,20 +144,28 @@ uint8_t bl_level_idx = 9; // default brightness
     #if ESP_ARDUINO_VERSION_MAJOR >= 3
       #define BL_SETUP()       ledcAttach(TFT_BL, BL_FREQ, BL_RESOLUTION)
       #define BL_SET(duty)     ledcWrite(TFT_BL, (duty))
+      #define TLED          TFT_BL
     #else
       #define BL_SETUP()       do { ledcSetup(BL_CHANNEL, BL_FREQ, BL_RESOLUTION); ledcAttachPin(TFT_BL, BL_CHANNEL); } while(0)
       #define BL_SET(duty)     ledcWrite(BL_CHANNEL, (duty))
+      #define TLED          BL_CHANNEL
     #endif
   #endif
 
   void brightnessInit() {
-      // Serial.print(F("[brightnessInit] ledcWrite "));
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
       bl_prefs.begin("backlight", false);
       bl_level_idx = bl_prefs.getUChar("level", 9);
       if (bl_level_idx >= BL_NUM_LEVELS) bl_level_idx = 9;
       BL_SET(BL_LEVELS[bl_level_idx]);
+      uint32_t currentDuty = ledcRead(BL_CHANNEL);
+
+      log_d("brightnessInit: level = %d currentDuty=%d", bl_level_idx, currentDuty);
+      log_d("    BL_CHANNEL = %d\n", BL_CHANNEL);
+      log_d("    TFT_BL = %d\n", TFT_BL);
+      log_d("    BL TLED = %d\n", TLED);
+
   }
 
   void brightnessCycle() {
@@ -178,7 +189,16 @@ uint8_t bl_level_idx = 9; // default brightness
     if (level >= BL_NUM_LEVELS)
       level = BL_NUM_LEVELS - 1;
       bl_level_idx = level;
+
+      uint32_t currentDuty; //  = ledcRead(TLED);
+      // Serial.print("currentDuty = "); Serial.println(currentDuty);
+
       BL_SET(BL_LEVELS[bl_level_idx]);
+      // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
+
+      currentDuty = ledcRead(TFT_BL);
+      // Serial.print("TFT_BL currentDuty = "); Serial.println(currentDuty);
+      log_d("brightnessSet: level = %d currentDuty=%d", bl_level_idx, currentDuty);
   }
 
   void brightnessSave(uint8_t level) {
@@ -186,34 +206,43 @@ uint8_t bl_level_idx = 9; // default brightness
       bl_level_idx = level;
       BL_SET(BL_LEVELS[bl_level_idx]);
       bl_prefs.putUChar("level", bl_level_idx);
+      // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
+      uint32_t currentDuty = ledcRead(TLED);
+      // Serial.print("currentDuty = "); Serial.println(currentDuty);
+      log_d("brightnessSet: level = %d currentDuty=%d", bl_level_idx, currentDuty);
   }
 
   void backlightOn() {
     // Serial.println("BL brightnessOn");
     BL_SET(BL_LEVELS[bl_level_idx]);
+      // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
+      uint32_t currentDuty = ledcRead(TLED);
+      // Serial.print("currentDuty = "); Serial.println(currentDuty);
+      log_d("backlightOn: level = %d currentDuty=%d", bl_level_idx, currentDuty);
   }
 
   void backlightOff() {
-    // Serial.println("BL brightnessOff");
       BL_SET(0);
+      log_d("backlightOff");
   }
+
 #else   // HAS_MINI_SCREEN
 
-  const uint8_t BL_NUM_LEVELS = 1;
+   uint8_t BL_NUM_LEVELS = 1;
   // dummyFunctions
   void brightnessInit() {
-      // Serial.print(F("[brightnessInit] HAS_MINI_SCREEN "));
+      Serial.print(F("[brightnessInit] HAS_MINI_SCREEN "));
       pinMode(TFT_BL, OUTPUT);
   }
+
+  // dummy
   void brightnessCycle() { }
-
   uint8_t getBrightnessLevel() { return 9; }
-
   void brightnessSet(uint8_t level) { (void) level; }
   void brightnessSave(uint8_t level) { (void) level; }
 
   void backlightOn() {
-    // Serial.println("-- brightnessOn");
+    log_d("backlightOn");
     #ifdef TFT_BL
       // ???
       #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
@@ -229,6 +258,7 @@ uint8_t bl_level_idx = 9; // default brightness
   }
 
   void backlightOff() {
+    log_d("backlightOff");
     #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
       digitalWrite(TFT_BL, HIGH);
     #endif
@@ -242,9 +272,9 @@ uint8_t bl_level_idx = 9; // default brightness
 
 #else // HAS_SCREEN
 
-  const uint8_t BL_NUM_LEVELS = 1;
+   uint8_t BL_NUM_LEVELS = 1;
   // Dummy Functions, should never be called but are here just in case
-  void brightnessInit() { }
+  void brightnessInit() { log_d("-- brightnessInit Fallthrough"); }
   void brightnessCycle() { }
   uint8_t getBrightnessLevel() { return 9; }
   void brightnessSet(uint8_t level) { }

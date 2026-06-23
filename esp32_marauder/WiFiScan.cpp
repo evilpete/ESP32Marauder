@@ -6867,18 +6867,18 @@ void WiFiScan::multiSSIDSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t t
         delay(random(0, 10));
         Serial.print(log_line);
 
-        display_string.concat("MAC: " + String(addr));
-        display_string.concat(" CH: " + String(ap_channel));
-        display_string.concat(" RSSI: " + String(snifferPacket->rx_ctrl.rssi));
-        display_string.concat(" SSIDs: " + String(new_confirmed.ssid_count));
-        display_string.concat(" SSID: " + essid);
-
-        int temp_len = display_string.length();
-        for (int i = 0; i < 40 - temp_len; i++) {
-          display_string.concat(" ");
-        }
-        
         #ifdef HAS_SCREEN
+          display_string.concat("MAC: " + String(addr));
+          display_string.concat(" CH: " + String(ap_channel));
+          display_string.concat(" RSSI: " + String(snifferPacket->rx_ctrl.rssi));
+          display_string.concat(" SSIDs: " + String(new_confirmed.ssid_count));
+          display_string.concat(" SSID: " + essid);
+
+          int temp_len = display_string.length();
+          for (int i = 0; i < 40 - temp_len; i++) {
+            display_string.concat(" ");
+          }
+
           display_obj.display_buffer->add(display_string);
         #endif
       }
@@ -9182,6 +9182,11 @@ void WiFiScan::channelHop(bool filtered, bool ranged) {
       }
     #endif
   }
+
+  if (this->set_channel == 1 or this->set_channel == 6 or this->set_channel == 11)
+    this->channel_hop_delay = 2;
+  else
+    this->channel_hop_delay = 1;
 
   this->changeChannel(this->set_channel);
   delay(1);

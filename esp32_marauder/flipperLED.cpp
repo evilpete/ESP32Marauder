@@ -7,6 +7,7 @@ void flipperLED::RunSetup() {
   pinMode(G_PIN, OUTPUT);
   pinMode(R_PIN, OUTPUT);
 
+  Serial.println("flipperLED::RunSetup A");
   if (!settings_obj.loadSetting<bool>("EnableLED")) {
     digitalWrite(B_PIN, HIGH);
     digitalWrite(G_PIN, HIGH);
@@ -15,6 +16,8 @@ void flipperLED::RunSetup() {
   }
     
   delay(50);
+
+  Serial.println("flipperLED::RunSetup B");
 
   digitalWrite(B_PIN, LOW);
   delay(500);

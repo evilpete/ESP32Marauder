@@ -102,6 +102,7 @@ void LedInterface::sniffLED() {
   if (!settings_obj.loadSetting<bool>("EnableLED"))
     return;
 
+  Serial.println("Setting neopixel SNIFF...");
   // this->current_mode == MODE_SNIFF;
   this->setColor(0, 0, 255);
 }

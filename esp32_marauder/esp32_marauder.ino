@@ -121,6 +121,8 @@ CommandLine cli_obj;
   extern void backlightOff();
   extern void backlightOn();
 // #endif
+// Do some LED stuff
+
 
 #ifdef HAS_GPS
   GpsInterface gps_obj;
@@ -168,9 +170,9 @@ CommandLine cli_obj;
 const String PROGMEM version_number = MARAUDER_VERSION;
 
 
-// #ifdef HAS_NEOPIXEL_LED
-//   Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
-// #endif
+#ifdef HAS_NEOPIXEL_LED
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
+#endif
 
 uint32_t currentTime  = 0;
 
@@ -250,49 +252,29 @@ uint32_t currentTime  = 0;
   SDInterface sd_obj = SDInterface(&sharedSPI, SD_CS);
 #endif
 
-void print_reset_reason() {
-  esp_reset_reason_t reason = esp_reset_reason();
-
-
-  Serial.print(F("Last reset reason: "));
-  switch (reason) {
-    case ESP_RST_UNKNOWN:
-      Serial.println(F("Unknown"));
-      break;
-    case ESP_RST_POWERON:
-      Serial.println(F("Power-on event"));
-      break;
-    case ESP_RST_EXT:
-      Serial.println(F("External pin (Reset button)"));
-      break;
-    case ESP_RST_SW:
-      Serial.println(F("Software reset (e.g., esp_restart())"));
-      break;
-    case ESP_RST_PANIC:
-      Serial.println(F("Software reset due to exception/crash"));
-      break;
-    case ESP_RST_INT_WDT:
-      Serial.println(F("Interrupt Watchdog"));
-      break;
-    case ESP_RST_TASK_WDT:
-      Serial.println(F("Task Watchdog"));
-      break;
-    case ESP_RST_WDT:
-      Serial.println(F("Other Watchdog"));
-      break;
-    case ESP_RST_DEEPSLEEP:
-      Serial.println(F("Exited Deep Sleep"));
-      break;
-    case ESP_RST_BROWNOUT:
-      Serial.println(F("Brownout (Low Voltage)"));
-      break;
-    case ESP_RST_SDIO:
-      Serial.println(F("Reset over SDIO"));
-      break;
-    default:
-      Serial.println(F("Unrecognized reset reason"));
-      break;
+//  Converts reason type to a C string.
+//  Type is located in /tools/sdk/esp32/include/esp_system/include/esp_system.h
+const char *resetReasonName() {
+  esp_reset_reason_t r = esp_reset_reason();
+  switch (r) {
+    case ESP_RST_UNKNOWN:   return "Unknown";
+    case ESP_RST_POWERON:   return "PowerOn";    //Power on or RST pin toggled
+    case ESP_RST_EXT:       return "ExtPin";     //External pin - not applicable for ESP32
+    case ESP_RST_SW:        return "Reboot";     //esp_restart()
+    case ESP_RST_PANIC:     return "Crash";      //Exception/panic
+    case ESP_RST_INT_WDT:   return "WDT_Int";    //Interrupt watchdog (software or hardware)
+    case ESP_RST_TASK_WDT:  return "WDT_Task";   //Task watchdog
+    case ESP_RST_WDT:       return "WDT_Other";  //Other watchdog
+    case ESP_RST_DEEPSLEEP: return "Sleep";      //Reset after exiting deep sleep mode
+    case ESP_RST_BROWNOUT:  return "BrownOut";   //Brownout reset (software or hardware)
+    case ESP_RST_SDIO:      return "SDIO";       //Reset over SDIO
+    default:                return "";
   }
+}
+
+void print_reset_reason() {
+  Serial.print(F("Last reset reason: "));
+  Serial.println(resetReasonName());
 }
 
 
@@ -338,11 +320,13 @@ void setup()
   #endif
 
   #ifdef HAS_SCREEN
+    log_d("pinMode(TFT_BL, OUTPUT");
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH); // ???
   #endif
 
   #ifdef HAS_SCREEN
+    brightnessInit();
     backlightOff();
   #endif
 
@@ -371,6 +355,16 @@ void setup()
 
   #ifdef CYD_SOUND
       sound_obj.RunSetup();
+  #endif
+
+  #ifdef HAS_FLIPPER_LED
+    led_obj.RunSetup();
+  #elif defined(XIAO_ESP32_S3)
+    xiao_led.RunSetup();
+  #elif defined(MARAUDER_M5STICKC)
+    stickc_led.RunSetup();
+  #elif defined(HAS_NEOPIXEL_LED)
+    led_obj.RunSetup();
   #endif
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
@@ -416,7 +410,7 @@ void setup()
   #endif
 
   #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
-    brightnessInit();
+    //brightnessInit();
     backlightOff();
   #endif
 
@@ -511,7 +505,7 @@ void setup()
   #endif
 
   // Do some LED stuff
-  #ifdef HAS_LED
+  #if defined(HAS_LED)  ||  defined(HAS_FLIPPER_LED) || defined(HAS_NEOPIXEL_LED)
     led_obj.RunSetup();
   #endif
 

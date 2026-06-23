@@ -24,6 +24,14 @@ void Sound_CYD::RunSetup() {
   #define ledcDetach  ledcDetachPin
 #endif
 
+
+  Serial.println("SND_CHANNEL :" + (String)SND_CHANNEL);
+  Serial.println("SOUND_PIN :" + (String)SOUND_PIN);
+  Serial.println("SND_ID :" + (String)SND_ID);
+
+  log_d("SND_CHANNEL : %d\n",  (String)SND_CHANNEL);
+  log_d("SOUND_PIN : %d\n",  (String)SOUND_PIN);
+  log_d("SND_ID : %d\n",  (String)SND_ID);
   // ledcWrite(SND_CHANNEL, duty_cycle);
   ledcWriteTone(SND_ID, 0);
 }

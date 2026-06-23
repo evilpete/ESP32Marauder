@@ -245,7 +245,10 @@ void CommandLine::runCommand(String input) {
     #ifdef MSC_SHARE
       Serial.println(HELP_MSC_CMD);
     #endif
-    Serial.println(HELP_CPUFREQ_CMD);
+    #ifdef ADJ_CPUFREQ
+      Serial.println(HELP_CPUFREQ_CMD);
+    #endif
+    Serial.println(HELP_RESET_REASON_CMD);
     
     // WiFi sniff/scan
     Serial.println(HELP_EVIL_PORTAL_CMD);
@@ -592,6 +595,12 @@ void CommandLine::runCommand(String input) {
 
     }
    #endif // MSC_SHARE
+
+    else if (cmd_args.get(0) == RESET_REASON_CMD) {
+      print_reset_reason();
+    }
+
+   #ifdef ADJ_CPUFREQ
     else if (cmd_args.get(0) == CPUFREQ_CMD) {
       int a_sw = this->argSearch(&cmd_args, "240");
       int b_sw = this->argSearch(&cmd_args, "160");
@@ -620,6 +629,7 @@ void CommandLine::runCommand(String input) {
       Serial.print(getCpuFrequencyMhz());
       Serial.println(F(" Mhz"));
     }
+  #endif
 
   else if (cmd_args.get(0) == REBOOT_CMD)
     ESP.restart();

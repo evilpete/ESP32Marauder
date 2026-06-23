@@ -1,4 +1,4 @@
-  #pragma once
+#pragma once
 
 #ifndef MenuFunctions_h
 #define MenuFunctions_h
@@ -65,6 +65,8 @@ extern Settings settings_obj;
 extern void shutdown();
 extern void DeepSleep(int8_t);
 
+extern const char *resetReasonName();
+extern void print_reset_reason();
 
 #define FLASH_BUTTON 0
 

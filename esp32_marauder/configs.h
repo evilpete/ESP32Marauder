@@ -133,11 +133,13 @@
 
   //// END HARDWARE NAMES
 
+  /*
   #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
     #define HAS_IDF_3
   #else
     #undef HAS_IDF_3
   #endif
+  */
 
  //// BOARD FEATURES
   #if defined(DUAL_MINI_C5)
@@ -149,16 +151,16 @@
     #define HAS_MINI_KB
     #define HAS_BATTERY
       #if defined(MARAUDER_M5STICKC)
-            #define HAS_BM8563
-        #define HAS_AXP192
+            #define HAS_BM8563  //  i2c RTC
+        #define HAS_AXP192      // i2c Power Management IC 
       #else
-        #define HAS_TP4057
+        #define HAS_TP4057A     // linear charger IC 
       #endif
 
     #if defined(MARAUDER_M5STICKCP2)
-      #define HAS_RTC8563
+      #define HAS_RTC8563         // I²C real-time clock (RTC)
     #elif defined(MARAUDER_M5STICKC)
-      #define HAS_BM8563
+      #define HAS_BM8563         //  i2c real-time clock (RTC)
     #endif
 
     #define HAS_BT
@@ -264,9 +266,9 @@
       #define HAS_BT
     #endif
     // #define HAS_RTC
-    //   #define HAS_PCF8523
+    //   #define HAS_PCF8523         // i2c real-time clock (RTC)
     // #define HAS_TEMP_SENSOR
-      #define HAS_PCT2075
+      #define HAS_PCT2075         // i2c TEMP_SENSOR
     #define HAS_SD
     #define USE_SD
     #define HAS_BATTERY
@@ -280,7 +282,8 @@
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
-    #define HAS_GPS
+    // #define HAS_GPS
+    #define ADJ_CPUFREQ
   #endif
 
   #ifdef MARAUDER_V4
@@ -490,7 +493,8 @@
 
   #ifdef MARAUDER_JC2432W328C
     #define HAS_TOUCH
-    #define HAS_FLIPPER_LED
+    #define HAS_LED
+      #define HAS_FLIPPER_LED
     //#define FLIPPER_ZERO_HAT
     #define HAS_BT
     // #define HAS_BT_REMOTE
@@ -500,7 +504,7 @@
     #define HAS_SD
     #define USE_SD
     // #define HAS_GPS
-    #define HAS_CST820
+    #define HAS_CST820      // i2c self-capacitive touch controller
     #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
     #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
@@ -511,8 +515,8 @@
   #endif
 
   #ifdef MARAUDER_MULTIBOARD_S3
-    #define HAS_FLIPPER_LED
     #define HAS_LED
+      #define HAS_FLIPPER_LED
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
@@ -532,8 +536,8 @@
     //#define HAS_BATTERY
     #define HAS_BT
     //#define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
     #define HAS_LED
+      #define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     #define HAS_SD
@@ -549,8 +553,8 @@
     //#define HAS_BATTERY
     #define HAS_BT
     //#define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
     #define HAS_LED
+      #define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
     //#define HAS_SCREEN
     #define HAS_SD
@@ -565,8 +569,8 @@
     #define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
-    #define HAS_XIAO_LED
     #define HAS_LED
+      #define HAS_XIAO_LED
 
     //#define HAS_BUTTONS
     //#define HAS_NEOPIXEL_LED
@@ -592,7 +596,8 @@
     #define MSC_SHARE
       #define USE_MMC_WRITE_SECTORS
     #define HAS_CYD_TOUCH
-    #define HAS_AW9364
+    #define ADJ_CPUFREQ
+    #define HAS_AW9364   //  1-wire Dimming LED Driver 
     #define HAS_PSRAM
       #define BK_LIGHT_PIN 38
       #define TFT_BL 38
@@ -603,8 +608,8 @@
       #define HAS_IDF_3
     #endif
     #define HAS_PWR_MGMT
-      #define PWR_EN_PIN  10
-      #define PWR_ON_PIN  14
+      #define PWR_EN_PIN  10     // Powers peripherals
+      #define PWR_ON_PIN  14     // Latches battery power on
    #endif
 
   #ifdef MARAUDER_C5
@@ -3539,6 +3544,17 @@
     #define SOUND_PIN 26
   #endif
   //// END STUPID CYD STUFF
+
+
+  #if defined(SOC_USB_OTG_SUPPORTED) && (defined(HAS_SD) || defined(HAS_SDMMC))
+    #if defined(HAS_IDF_3)
+      #define MSC_SHARE
+    #endif
+  #endif
+
+  #ifdef CONFIG_IDF_TARGET_ESP32
+    #undef ADJ_CPUFREQ
+  #endif
 
   //// FUNNY FLIPPER LED STUFF
 
