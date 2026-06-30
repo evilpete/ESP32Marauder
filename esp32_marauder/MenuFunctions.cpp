@@ -1463,9 +1463,9 @@ void MenuFunctions::orientDisplay() {
 
   display_obj.tft.setCursor(0, 0);
 
-  #ifdef HAS_ILI9341
+  #if defined(HAS_ILI9341) && !defined(HAS_ST7789)
     #ifndef HAS_CYD_TOUCH
-      display_obj.setCalData();
+       display_obj.setCalData();
     #else
       display_obj.touchscreen.setRotation(0);
     #endif
@@ -3109,6 +3109,12 @@ void MenuFunctions::RunSetup()
         display_obj.tft.drawCentreString("Set CPU 40Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
       });
     #endif // ADJ_CPUFREQ
+
+    #ifdef HAS_RTC
+      this->addNodes(&adminMenu, "Sync RTC with WiFi", TFTPINK, SETTINGS, []() {
+        rtc_obj.sync_rtc_ntp();
+      });
+    #endif
 
     this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
       this->changeMenu(&adminSubMenu, true);

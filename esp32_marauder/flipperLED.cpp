@@ -3,6 +3,7 @@
 #ifdef HAS_FLIPPER_LED
 
 void flipperLED::RunSetup() {
+  log_d("flipperLED::RunSetup");
   pinMode(B_PIN, OUTPUT);
   pinMode(G_PIN, OUTPUT);
   pinMode(R_PIN, OUTPUT);

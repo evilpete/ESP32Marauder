@@ -11,6 +11,7 @@
 void Sound_CYD::RunSetup() {
   // Serial.println("Sound_CYD::RunSetup");
 
+  log_d("Sound_CYD::RunSetup: SOUND_PIN = %d", SOUND_PIN);
   duty_cycle = DUTY;
 
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
@@ -25,13 +26,15 @@ void Sound_CYD::RunSetup() {
 #endif
 
 
-  Serial.println("SND_CHANNEL :" + (String)SND_CHANNEL);
-  Serial.println("SOUND_PIN :" + (String)SOUND_PIN);
-  Serial.println("SND_ID :" + (String)SND_ID);
-
-  log_d("SND_CHANNEL : %d\n",  (String)SND_CHANNEL);
-  log_d("SOUND_PIN : %d\n",  (String)SOUND_PIN);
-  log_d("SND_ID : %d\n",  (String)SND_ID);
+  #ifndef DEVELOPER
+    Serial.println("SND_CHANNEL :" + (String)SND_CHANNEL);
+    Serial.println("SOUND_PIN :" + (String)SOUND_PIN);
+    Serial.println("SND_ID :" + (String)SND_ID);
+  #else
+    log_d("SND_CHANNEL : %d",  SND_CHANNEL);
+    log_d("SOUND_PIN : %d",  SOUND_PIN);
+    log_d("SND_ID : %d", SND_ID);
+  #endif
   // ledcWrite(SND_CHANNEL, duty_cycle);
   ledcWriteTone(SND_ID, 0);
 }
@@ -49,51 +52,44 @@ void Sound_CYD::stop_tone() {
     ledcWriteTone(SND_ID, 0);
 }
 
-void Sound_CYD::s_power_on() { gen_tone(523,80); gen_tone(659,100); gen_tone(784,120); }
-void Sound_CYD::s_beep() { gen_tone(1000,80); }
-void Sound_CYD::s_ready() { gen_tone(523,100); gen_tone(659,100); gen_tone(784,100); gen_tone(1046,180); }
-void Sound_CYD::s_ready_2() { gen_tone(784,80); delay(50); gen_tone(1046,100); }            // Ready
+// void Sound_CYD::s_power_on() { gen_tone(523,80); gen_tone(659,100); gen_tone(784,120); }
+// void Sound_CYD::s_beep() { gen_tone(1000,80); }
+// void Sound_CYD::s_ready() { gen_tone(523,100); gen_tone(659,100); gen_tone(784,100); gen_tone(1046,180); }
+// void Sound_CYD::s_ready_2() { gen_tone(784,80); delay(50); gen_tone(1046,100); }            // Ready
 
 
-void Sound_CYD::s_error() { gen_tone(523,150); delay(50); gen_tone(330,180); }            // Error
-void Sound_CYD::s_error_2() { for(int i=0;i<3;i++){ gen_tone(300,150); delay(50);} }
+// void Sound_CYD::s_error() { gen_tone(523,150); delay(50); gen_tone(330,180); }            // Error
+// void Sound_CYD::s_error_2() { for(int i=0;i<3;i++){ gen_tone(300,150); delay(50);} }
 
 
+/*
 void Sound_CYD::tic() {
     // # Serial.println("tic");
-    //if (!settings_obj.loadSetting<bool>("EnableSND")) {
-    //    return;
-    //}
+    if (!settings_obj.loadSetting<bool>("EnableSND")) {
+        return;
+    }
 
     gen_tone(150, 20);
     gen_tone(180, 10);
-
-    /*
-    ledcWriteTone(SND_ID, 150);
-    delay(20);
-    ledcWriteTone(SND_ID, 180);
-    delay(10);
-    ledcWriteTone(SND_ID, 0);
-    */
 }
+
 
 void Sound_CYD::tok() {
     // Serial.println("tok");
-    //if (!settings_obj.loadSetting<bool>("EnableSND")) {
-    //    return;
-    //}
+    if (!settings_obj.loadSetting<bool>("EnableSND")) {
+        return;
+    }
 
     gen_tone(150, 20);
     gen_tone(110, 10);
 
-    /*
-    ledcWriteTone(SND_ID, 150);
-    delay(20);
-    ledcWriteTone(SND_ID, 110);
-    delay(10);
-    ledcWriteTone(SND_ID, 0);
-    */
+    // ledcWriteTone(SND_ID, 150);
+    // delay(20);
+    // ledcWriteTone(SND_ID, 110);
+    // delay(10);
+    // ledcWriteTone(SND_ID, 0);
 }
+*/
 
 void Sound_CYD::click() {
     if (!settings_obj.loadSetting<bool>("EnableSND")) {

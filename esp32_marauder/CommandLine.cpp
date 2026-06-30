@@ -1868,7 +1868,7 @@ void CommandLine::runCommand(String input) {
       Serial.println(F("WIFI is not connected."));
       return;
     }
-    rtc_obj.rtc_ntp();
+    rtc_obj.sync_rtc_ntp();
   }
   #endif //  HAS_RTC
 

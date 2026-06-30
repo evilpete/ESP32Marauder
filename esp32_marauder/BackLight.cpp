@@ -153,6 +153,7 @@ uint8_t bl_level_idx = 9; // default brightness
   #endif
 
   void brightnessInit() {
+      log_d("flipperLED::RunSetup: TFT_BL=%d", TFT_BL);
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
       bl_prefs.begin("backlight", false);
@@ -231,6 +232,7 @@ uint8_t bl_level_idx = 9; // default brightness
    uint8_t BL_NUM_LEVELS = 1;
   // dummyFunctions
   void brightnessInit() {
+      log_d("brightnessInit(noDim): TFT_BL = %d", TFT_BL);
       Serial.print(F("[brightnessInit] HAS_MINI_SCREEN "));
       pinMode(TFT_BL, OUTPUT);
   }

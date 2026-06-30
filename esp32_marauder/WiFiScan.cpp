@@ -4088,7 +4088,7 @@ void WiFiScan::RunPacketMonitor(uint8_t scan_mode, uint16_t color) {
       #endif
     
       #ifdef HAS_SCREEN
-        #ifndef HAS_CYD_TOUCH
+        #if !defined(HAS_CYD_TOUCH) && !defined(HAS_ST7789)
           display_obj.setCalData(true);
         #else
           //display_obj.touchscreen.setRotation(1);

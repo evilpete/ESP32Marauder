@@ -151,17 +151,13 @@
     #define HAS_MINI_KB
     #define HAS_BATTERY
       #if defined(MARAUDER_M5STICKC)
-            #define HAS_BM8563  //  i2c RTC
         #define HAS_AXP192      // i2c Power Management IC 
       #else
         #define HAS_TP4057A     // linear charger IC 
       #endif
 
-    #if defined(MARAUDER_M5STICKCP2)
-      #define HAS_RTC8563         // I²C real-time clock (RTC)
-    #elif defined(MARAUDER_M5STICKC)
+    #define HAS_RTC
       #define HAS_BM8563         //  i2c real-time clock (RTC)
-    #endif
 
     #define HAS_BT
     #define HAS_BUTTONS
@@ -264,26 +260,34 @@
     #ifdef MARAUDER_REV_FEATHER_S3
       #define MARAUDER_REV_FEATHER
       #define HAS_BT
+      //   #define HAS_PCF8523         // i2c real-time clock (RTC)
+      // #define HAS_TEMP_SENSOR
+      // #define HAS_PCT2075         // i2c TEMP_SENSOR
+      // #define HAS_SD
+      // #define USE_SD
+    #else   // REV_FEATHER S2
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_RTC
+        #define HAS_PCF8523         // i2c real-time clock (RTC)
     #endif
-    // #define HAS_RTC
-    //   #define HAS_PCF8523         // i2c real-time clock (RTC)
-    // #define HAS_TEMP_SENSOR
-      #define HAS_PCT2075         // i2c TEMP_SENSOR
-    #define HAS_SD
-    #define USE_SD
+    #define HAS_NIMBLE_2
     #define HAS_BATTERY
       #define HAS_MAX1704X
     #define HAS_PSRAM
-    //#define HAS_BT
     #define HAS_MINI_KB
     #define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
     #define HAS_LED
+      #define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_MINI_SCREEN
     // #define HAS_GPS
     #define ADJ_CPUFREQ
+    // #define HAS_TEMP_SENSOR
+    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      #define HAS_IDF_3
+    #endif
   #endif
 
   #ifdef MARAUDER_V4
@@ -309,9 +313,11 @@
 
   #ifdef MARAUDER_CYD_24
     #define HAS_TOUCH
-    #define HAS_FLIPPER_LED
+    #define HAS_LED
+      #define HAS_FLIPPER_LED
+    // #define HAS_RTC
+    //   #define HAS_PCF8523         // i2c real-time clock (RTC)
     #define HAS_BT
-    #define HAS_BT_REMOTE
     #define HAS_BUTTONS
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -324,6 +330,7 @@
       #define HAS_IDF_3
     #endif
     #define CYD_SOUND
+      #define SOUND_PIN 26
   #endif
 
   #if defined(MARAUDER_V6) || defined(MARAUDER_V6_1)
@@ -493,6 +500,9 @@
 
   #ifdef MARAUDER_JC2432W328C
     #define HAS_TOUCH
+      #define HAS_CST820      // i2c self-capacitive touch controller
+    // #define HAS_RTC
+    //    #define HAS_PCF8523         // i2c real-time clock (RTC)
     #define HAS_LED
       #define HAS_FLIPPER_LED
     //#define FLIPPER_ZERO_HAT
@@ -504,12 +514,12 @@
     #define HAS_SD
     #define USE_SD
     // #define HAS_GPS
-    #define HAS_CST820      // i2c self-capacitive touch controller
-    #define HAS_CYD_PORTRAIT
+    // #define HAS_CYD_PORTRAIT
     #define HAS_NIMBLE_2
     #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
       #define HAS_IDF_3
     #endif
+    // #define ADJ_CPUFREQ
     #define CYD_SOUND
       #define SOUND_PIN 26
   #endif
@@ -587,6 +597,8 @@
     #define HAS_PWR_MGMT
     #define HAS_BATTERY
       #define BATTERY_ADC_PIN 5
+    // #define HAS_RTC
+    //  #define HAS_PCF8523         // i2c real-time clock (RTC)
     #define HAS_BUTTONS
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -1436,6 +1448,11 @@
       #define HAS_ILI9341
       #define HAS_ST7789
 
+      #ifdef HAS_PCF8523
+        #define RTC_SDA 27
+        #define RTC_SCL 22
+      #endif
+
       #define TFT_BL 27
       #define BANNER_TEXT_SIZE 2
 
@@ -1579,6 +1596,11 @@
 
       // #define I2C_SDA 33
       // #define I2C_SCL 32
+
+      #ifdef HAS_PCF8523
+        #define RTC_SDA 16
+        #define RTC_SCL 15
+      #endif
 
       #ifndef TFT_WIDTH
         #define TFT_WIDTH 240
@@ -1845,71 +1867,6 @@
     #endif
 
 
-    #if defined(MARAUDER_CYD_HMI)
-       #define CHAN_PER_PAGE 7
-       #define SCREEN_CHAR_WIDTH 40
-      #define HAS_ILI9341
-       #define HAS_ST7789
-
-      #define TFT_BL 38
-      #define BANNER_TEXT_SIZE 2
-
-      // #define I2C_SDA 33
-      // #define I2C_SCL 32
-
-      #ifndef TFT_WIDTH
-        #define TFT_WIDTH 240
-      #endif
-
-      #ifndef TFT_HEIGHT
-        #define TFT_HEIGHT 320
-      #endif
-
-      #define GRAPH_VERT_LIM TFT_HEIGHT/2 - 1
-      #define EXT_BUTTON_WIDTH 30
-      #define SCREEN_BUFFER
-      #define MAX_SCREEN_BUFFER 21
-
-      #define SCREEN_ORIENTATION 0
-      #define CHAR_WIDTH 12
-      #define SCREEN_WIDTH TFT_WIDTH
-      #define SCREEN_HEIGHT TFT_HEIGHT
-      #define HEIGHT_1 TFT_WIDTH
-      #define WIDTH_1 TFT_HEIGHT
-      #define STANDARD_FONT_CHAR_LIMIT (TFT_WIDTH/6) // number of characters on a single line with normal font
-      #define TEXT_HEIGHT 16 // Height of text to be printed and scrolled
-      #define BOT_FIXED_AREA 0 // Number of lines in bottom fixed area (lines counted from bottom of screen)
-      #define TOP_FIXED_AREA 48 // Number of lines in top fixed area (lines counted from top of screen)
-      #define YMAX 320 // Bottom of screen area
-      #define minimum(a,b)     (((a) < (b)) ? (a) : (b))
-      #define MENU_FONT &FreeMono9pt7b // Winner
-      //#define MENU_FONT &FreeMonoBold9pt7b
-      //#define MENU_FONT &FreeSans9pt7b
-      //#define MENU_FONT &FreeSansBold9pt7b
-      #define BUTTON_SCREEN_LIMIT 12
-      #define BUTTON_ARRAY_LEN BUTTON_SCREEN_LIMIT
-      #define STATUS_BAR_WIDTH 16
-      #define LVGL_TICK_PERIOD 6
-
-      #define FRAME_X 100
-      #define FRAME_Y 64
-      #define FRAME_W 120
-      #define FRAME_H 50
-
-      // Red zone size
-      #define REDBUTTON_X FRAME_X
-      #define REDBUTTON_Y FRAME_Y
-      #define REDBUTTON_W (FRAME_W/2)
-      #define REDBUTTON_H FRAME_H
-
-      // Green zone size
-      #define GREENBUTTON_X (REDBUTTON_X + REDBUTTON_W)
-      #define GREENBUTTON_Y FRAME_Y
-      #define GREENBUTTON_W (FRAME_W/2)
-      #define GREENBUTTON_H FRAME_H
-      #define STATUSBAR_COLOR 0x4A49
-    #endif
-
     #if defined(MARAUDER_CYD_GUITION)
       #define CHAN_PER_PAGE 7
 
@@ -2062,14 +2019,18 @@
 
       #define I2C_SDA 33
       #define I2C_SCL 32
-
       #define I2C_FREQ 10000    // 10K instead of 100K
       #define SOUND_PIN 26
+
+      #ifdef HAS_RTC
+        #define RTC_SDA 21  //  CN1
+        #define RTC_SCL 22
+      #endif
 
       #define CST820_SDA I2C_SDA
       #define CST820_SCL I2C_SCL
       #define CST820_RST 25
-      #define CST820_INT 21
+      #define CST820_INT -1 // 21
 
       #ifndef TFT_WIDTH
         #define TFT_WIDTH 240
@@ -2079,7 +2040,7 @@
         #define TFT_HEIGHT 320
       #endif
 
-      #define TFT_DIY
+      // #define TFT_DIY
 
       #define GRAPH_VERT_LIM TFT_HEIGHT/2 - 1
 
@@ -2945,7 +2906,10 @@
     #endif
 
     #ifdef MARAUDER_REV_FEATHER
-      #define SD_CS 10      // Adalogger-FeatherWing
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
+      #define SD_CS 10
     #endif
 
     #ifdef MARAUDER_M5STICKC
@@ -3105,8 +3069,6 @@
     #define MEM_LOWER_LIM 10000
   #elif defined(MARAUDER_C5)
     #define MEM_LOWER_LIM 10000
-  #elif defined(MARAUDER_CYD_HMI)
-    #define MEM_LOWER_LIM 10000
   #elif defined(MARAUDER_V8)
     #define MEM_LOWER_LIM 10000
   #elif defined(MARAUDER_MINI_V3)
@@ -3141,8 +3103,6 @@
       #define PIN 21
     #elif defined(MARAUDER_M5_NANO_C6)
       #define PIN 20
-    #elif defined(MARAUDER_CYD_HMI)
-      #define PIN 15
     #else
       #define PIN 25
     #endif
@@ -3202,7 +3162,7 @@
       #define GPS_SERIAL_INDEX 2
       #define GPS_TX 4
       #define GPS_RX 13
-    #elif defined(MARAUDER_C2432W328C)
+    #elif defined(MARAUDER_JC2432W328C)
       #define GPS_SERIAL_INDEX 2
       #define GPS_TX 16
       #define GPS_RX 17
@@ -3281,7 +3241,7 @@
       #define I2C_SDA 33
       #define I2C_SCL 26
 
-    #elif defined(MARAUDER_V7)
+   #elif defined(MARAUDER_V7)
       #define I2C_SDA 33
       #define I2C_SCL 16
       #define HAS_IP5306
@@ -3298,6 +3258,10 @@
     #elif defined(MARAUDER_CYD_MICRO)
       #define I2C_SDA 22
       #define I2C_SCL 27
+
+    #elif MARAUDER_CYD_24
+      #define I2C_SDA 33
+      #define I2C_SCL 36
 
     #elif defined(MARAUDER_CYD_2USB)
       #define I2C_SDA 22
@@ -3337,10 +3301,6 @@
       #define I2C_SCL 32
     #endif
     */
-    #ifdef MARAUDER_CYD_HMI
-      #define BATTERY_ADC_PIN 5
-    #endif
-
     //  If we know what we have, we can delete what we're not using
     #ifdef BATTERY_ADC_PIN
       #undef HAS_AXP2101
@@ -3405,8 +3365,6 @@
   #elif defined(MARAUDER_V7_1)
     #define MARAUDER_TITLE_BYTES 13578
   #elif defined(MARAUDER_REV_FEATHER)
-    #define MARAUDER_TITLE_BYTES 13578
-  #elif defined(MARAUDER_CYD_HMI)
     #define MARAUDER_TITLE_BYTES 13578
   #elif defined(MARAUDER_C5)
     #define MARAUDER_TITLE_BYTES 13578

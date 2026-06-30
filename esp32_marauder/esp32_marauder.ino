@@ -9,6 +9,10 @@ https://www.online-utility.org/image/convert/to/XBM
 #include "driver/gpio.h"
 
 
+#ifdef I2C_FREQ
+  #include "Wire.h"
+#endif
+
 #ifndef HAS_SCREEN
   #define MenuFunctions_h
   #define Display_h
@@ -297,8 +301,11 @@ void setup()
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
 
-  Serial.begin(115200);  // 115200);
-  delay(2000);
+  #ifndef HAS_IDF_3
+    esp_spiram_init();
+  #endif
+
+  Serial.begin(460800);  // 115200);
 
   #ifdef HAS_ACT_LED
     pinMode(ACT_LED_PIN, OUTPUT);
@@ -343,7 +350,6 @@ void setup()
   #if defined(HAS_SD) && defined(SD_CS) && !defined(HAS_C5_SD)
     pinMode(SD_CS, OUTPUT);
     delay(10);
-
     digitalWrite(SD_CS, HIGH);
     delay(10);
   #endif
@@ -535,6 +541,10 @@ void setup()
   }
 
   menu_function_obj.changeMenu(menu_function_obj.current_menu);*/
+
+  #ifdef I2C_FREQ
+    Wire.setClock(I2C_FREQ);		// reset I2C_FREQ incase it was chamged
+  #endif
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
 

@@ -8,13 +8,18 @@
 
 
 #include <Arduino.h>
-#include "RTClib.h"
+#if defined(HAS_PCF8523) || defined(HAS_DS1307)
+  #include "RTClib.h"
+#elif defined(HAS_BM8563)
+  #include "I2C_BM8563.h"
+#endif
 
 #include <time.h>
 #include <sys/time.h>
 
 #include <Wire.h>
 #include "WiFiScan.h"
+
 
 extern WiFiScan wifi_scan_obj;
 
@@ -45,14 +50,15 @@ class RTC  {    // RTC_PCF8523
 
   public:
 
-
-    #ifdef HAS_PCF8523
+    #if defined(HAS_PCF8523)
       RTC_PCF8523 rtclock;
-      bool PCF8523_setup();
-    #elif HAS_DS1307
+    #elif defined(HAS_DS1307)
       RTC_DS1307 rtclock;
-      bool DS1307_setup();
+    #elif defined(HAS_BM8563)
+      RTC_BM8563 rtclock;
     #endif
+
+    bool setup();
 
     void RunSetup();
     bool supported = false;
@@ -71,6 +77,9 @@ class RTC  {    // RTC_PCF8523
     const int daylightOffset_sec = 0;
     void setSystemTimeFromCompile();
     void syncFromRTC();
+
+  private:
+    TwoWire *_wire;
 
 };
 

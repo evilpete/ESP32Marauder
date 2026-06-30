@@ -2,7 +2,6 @@
 
 #ifdef HAS_RTC
 
-
 #include "RTC.h"
 
 // https://github.com/adafruit/RTClib
@@ -12,36 +11,45 @@
 // scanf(&timeinfo, "%m %d %Y / %H:%M:%S")
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system_time.html
 
+// BM8563 : M5StickC_Plus / ONX2432G028
+
+#if !defined(RTC_SDA) && defined(I2C_SDA)
+  #define RTC_SDA I2C_SDA
+  #define RTC_SCL I2C_SCL
+#endif
 
 void RTC::RunSetup() {
 
-  Serial.println("RTC::RunSetup");
+  log_d("RTC::RunSetup SDA=%d SCL=%d", RTC_SDA, RTC_SCL);
 
-  #ifdef I2C_SCL
-    Wire.setPins(I2C_SDA, I2C_SCL);
-    Wire.begin();
+  #if defined(I2C_SDA) && (RTC_SDA != I2C_SDA)
+    log_d("RTC::RunSetup Using Wire1");
+    _wire = &Wire1;
+  #else
+    _wire = &Wire;
   #endif
 
-  supported = rtclock.begin();
+  #ifdef I2C_SCL
+    _wire->setPins(RTC_SDA, RTC_SCL);
+    _wire->begin();
+  #endif
+
+  supported = rtclock.begin(_wire);
 
   if (!supported) {
     log_w("Couldn't find RTC");
     // return supported;
   }
 
-  #ifdef HAS_PCF8523
-    PCF8523_setup();
-  #elif defined(DS1307)
-    DS1307_setup();
-  #endif
-
+  setup();
 }
 
 
-#ifdef HAS_PCF8523
+#if defined(HAS_PCF8523)
 
-bool RTC::PCF8523_setup() {
+bool RTC::setup() {
 
+  log_d("RTC::PCF8523_setup");
 
   if (! rtclock.initialized() || rtclock.lostPower()) {
     Serial.println(F("RTC NOT initialized"));
@@ -67,9 +75,12 @@ bool RTC::PCF8523_setup() {
 
 // float RTC::getTemperature() { return 0.0;  }
 
-#elif defined(DS1307)
+#elif defined(HAS_DS1307)
+// M5StickC_Plus
 
-bool RTC::DS1307_setup() {
+bool RTC::setup() {
+
+  log_d("RTC::DS1307_setup");
 
     if (! rtclock.isrunning()) {
       Serial.println(F("RTC NOT initialized"));
@@ -84,9 +95,12 @@ bool RTC::DS1307_setup() {
 }
 
 
-
 // float RTC:getTemperature() { rtclock.getTemperature(); }
 
+#elif defined(HAS_BM8563)
+  bool RTC::setup() {
+    log_d("RTC::BM8563_setup");
+  }
 #endif
 
 void RTC::syncFromRTC() {

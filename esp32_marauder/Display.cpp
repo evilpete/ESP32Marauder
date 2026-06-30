@@ -139,7 +139,7 @@ void Display::init() {
 }
 
 void Display::setCalData(bool landscape) {
-  #ifndef HAS_CYD_TOUCH
+  #if !defined(HAS_CYD_TOUCH) && !defined(HAS_CST820)
     if (!landscape) {
       #ifdef TFT_SHIELD
         uint16_t calData[5] = { 275, 3494, 361, 3528, 4 }; // tft.setRotation(0); // Portrait with TFT Shield
@@ -199,7 +199,7 @@ void Display::RunSetup() {
 
   tft.setCursor(0, 0);
 
-  #ifdef HAS_ILI9341
+  #if defined(HAS_ILI9341) && !defined(HAS_CST820)
 
     #ifndef HAS_CYD_TOUCH
       this->setCalData();
@@ -214,7 +214,7 @@ void Display::RunSetup() {
   #endif
 
   #ifdef MARAUDER_REV_FEATHER
-    pinMode(7, OUTPUT);
+    pinMode(7, OUTPUT);     // TFT_CS
 
     delay(10);
 
