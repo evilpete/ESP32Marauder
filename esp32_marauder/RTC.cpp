@@ -18,20 +18,31 @@
   #define RTC_SCL I2C_SCL
 #endif
 
+
+// default 100000UL
+#ifndef RTC_FREQ
+  #define RTC_FREQ -1
+#endif
+
 void RTC::RunSetup() {
 
-  log_d("RTC::RunSetup SDA=%d SCL=%d", RTC_SDA, RTC_SCL);
+  log_d("RTC::RunSetup SDA=%d SCL=%d Freq=%d", RTC_SDA, RTC_SCL, RTC_FREQ);
 
   #if defined(I2C_SDA) && (RTC_SDA != I2C_SDA)
     log_d("RTC::RunSetup Using Wire1");
     _wire = &Wire1;
   #else
+    log_d("RTC::RunSetup Using Wire0");
     _wire = &Wire;
   #endif
 
-  #ifdef I2C_SCL
+  #ifdef RTC_SCL
     _wire->setPins(RTC_SDA, RTC_SCL);
     _wire->begin();
+  #endif
+
+  #if defined(RTC_FREQ) && (RTC_FREQ > 0)
+    _wire->setClock(RTC_FREQ);
   #endif
 
   supported = rtclock.begin(_wire);
@@ -52,22 +63,26 @@ bool RTC::setup() {
   log_d("RTC::PCF8523_setup");
 
   if (! rtclock.initialized() || rtclock.lostPower()) {
-    Serial.println(F("RTC NOT initialized"));
-    Serial.flush();
-    log_w("RTC is NOT initialized");
+    #ifdef DEVELOPER
+      log_d("RTC is NOT initialized, setting to build date");
+    #else
+      Serial.println(F("RTC is NOT initialized"));
+    #endif
+
     rtclock.adjust(DateTime(F(__DATE__), F(__TIME__)));
     synced = false;
     setSystemTimeFromCompile();
-    Serial.println(F("SystemTime set from Build time"));
+    log_d("SystemTime set from Build time");
   } else {
     synced = true;
     syncFromRTC();
-    Serial.println(F("SystemTime set from RTC"));
+    log_d("SystemTime set from RTC");
   }
 
   // do this to ensure the RTC is running.
   rtclock.start();
 
+  // log_d(dt_string());
   Serial.println(dt_string());
 
   return supported;
@@ -92,6 +107,12 @@ bool RTC::setup() {
       syncFromRTC();
       Serial.println(F("SystemTime set from RTC"));
     }
+
+    // #ifdef DEVELOPER
+    //   log_d(dt_string());
+    // #else
+      Serial.println(dt_string());
+    // #endif
 }
 
 
@@ -106,9 +127,7 @@ bool RTC::setup() {
 void RTC::syncFromRTC() {
   // 1. Read time from the PCF8523
   
-  #ifdef HAS_PCF8523 
-    DateTime now = rtclock.now();
-  #endif
+  DateTime now = rtclock.now();
 
   // 2. Populate the standard C tm structure
   struct tm tm_time;
@@ -128,7 +147,7 @@ void RTC::syncFromRTC() {
   
   settimeofday(&tv, NULL);
   synced = true;
-  Serial.println("ESP32 system time successfully synced to PCF8523 RTC!");
+  Serial.println(F("ESP32 system time successfully synced to PCF8523 RTC!"));
 }
 
 
@@ -139,14 +158,14 @@ bool RTC::getSystemTimeFromString(const char* timeStr) {
     // Parse the string into the tm struct using format specifiers
     // %Y = Year, %m = Month, %d = Day, %H = Hour, %M = Minute, %S = Second
     if (strptime(timeStr, "%Y-%m-%dT%H:%M:%S", &timeinfo) == NULL) {
-        Serial.println("Failed to parse time string.");
+        Serial.println(F("Failed to parse time string."));
         return false;
     }
     
     // Convert tm struct to Unix timestamp (seconds since Jan 1 1970)
     time_t epochTime = mktime(&timeinfo);
     if (epochTime == -1) {
-        Serial.println("Failed to convert tm to epoch time.");
+        Serial.println(F("Failed to convert tm to epoch time."));
         return false;
     }
     
@@ -157,12 +176,12 @@ bool RTC::getSystemTimeFromString(const char* timeStr) {
     
     // Apply time directly to ESP32 internal clock
     if (settimeofday(&tv, NULL) != 0) {
-        Serial.println("Failed to update system time.");
+        Serial.println(F("Failed to update system time."));
         return false;
     }
     
     synced = true;
-    Serial.println("System time updated successfully!");
+    Serial.println(F("System time updated successfully!"));
     return true;
 }
 
@@ -192,7 +211,7 @@ bool RTC::sync_rtc_ntp() {
   synced = true;
 
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-  Serial.println("RTC successfully set via NTP!");
+  Serial.println(F("RTC successfully set via NTP!"));
 
  time_t now;
   time(&now);
@@ -209,7 +228,7 @@ bool RTC::sync_rtc_ntp() {
 
   #ifdef HAS_PCF8523
     rtclock.adjust(ntpTime);
-    Serial.println("PCF8523 RTC updated with NTP time.");
+    Serial.println(F("PCF8523 RTC updated with NTP time."));
     // log_d("PCF8523 RTC updated with NTP time.");
   #endif
 
@@ -246,46 +265,25 @@ void RTC::setSystemTimeFromCompile() {
 }
 
 String RTC::dt_string() {
-
-  if (!supported) {
-    log_w("RTC not supported");
-    return "";
-  }
+  if (!supported) { log_w("RTC not supported"); return ""; }
 
   char format[] = "YYYY-MM-DD hh:mm:ss";
-  
-  DateTime dt = rtclock.now();
-  // Serial.println(dt);
-  // Serial.flush();
 
-  return rtclock.now().toString(format);
+  return rtclock.now().toString(format);   // one I2C read
 }
 
 String RTC::millis_dt_string() {   // punt
-  unsigned long currentMillis = millis(); 
+  unsigned long ms = millis();
+  unsigned long s  = (ms / 1000) % 60;
+  unsigned long m  = (ms / 60000) % 60;
+  unsigned long h  = (ms / 3600000) % 24;
+  unsigned long d  =  ms / 86400000UL;
 
-  unsigned long seconds = currentMillis / 1000;
-  unsigned long minutes = seconds / 60;
-  unsigned long hours = minutes / 60;
-  unsigned long days = hours / 24;
+  char buf[20];
 
-  // Use modulo (%) to get the remainder for each unit
-  seconds %= 60;
-  minutes %= 60;
-  hours %= 24;
+  snprintf(buf, sizeof(buf), "%lud %02lu:%02lu:%02lu", d, h, m, s);
 
-  String timeString = String(days) + "d ";
-    
-  if (hours < 10) timeString += "0";
-    timeString += String(hours) + ":";
-          
-  if (minutes < 10) timeString += "0";
-    timeString += String(minutes) + ":";
-                
-  if (seconds < 10) timeString += "0";
-    timeString += String(seconds);
-
-  return timeString;
+  return String(buf); 
 }
 
 

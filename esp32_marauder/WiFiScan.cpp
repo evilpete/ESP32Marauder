@@ -4086,6 +4086,7 @@ void WiFiScan::RunInfo() {
   uint8_t sta_mac[6];
   uint8_t ap_mac[6];
   size_t psramtat = 0;
+  extern const char *resetReasonName();
 
   this->getMAC(true, sta_mac);
   this->getMAC(false, ap_mac);
@@ -4125,9 +4126,9 @@ void WiFiScan::RunInfo() {
   #endif
   Serial.println(text_table4[22] + (String)esp_get_idf_version());
   Serial.println("ESP Arduino:" + String(ESP_ARDUINO_VERSION_MAJOR) + "." + String(ESP_ARDUINO_VERSION_MINOR) + "." + String(ESP_ARDUINO_VERSION_PATCH));
-  Serial.println("Flash Sise: " + (String)flashSize);
-  Serial.println("PSRAM Sise: " + (String) psramtat);
-  Serial.println("CpuFrequency = " + (String)getCpuFrequencyMhz() + " Mhz");
+  Serial.println("Flash Size: " + (String)flashSize);
+  Serial.println("PSRAM Size: " + (String) psramtat);
+  Serial.println("CpuFrequency: " + (String)getCpuFrequencyMhz() + " Mhz");
 
   if (this->wsl_bypass_enabled) {
     #ifdef HAS_SCREEN
@@ -4188,6 +4189,9 @@ void WiFiScan::RunInfo() {
       Serial.println(text_table4[34]);
     }
   #endif  // HAS_BATTERY
+  display_obj.tft.printf("Last reset reason: %s", resetReasonName());
+  Serial.print(F("Last reset reason: "));
+  Serial.println(resetReasonName());
   
   if (this->wifi_connected)
       showNetworkInfo();

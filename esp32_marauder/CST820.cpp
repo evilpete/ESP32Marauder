@@ -50,6 +50,7 @@ void CST820::begin(int8_t _sda, int8_t _scl, int8_t _rst, int8_t _int, uint32_t 
         log_d("CST820::begin using Wire1");
       } else {
         _wire = &Wire;
+        log_d("CST820::begin using Wire0");
       }
     #else
       _wire = &Wire;

@@ -136,14 +136,16 @@ uint8_t bl_level_idx = 9; // default brightness
   uint8_t BL_NUM_LEVELS = 11;
 
   #define BL_CHANNEL 0
-  #define BL_FREQ 5000
+  #define BL_FREQ 6000
   #define BL_RESOLUTION 8
 
   // Helper macros for LEDC API compatibility (2.x vs 3.x board package)
   #if !defined(HAS_MINI_SCREEN) && !defined(HAS_AW9364)
     #if ESP_ARDUINO_VERSION_MAJOR >= 3
-      #define BL_SETUP()       ledcAttach(TFT_BL, BL_FREQ, BL_RESOLUTION)
-      #define BL_SET(duty)     ledcWrite(TFT_BL, (duty))
+      // #define BL_SETUP()       ledcAttach(TFT_BL, BL_FREQ, BL_RESOLUTION)
+      #define BL_SETUP()       ledcAttachChannel(TFT_BL, BL_FREQ, BL_RESOLUTION, BL_CHANNEL)
+      //#define BL_SET(duty)     ledcWrite(TFT_BL, (duty))
+      #define BL_SET(duty)     ledcWriteChannel(BL_CHANNEL, (duty))
       #define TLED          TFT_BL
     #else
       #define BL_SETUP()       do { ledcSetup(BL_CHANNEL, BL_FREQ, BL_RESOLUTION); ledcAttachPin(TFT_BL, BL_CHANNEL); } while(0)
@@ -160,12 +162,13 @@ uint8_t bl_level_idx = 9; // default brightness
       bl_level_idx = bl_prefs.getUChar("level", 9);
       if (bl_level_idx >= BL_NUM_LEVELS) bl_level_idx = 9;
       BL_SET(BL_LEVELS[bl_level_idx]);
-      uint32_t currentDuty = ledcRead(BL_CHANNEL);
+      delay(5);
+      uint32_t currentDuty = ledcRead(TLED);
 
       log_d("brightnessInit: level = %d currentDuty=%d", bl_level_idx, currentDuty);
-      log_d("    BL_CHANNEL = %d\n", BL_CHANNEL);
-      log_d("    TFT_BL = %d\n", TFT_BL);
-      log_d("    BL TLED = %d\n", TLED);
+      log_d("    BL_CHANNEL = %d", BL_CHANNEL);
+      log_d("    TFT_BL = %d", TFT_BL);
+      log_d("    BL TLED = %d", TLED);
 
   }
 
@@ -183,6 +186,9 @@ uint8_t bl_level_idx = 9; // default brightness
   }
 
   uint8_t getBrightnessLevel() {
+      uint32_t currentDuty = ledcRead(TLED);
+      // uint32_t currFreq = ledcReadFreq(TLED);
+      log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
       return bl_level_idx;
   }
 
@@ -197,9 +203,9 @@ uint8_t bl_level_idx = 9; // default brightness
       BL_SET(BL_LEVELS[bl_level_idx]);
       // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
 
-      currentDuty = ledcRead(TFT_BL);
+      currentDuty = ledcRead(TLED);
       // Serial.print("TFT_BL currentDuty = "); Serial.println(currentDuty);
-      log_d("brightnessSet: level = %d currentDuty=%d", bl_level_idx, currentDuty);
+      log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
   }
 
   void brightnessSave(uint8_t level) {
@@ -210,7 +216,7 @@ uint8_t bl_level_idx = 9; // default brightness
       // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
       uint32_t currentDuty = ledcRead(TLED);
       // Serial.print("currentDuty = "); Serial.println(currentDuty);
-      log_d("brightnessSet: level = %d currentDuty=%d", bl_level_idx, currentDuty);
+      log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
   }
 
   void backlightOn() {
@@ -219,12 +225,14 @@ uint8_t bl_level_idx = 9; // default brightness
       // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
       uint32_t currentDuty = ledcRead(TLED);
       // Serial.print("currentDuty = "); Serial.println(currentDuty);
-      log_d("backlightOn: level = %d currentDuty=%d", bl_level_idx, currentDuty);
+      log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
   }
 
   void backlightOff() {
       BL_SET(0);
-      log_d("backlightOff");
+      // log_d("backlightOff");
+      uint32_t currentDuty = ledcRead(TLED);
+      log_d("level = %d currentDuty=%d", bl_level_idx, currentDuty);
   }
 
 #else   // HAS_MINI_SCREEN

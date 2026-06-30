@@ -1456,7 +1456,6 @@ void CommandLine::runCommand(String input) {
     int ap_sw = this->argSearch(&cmd_args, "-a");   // AP Index #
     int pw_sw = this->argSearch(&cmd_args, "-p");   // Password
     int s_sw  = this->argSearch(&cmd_args, "-s");
-    int n_sw  = this->argSearch(&cmd_args, "-n");
 
     if ((ap_sw != -1) && (pw_sw != -1)) {
       int index = cmd_args.get(ap_sw + 1).toInt();

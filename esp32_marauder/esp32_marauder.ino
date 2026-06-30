@@ -124,6 +124,7 @@ CommandLine cli_obj;
   extern void brightnessInit();
   extern void backlightOff();
   extern void backlightOn();
+  extern uint8_t getBrightnessLevel();
 // #endif
 // Do some LED stuff
 
@@ -188,6 +189,13 @@ uint32_t currentTime  = 0;
     WiFi.mode(WIFI_OFF);
     esp_wifi_stop();
 
+    #ifdef HAS_SCREEN
+      display_obj.tft.fillScreen(TFT_BLACK);
+      display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+      display_obj.tft.drawCentreString("DeepSleep", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+      delay(300);
+    #endif
+
     #ifdef HAS_BT
       // This handles stopping and deinitializing BT gracefully
       // esp_bluedroid_disable();
@@ -206,8 +214,13 @@ uint32_t currentTime  = 0;
     // #ifdef CONFIG_IDF_TARGET_ESP32
     // rtc_gpio_isolate(GPIO_NUM_12);
     // 18 19 5 23 10 33 32 16 17 20 
-    esp_sleep_config_gpio_isolate();
+    #ifdef PWR_EN_PIN  // Enable power to peripherals
+      digitalWrite(PWR_EN_PIN, LOW);
+      pinMode(PWR_EN_PIN, INPUT);
+    #endif
     
+    esp_sleep_config_gpio_isolate();
+
     if (wakeup_but >= 0) {
       gpio_hold_dis((gpio_num_t) wakeup_but);
       pinMode(wakeup_but, INPUT_PULLUP);
@@ -227,23 +240,29 @@ uint32_t currentTime  = 0;
 
     Serial.println("Going to sleep now...");
     Serial.flush();
-    delay(100); // Give serial monitor time to flush
+    delay(200); // Give serial monitor time to flush
 
     // Enter deep sleep
     esp_deep_sleep_start();
   }
 
   void shutdown() {
+
     #ifdef POWER_HOLD_PIN
+	#ifdef HAS_SCREEN
+	  display_obj.tft.fillScreen(TFT_BLACK);
+	  display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+	  display_obj.tft.drawCentreString("Shutdown", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+	  Serial.println(F("Shutdown"));
+	  delay(200);
+	#endif
         // T-HMI
         //  if on battery, can be turn off with the PWR_ON_PIN/POWER_HOLD_PIN if on battery
-        Serial.println("Set POWER_HOLD_PIN:  LOW");
-        Serial.flush();
         digitalWrite(POWER_HOLD_PIN, LOW);
 
         //  if plugged in we use DEEPSLEEP instead
         delay(500);
-        Serial.println("DeepSleep");
+        Serial.println(F("DeepSleep"));
         DeepSleep();
     #else
         DeepSleep(0);
@@ -363,6 +382,7 @@ void setup()
       sound_obj.RunSetup();
   #endif
 
+  /*
   #ifdef HAS_FLIPPER_LED
     led_obj.RunSetup();
   #elif defined(XIAO_ESP32_S3)
@@ -372,6 +392,7 @@ void setup()
   #elif defined(HAS_NEOPIXEL_LED)
     led_obj.RunSetup();
   #endif
+  */
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
   #ifdef ESP_ARDUINO_VERSION_STR
@@ -563,6 +584,7 @@ void setup()
   Wire.setClock(I2C_FREQ);           // reset I2C_FREQ incase it was chamged
 #endif
 
+    getBrightnessLevel();
 
 }
 

@@ -1106,6 +1106,7 @@ void MenuFunctions::updateStatusBar()
       char timeBuffer[16];
       struct tm timeinfo;
       static uint32_t tic = 0;
+      uint16_t bg_color = STATUSBAR_COLOR;
 
       // lets only update every 20 sec
       if ((this->initTime - tic) < 20000) {
@@ -1114,7 +1115,7 @@ void MenuFunctions::updateStatusBar()
       tic = this->initTime;
 
       if(!getLocalTime(&timeinfo)){
-          Serial.println("Failed to obtain time");
+          Serial.println(F("Failed to obtain time"));
           return;
       }
 
@@ -1122,7 +1123,15 @@ void MenuFunctions::updateStatusBar()
 
       int tx, ty, tw, th;
       tw = 5 * 8;
-      th = 15;
+
+      #ifdef HAS_BATTERY
+        if (battery_obj.supported) {
+          th = 15;
+          bg_color = TFT_BLACK;
+        } else
+      #endif
+        th = 0;
+
       #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
         tx = TFT_HEIGHT - tw;
         // ty = TFT_WIDTH - th; // Bottom Right
@@ -1137,14 +1146,11 @@ void MenuFunctions::updateStatusBar()
       // Serial.println(timeBuffer);
       // Serial.println((String) tx + " : " + (String) ty);
 
-      display_obj.tft.fillRect(tx, ty, tw, th, TFT_BLACK);
-      display_obj.tft.setTextColor(TFT_YELLOW, TFT_BLACK, true);
+      display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
+      display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
       display_obj.tft.drawString(timeBuffer, tx , ty , 2);
 
       display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
-
-    } else {
-      Serial.print("synced == false");
     }
 
   #endif

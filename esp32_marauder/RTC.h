@@ -71,7 +71,10 @@ class RTC  {    // RTC_PCF8523
     // float getTemperature();  // PCF8523 only
 
     bool getSystemTimeFromString(const char* timeStr);
-    char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    // static const char* const daysOfTheWeek[] PROGMEM = {
+    //  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    //  };
+
     const char* ntpServer = "pool.ntp.org";
     const long gmtOffset_sec = 0;   // Always 0 for UTC
     const int daylightOffset_sec = 0;

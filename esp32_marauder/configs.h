@@ -501,12 +501,12 @@
   #ifdef MARAUDER_JC2432W328C
     #define HAS_TOUCH
       #define HAS_CST820      // i2c self-capacitive touch controller
-    // #define HAS_RTC
-    //    #define HAS_PCF8523         // i2c real-time clock (RTC)
+     #define HAS_RTC
+        #define HAS_PCF8523         // i2c real-time clock (RTC)
     #define HAS_LED
       #define HAS_FLIPPER_LED
     //#define FLIPPER_ZERO_HAT
-    #define HAS_BT
+    // #define HAS_BT
     // #define HAS_BT_REMOTE
     #define HAS_BUTTONS
     #define HAS_SCREEN
@@ -1449,8 +1449,9 @@
       #define HAS_ILI9341
       #define HAS_ST7789
 
-      #ifdef HAS_PCF8523
-        #define RTC_SDA 27
+      // CN1
+      #if defined(HAS_PCF8523) && !defined(RTC_SDA)
+        #define RTC_SDA 21
         #define RTC_SCL 22
       #endif
 
@@ -2023,8 +2024,8 @@
       #define I2C_FREQ 10000    // 10K instead of 100K
       #define SOUND_PIN 26
 
-      #ifdef HAS_RTC
-        #define RTC_SDA 21  //  CN1
+      #if defined(HAS_RTC) && !defined(RTC_SDA)
+        #define RTC_SDA 21
         #define RTC_SCL 22
       #endif
 

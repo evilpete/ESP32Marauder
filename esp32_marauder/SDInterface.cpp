@@ -109,6 +109,7 @@ bool SDInterface::initSD() {
         }
   
         this->card_sz = sz;
+        log_d("sz=%d cardSizeMB=%d", sz, cardSizeMB);
       }
 
       if (!SD.exists("/SCRIPTS")) {

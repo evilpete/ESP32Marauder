@@ -3,7 +3,7 @@
 #ifdef CYD_SOUND
 
 #define LEDC_RESOLUTION 8  // Set resolution to 10 bits
-#define DUTY (std::pow(2, LEDC_RESOLUTION)/2 -1) 
+// #define DUTY (std::pow(2, LEDC_RESOLUTION)/2 -1) 
 #ifndef SND_CHANNEL
   #define SND_CHANNEL 3
 #endif
@@ -11,8 +11,8 @@
 void Sound_CYD::RunSetup() {
   // Serial.println("Sound_CYD::RunSetup");
 
-  log_d("Sound_CYD::RunSetup: SOUND_PIN = %d", SOUND_PIN);
-  duty_cycle = DUTY;
+  log_d("Sound_CYD::RunSetup: SOUND_PIN=%d RESOLUTION=%d, CHANNEL=%d", SOUND_PIN, LEDC_RESOLUTION, SND_CHANNEL);
+  // duty_cycle = DUTY;
 
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
   // ledcAttach(SOUND_PIN, 1, LEDC_RESOLUTION);
@@ -39,17 +39,18 @@ void Sound_CYD::RunSetup() {
   ledcWriteTone(SND_ID, 0);
 }
 
+
 void Sound_CYD::gen_tone(uint32_t f, uint32_t t) {
-    // Serial.println("ledcWriteTone :" + (String)s);
+    // log_d("Sound_CYD::gen_tone f=%d t=%d SND_ID=%d", f, t, SND_ID);
     ledcWriteTone(SND_ID, f);
     delay(t);
 
-    ledcWriteTone(SND_ID, 0);
+    ledcWriteChannel(SND_CHANNEL, 0);
     delay(12);
 }
 
 void Sound_CYD::stop_tone() {
-    ledcWriteTone(SND_ID, 0);
+    ledcWriteChannel(SND_CHANNEL, 0);
 }
 
 // void Sound_CYD::s_power_on() { gen_tone(523,80); gen_tone(659,100); gen_tone(784,120); }
