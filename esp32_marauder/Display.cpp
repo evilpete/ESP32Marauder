@@ -653,4 +653,5 @@ void Display::buildBanner(String msg, int xpos)
   this->showCenterText(msg.c_str(), banner_y);
 }
 
+
 #endif

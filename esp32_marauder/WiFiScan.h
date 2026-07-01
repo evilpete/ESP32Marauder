@@ -970,5 +970,9 @@ class WiFiScan
     static int extractPineScanChannel(const uint8_t* payload, int len); // Pineapple
     static void multiSSIDSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type); // MultiSSID
     static inline uint32_t hash_mac(const uint8_t mac[6]);
+
+    template <typename T> static void d_print(T msg);
+    template <typename T> static void d_println(T msg);
+    template <typename... Args> static void d_printf(const char * f, Args... args);
 };
 #endif

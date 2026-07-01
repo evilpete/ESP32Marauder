@@ -16,7 +16,7 @@
 #endif
 
 
-bool SDInterface::initSD() {
+bool  SDInterface::initSD() {
   #ifdef HAS_SD
     String display_string = "";
 

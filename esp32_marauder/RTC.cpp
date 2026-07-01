@@ -26,13 +26,13 @@
 
 void RTC::RunSetup() {
 
-  log_d("RTC::RunSetup SDA=%d SCL=%d Freq=%d", RTC_SDA, RTC_SCL, RTC_FREQ);
+  log_i("RTC::RunSetup SDA=%d SCL=%d Freq=%d", RTC_SDA, RTC_SCL, RTC_FREQ);
 
   #if defined(I2C_SDA) && (RTC_SDA != I2C_SDA)
-    log_d("RTC::RunSetup Using Wire1");
+    log_i("RTC::RunSetup Using Wire1");
     _wire = &Wire1;
   #else
-    log_d("RTC::RunSetup Using Wire0");
+    log_i("RTC::RunSetup Using Wire0");
     _wire = &Wire;
   #endif
 
@@ -60,11 +60,11 @@ void RTC::RunSetup() {
 
 bool RTC::setup() {
 
-  log_d("RTC::PCF8523_setup");
+  log_i("RTC::PCF8523_setup");
 
   if (! rtclock.initialized() || rtclock.lostPower()) {
     #ifdef DEVELOPER
-      log_d("RTC is NOT initialized, setting to build date");
+      log_i("RTC is NOT initialized, setting to build date");
     #else
       Serial.println(F("RTC is NOT initialized"));
     #endif
@@ -72,11 +72,11 @@ bool RTC::setup() {
     rtclock.adjust(DateTime(F(__DATE__), F(__TIME__)));
     synced = false;
     setSystemTimeFromCompile();
-    log_d("SystemTime set from Build time");
+    log_i("SystemTime set from Build time");
   } else {
     synced = true;
     syncFromRTC();
-    log_d("SystemTime set from RTC");
+    log_i("SystemTime set from RTC");
   }
 
   // do this to ensure the RTC is running.
@@ -95,7 +95,7 @@ bool RTC::setup() {
 
 bool RTC::setup() {
 
-  log_d("RTC::DS1307_setup");
+  log_i("RTC::DS1307_setup");
 
     if (! rtclock.isrunning()) {
       Serial.println(F("RTC NOT initialized"));
@@ -120,7 +120,7 @@ bool RTC::setup() {
 
 #elif defined(HAS_BM8563)
   bool RTC::setup() {
-    log_d("RTC::BM8563_setup");
+    log_i("RTC::BM8563_setup");
   }
 #endif
 

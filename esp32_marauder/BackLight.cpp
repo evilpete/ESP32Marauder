@@ -72,7 +72,7 @@ uint8_t bl_level_idx = 9; // default brightness
   }
 
   void brightnessInit() {
-    log_d("HAS_AW9364 brightnessInit TFT_BL = %d", TFT_BL);
+    log_i("HAS_AW9364 brightnessInit TFT_BL = %d", TFT_BL);
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, 1);
     // ledDriver.begin(TFT_BL);
@@ -97,7 +97,7 @@ uint8_t bl_level_idx = 9; // default brightness
   }
 
   void brightnessSet(uint8_t level) {
-      log_d("HAS_AW9364 brightnessSet level = %d ", level);
+      log_i("HAS_AW9364 brightnessSet level = %d ", level);
       if (level > BL_NUM_LEVELS) level = BL_NUM_LEVELS;
       bl_level_idx = level;
       _setBrightness(bl_level_idx);
@@ -105,7 +105,7 @@ uint8_t bl_level_idx = 9; // default brightness
   }
 
   void brightnessSave(uint8_t level) {
-      log_d("HAS_AW9364 brightnessSave level = %d ", level);
+      log_i("HAS_AW9364 brightnessSave level = %d ", level);
       bl_level_idx = level;
       brightnessSet(level);
       bl_prefs.putUChar("level", bl_level_idx);
@@ -155,7 +155,7 @@ uint8_t bl_level_idx = 9; // default brightness
   #endif
 
   void brightnessInit() {
-      log_d("flipperLED::RunSetup: TFT_BL=%d", TFT_BL);
+      log_i("flipperLED::RunSetup: TFT_BL=%d", TFT_BL);
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
       bl_prefs.begin("backlight", false);
@@ -205,7 +205,7 @@ uint8_t bl_level_idx = 9; // default brightness
 
       currentDuty = ledcRead(TLED);
       // Serial.print("TFT_BL currentDuty = "); Serial.println(currentDuty);
-      log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
+      log_i("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
   }
 
   void brightnessSave(uint8_t level) {
@@ -216,7 +216,7 @@ uint8_t bl_level_idx = 9; // default brightness
       // Serial.print("bl_level_idx = "); Serial.println(BL_LEVELS[bl_level_idx]);
       uint32_t currentDuty = ledcRead(TLED);
       // Serial.print("currentDuty = "); Serial.println(currentDuty);
-      log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
+      log_i("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
   }
 
   void backlightOn() {

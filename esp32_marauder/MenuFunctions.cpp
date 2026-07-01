@@ -1028,6 +1028,8 @@ void MenuFunctions::updateStatusBar()
 {
   display_obj.tft.setTextSize(1);
 
+  uint32_t cur_millis = millis();
+
   bool status_changed = false;
   
   #if defined(MARAUDER_MINI) || defined(MARAUDER_M5STICKC) || defined(MARAUDER_REV_FEATHER) || defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV) || defined(MARAUDER_MINI_V3)
@@ -1102,27 +1104,24 @@ void MenuFunctions::updateStatusBar()
   }
 
   #ifdef HAS_RTC
-    if(rtc_obj.synced) {
+    if((rtc_obj.synced) && (cur_millis & (1 << 12))) {
       char timeBuffer[16];
       struct tm timeinfo;
-      static uint32_t tic = 0;
+      // static uint32_t tic = 0;
       uint16_t bg_color = STATUSBAR_COLOR;
 
-      // lets only update every 20 sec
-      if ((this->initTime - tic) < 20000) {
-        return;
-      }
-      tic = this->initTime;
+      // tic = this->initTime;
 
       if(!getLocalTime(&timeinfo)){
           Serial.println(F("Failed to obtain time"));
           return;
       }
 
-      strftime(timeBuffer, sizeof(timeBuffer), "%H:%M", &timeinfo);
+      //  "%H:%M"
+      strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
 
       int tx, ty, tw, th;
-      tw = 5 * 8;
+      tw = (5 * 8) - 4;
 
       #ifdef HAS_BATTERY
         if (battery_obj.supported) {
@@ -1170,7 +1169,14 @@ void MenuFunctions::updateStatusBar()
   #endif
 
   #ifdef HAS_MINI_SCREEN
-    display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
+    #ifndef HAS_PSRAM
+      display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
+    #else
+      if (cur_millis & (1 << 13))  // 13 -> 8.192 seconds
+        display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", 100, 0, 1);
+      else
+        display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", 100, 0, 1);
+    #endif
   #endif
   }
 
@@ -1572,7 +1578,7 @@ bool MenuFunctions::isKeyPressed(char c)
 #endif
 
 // Function to build the menus
-void MenuFunctions::RunSetup()
+void  MenuFunctions::RunSetup()
 {
   extern LinkedList<AccessPoint>* access_points;
   extern LinkedList<Station>* stations;
@@ -3757,12 +3763,12 @@ void MenuFunctions::buildSDFileMenu(bool update) {
       for (int x = 0; x < sd_obj.sd_files->size(); x++) {
         if (current_menu->list->get(x + 2).selected) {
           if (sd_obj.removeFile("/" + sd_obj.sd_files->get(x))) {
-            Serial.println("Deleted /" + sd_obj.sd_files->get(x));
             display_obj.clearScreen();
             display_obj.tft.setTextWrap(false);
             display_obj.tft.setCursor(0, SCREEN_HEIGHT / 3);
             display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
             display_obj.tft.println("Deleting /" + sd_obj.sd_files->get(x) + "...");
+            Serial.println("Deleted /" + sd_obj.sd_files->get(x));
           }
         }
       }

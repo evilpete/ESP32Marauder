@@ -11,28 +11,28 @@
 void Sound_CYD::RunSetup() {
   // Serial.println("Sound_CYD::RunSetup");
 
-  log_d("Sound_CYD::RunSetup: SOUND_PIN=%d RESOLUTION=%d, CHANNEL=%d", SOUND_PIN, LEDC_RESOLUTION, SND_CHANNEL);
+  log_i("Sound_CYD::RunSetup: SOUND_PIN=%d RESOLUTION=%d, CHANNEL=%d", SOUND_PIN, LEDC_RESOLUTION, SND_CHANNEL);
   // duty_cycle = DUTY;
 
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
   // ledcAttach(SOUND_PIN, 1, LEDC_RESOLUTION);
   ledcAttachChannel(SOUND_PIN, 5000, LEDC_RESOLUTION, SND_CHANNEL);
   #define SND_ID  SOUND_PIN
+  #define ledcWch ledcWriteChannel
 #else
   ledcAttachPin(SOUND_PIN, SND_CHANNEL);
   ledcSetup(SND_CHANNEL, 5000, LEDC_RESOLUTION);
+  #define ledcWch   ledcWrite
   #define SND_ID SND_CHANNEL
   #define ledcDetach  ledcDetachPin
 #endif
 
 
   #ifndef DEVELOPER
-    Serial.println("SND_CHANNEL :" + (String)SND_CHANNEL);
     Serial.println("SOUND_PIN :" + (String)SOUND_PIN);
-    Serial.println("SND_ID :" + (String)SND_ID);
   #else
     log_d("SND_CHANNEL : %d",  SND_CHANNEL);
-    log_d("SOUND_PIN : %d",  SOUND_PIN);
+    log_i("SOUND_PIN : %d",  SOUND_PIN);
     log_d("SND_ID : %d", SND_ID);
   #endif
   // ledcWrite(SND_CHANNEL, duty_cycle);
@@ -45,12 +45,12 @@ void Sound_CYD::gen_tone(uint32_t f, uint32_t t) {
     ledcWriteTone(SND_ID, f);
     delay(t);
 
-    ledcWriteChannel(SND_CHANNEL, 0);
+    ledcWch(SND_CHANNEL, 0);
     delay(12);
 }
 
 void Sound_CYD::stop_tone() {
-    ledcWriteChannel(SND_CHANNEL, 0);
+    ledcWch(SND_CHANNEL, 0);
 }
 
 // void Sound_CYD::s_power_on() { gen_tone(523,80); gen_tone(659,100); gen_tone(784,120); }

@@ -5,6 +5,7 @@ Partition Scheme: Minimal SPIFFS
 https://www.online-utility.org/image/convert/to/XBM
 */
 
+#include <Arduino.h>
 #include "configs.h"
 #include "driver/gpio.h"
 
@@ -181,6 +182,33 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
 
 uint32_t currentTime  = 0;
 
+/* 
+
+  template <typename T>
+  void d_print(T msg) {
+  #ifdef HAS_SCREEN
+    display_obj.tft.print(msg);
+  #endif
+    Serial.print(msg);
+  }
+
+  template <typename T>
+  void d_println(T msg) {
+  #ifdef HAS_SCREEN
+    display_obj.tft.println(msg);
+  #endif
+    Serial.println(msg);
+  }
+
+  template<typename... Args>
+  void d_printf(const char * f, Args... args) {
+    #ifdef HAS_SCREEN
+      display_obj.tft.printf(f, args...);
+    #endif
+    Serial.printf(f, args...);
+  }
+
+*/
 
   void DeepSleep(int8_t wakeup_but = -1) {
 

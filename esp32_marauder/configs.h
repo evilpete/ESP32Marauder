@@ -311,605 +311,599 @@
     #define HAS_C5_SD
   #endif
 
-  #ifdef MARAUDER_CYD_24
-    #define HAS_TOUCH
-    #define HAS_LED
-      #define HAS_FLIPPER_LED
-    // #define HAS_RTC
-    //   #define HAS_PCF8523         // i2c real-time clock (RTC)
-    #define HAS_BT
-    #define HAS_BUTTONS
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    // #define HAS_GPS
-    #define HAS_CYD_PORTRAIT
-    #define HAS_NIMBLE_2
-    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-      #define HAS_IDF_3
-    #endif
-    #define CYD_SOUND
-      #define SOUND_PIN 26
-  #endif
-
-  #if defined(MARAUDER_V6) || defined(MARAUDER_V6_1)
-    #define HAS_TOUCH
-    //#define FLIPPER_ZERO_HAT
-    #define HAS_BATTERY
-      #define HAS_IP5306
-    #define HAS_BT
-    #define HAS_BT_REMOTE
-    #define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
-    #define HAS_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-    #define HAS_C5_SD
-  #endif
-
-  #ifdef MARAUDER_CYD_MICRO
-    #define HAS_TOUCH
-    #define HAS_FLIPPER_LED
-    #define HAS_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    #define HAS_BT_REMOTE
-    #define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    #define HAS_CYD_TOUCH
-    //#define HAS_NIMBLE_2
-    #define CYD_SOUND
-  #endif
-
-  #ifdef MARAUDER_CYD_2USB
-    #define HAS_TOUCH
-    #define HAS_FLIPPER_LED
-    #define HAS_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    #define HAS_BT_REMOTE
-    #define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    // #define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    #define HAS_CYD_TOUCH
-    #define HAS_CYD_PORTRAIT
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-    #define CYD_SOUND
-  #endif
-
-  #ifdef MARAUDER_CYD_3_5_INCH
-    #define HAS_TOUCH
-    #define HAS_FLIPPER_LED
-    #define HAS_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    #define HAS_BT_REMOTE
-    #define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    //#define HAS_CYD_TOUCH
-    #define HAS_SEPARATE_SD
-    #define HAS_CYD_PORTRAIT
-    //#define HAS_NIMBLE_2
-    #define CYD_SOUND
-  #endif
-
-  #ifdef MARAUDER_CYD_GUITION
-    #define HAS_TOUCH
-    #define HAS_FLIPPER_LED
-    #define HAS_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    #define HAS_BT_REMOTE
-    #define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    // #define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    //#define HAS_CYD_TOUCH
-    //#define HAS_NIMBLE_2
-    #define CYD_SOUND
-  #endif
-
-  #ifdef MARAUDER_KIT
-    #define HAS_TOUCH
-    //#define FLIPPER_ZERO_HAT
-    #define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
-    #define HAS_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-    #define HAS_C5_SD
-  #endif
-
-  #ifdef GENERIC_ESP32
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    //#define HAS_SD
-    //#define HAS_TEMP_SENSOR
-    //#define HAS_GPS
-    //#define HAS_NIMBLE_2
-  #endif
-
-  #ifdef MARAUDER_FLIPPER
-    #define HAS_FLIPPER_LED
-    #define HAS_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    //#define HAS_BT
-    //#define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    #define HAS_GPS
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_PSRAM
-    //#define HAS_TEMP_SENSOR
-  #endif
-
-  #ifdef MARAUDER_JC2432W328C
-    #define HAS_TOUCH
-      #define HAS_CST820      // i2c self-capacitive touch controller
-     #define HAS_RTC
-        #define HAS_PCF8523         // i2c real-time clock (RTC)
-    #define HAS_LED
-      #define HAS_FLIPPER_LED
-    //#define FLIPPER_ZERO_HAT
-    // #define HAS_BT
-    // #define HAS_BT_REMOTE
-    #define HAS_BUTTONS
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    // #define HAS_GPS
-    // #define HAS_CYD_PORTRAIT
-    #define HAS_NIMBLE_2
-    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-      #define HAS_IDF_3
-    #endif
-    // #define ADJ_CPUFREQ
-    #define CYD_SOUND
-      #define SOUND_PIN 26
-  #endif
-
-  #ifdef MARAUDER_MULTIBOARD_S3
-    #define HAS_LED
-      #define HAS_FLIPPER_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    #define HAS_GPS
-    #define HAS_SD
-    #define USE_SD
-    //#define HAS_PSRAM
-    //#define HAS_TEMP_SENSOR
-  #endif
-
-  #ifdef ESP32_LDDB
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    #define HAS_LED
-      #define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    //#define HAS_TEMP_SENSOR
-    //#define HAS_GPS
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-  #endif
-
-  #ifdef MARAUDER_DEV_BOARD_PRO
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    #define HAS_LED
-      #define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    #define HAS_SD
-    #define USE_SD
-    //#define HAS_TEMP_SENSOR
-    #define HAS_GPS
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-  #endif
-
-  #ifdef XIAO_ESP32_S3
-    #define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    #define HAS_LED
-      #define HAS_XIAO_LED
-
-    //#define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    //#define HAS_SD
-    //#define HAS_TEMP_SENSOR
-    //#define HAS_GPS
-  #endif
-
-  #ifdef MARAUDER_CYD_HMI
-    #define HAS_TOUCH
-    #define HAS_BT
-    #define HAS_PWR_MGMT
-    #define HAS_BATTERY
-      #define BATTERY_ADC_PIN 5
-    // #define HAS_RTC
-    //  #define HAS_PCF8523         // i2c real-time clock (RTC)
-    #define HAS_BUTTONS
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_SDMMC
+    #ifdef MARAUDER_CYD_24
+      #define HAS_TOUCH
+      #define HAS_LED
+        #define HAS_FLIPPER_LED
+      // #define HAS_RTC
+      //   #define HAS_PCF8523         // i2c real-time clock (RTC)
+      #define HAS_BT
+      #define HAS_BUTTONS
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
       #define HAS_SD
       #define USE_SD
-    #define MSC_SHARE
-      #define USE_MMC_WRITE_SECTORS
-    #define HAS_CYD_TOUCH
-    #define ADJ_CPUFREQ
-    #define HAS_AW9364   //  1-wire Dimming LED Driver 
-    #define HAS_PSRAM
-      #define BK_LIGHT_PIN 38
-      #define TFT_BL 38
-    // #define HAS_GPS
-    #define HAS_CYD_PORTRAIT
-    #define HAS_NIMBLE_2
-    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      // #define HAS_GPS
+      #define HAS_CYD_PORTRAIT
+      #define HAS_NIMBLE_2
+      #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+        #define HAS_IDF_3
+      #endif
+      #define CYD_SOUND
+        #define SOUND_PIN 26
+    #endif
+
+    #if defined(MARAUDER_V6) || defined(MARAUDER_V6_1)
+      #define HAS_TOUCH
+      //#define FLIPPER_ZERO_HAT
+      #define HAS_BATTERY
+        #define HAS_IP5306
+      #define HAS_BT
+      #define HAS_BT_REMOTE
+      #define HAS_BUTTONS
+      #define HAS_NEOPIXEL_LED
+      #define HAS_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+      #define HAS_C5_SD
+    #endif
+
+    #ifdef MARAUDER_CYD_MICRO
+      #define HAS_TOUCH
+      #define HAS_FLIPPER_LED
+      #define HAS_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      #define HAS_BT_REMOTE
+      #define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      #define HAS_CYD_TOUCH
+      //#define HAS_NIMBLE_2
+      #define CYD_SOUND
+    #endif
+
+    #ifdef MARAUDER_CYD_2USB
+      #define HAS_TOUCH
+      #define HAS_FLIPPER_LED
+      #define HAS_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      #define HAS_BT_REMOTE
+      #define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      // #define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      #define HAS_CYD_TOUCH
+      #define HAS_CYD_PORTRAIT
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+      #define CYD_SOUND
+    #endif
+
+    #ifdef MARAUDER_CYD_3_5_INCH
+      #define HAS_TOUCH
+      #define HAS_FLIPPER_LED
+      #define HAS_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      #define HAS_BT_REMOTE
+      #define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      //#define HAS_CYD_TOUCH
+      #define HAS_SEPARATE_SD
+      #define HAS_CYD_PORTRAIT
+      //#define HAS_NIMBLE_2
+      #define CYD_SOUND
+    #endif
+
+    #ifdef MARAUDER_CYD_GUITION
+      #define HAS_TOUCH
+      #define HAS_FLIPPER_LED
+      #define HAS_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      #define HAS_BT_REMOTE
+      #define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      // #define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      //#define HAS_CYD_TOUCH
+      //#define HAS_NIMBLE_2
+      #define CYD_SOUND
+    #endif
+
+    #ifdef MARAUDER_KIT
+      #define HAS_TOUCH
+      //#define FLIPPER_ZERO_HAT
+      #define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      #define HAS_NEOPIXEL_LED
+      #define HAS_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+      #define HAS_C5_SD
+    #endif
+
+    #ifdef GENERIC_ESP32
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      //#define HAS_SD
+      //#define HAS_TEMP_SENSOR
+      //#define HAS_GPS
+      //#define HAS_NIMBLE_2
+    #endif
+
+    #ifdef MARAUDER_FLIPPER
+      #define HAS_FLIPPER_LED
+      #define HAS_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      //#define HAS_BT
+      //#define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      #define HAS_GPS
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_PSRAM
+      //#define HAS_TEMP_SENSOR
+    #endif
+
+    #ifdef MARAUDER_JC2432W328C
+      #define HAS_TOUCH
+        #define HAS_CST820      // i2c self-capacitive touch controller
+       #define HAS_RTC
+          #define HAS_PCF8523         // i2c real-time clock (RTC)
+      #define HAS_LED
+        #define HAS_FLIPPER_LED
+      //#define FLIPPER_ZERO_HAT
+      #define HAS_BT
+      // #define HAS_BT_REMOTE
+      #define HAS_BUTTONS
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      // #define HAS_GPS
+      // #define HAS_CYD_PORTRAIT
+      #define HAS_NIMBLE_2
+      #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+        #define HAS_IDF_3
+      #endif
+      // #define ADJ_CPUFREQ
+      #define CYD_SOUND
+        #define SOUND_PIN 26
+    #endif
+
+    #ifdef MARAUDER_MULTIBOARD_S3
+      #define HAS_LED
+        #define HAS_FLIPPER_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      #define HAS_GPS
+      #define HAS_SD
+      #define USE_SD
+      //#define HAS_PSRAM
+      //#define HAS_TEMP_SENSOR
+    #endif
+
+    #ifdef ESP32_LDDB
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      #define HAS_LED
+        #define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      //#define HAS_TEMP_SENSOR
+      //#define HAS_GPS
+      #define HAS_NIMBLE_2
       #define HAS_IDF_3
     #endif
-    #define HAS_PWR_MGMT
-      #define PWR_EN_PIN  10     // Powers peripherals
-      #define PWR_ON_PIN  14     // Latches battery power on
-   #endif
 
-  #ifdef MARAUDER_C5
-    //#define HAS_FLIPPER_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
-    #define HAS_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    #define HAS_GPS
-    #define HAS_C5_SD
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_DUAL_BAND
-    //#define HAS_PSRAM
-    //#define HAS_TEMP_SENSOR
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-  #endif
-
-  #ifdef MARAUDER_V8
-    #define HAS_TOUCH
-    //#define HAS_FLIPPER_LED
-    //#define FLIPPER_ZERO_HAT
-    #define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
-    #define HAS_GPS
-    #define HAS_C5_SD
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_DUAL_BAND
-    #define HAS_PSRAM
-    //#define HAS_TEMP_SENSOR
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-    #define HAS_ACT_LED
-  #endif
-
-  #ifdef MARAUDER_MINI_V3
-    //#define HAS_TOUCH
-    //#define HAS_FLIPPER_LED
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
-    #define HAS_BT
-    #define HAS_BUTTONS
-    //#define HAS_NEOPIXEL_LED
-    //#define HAS_PWR_MGMT
-    #define HAS_MINI_KB
-    #define HAS_SCREEN
-    #define HAS_MINI_SCREEN
-    #define HAS_GPS
-    #define HAS_C5_SD
-    #define HAS_SD
-    #define USE_SD
-    #define HAS_DUAL_BAND
-    #define HAS_PSRAM
-    //#define HAS_TEMP_SENSOR
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-    //#define HAS_SIMPLEX_DISPLAY
-    //#define HAS_DIRECT_UPLOAD
-  #endif
-
-  #if defined(MARAUDER_M5_NANO_C6)
-    //#define FLIPPER_ZERO_HAT
-    //#define HAS_MINI_KB
-    //#define HAS_BATTERY
-    #define HAS_BT
-    //#define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
-    #define HAS_LED
-    //#define HAS_PWR_MGMT
-    //#define HAS_SCREEN
-    //#define HAS_MINI_SCREEN
-    //#define HAS_SD
-    //#define USE_SD
-    //#define HAS_TEMP_SENSOR
-    //#define HAS_GPS
-    #define HAS_NIMBLE_2
-    #define HAS_IDF_3
-  #endif
-  //// END BOARD FEATURES
-
-  //// POWER MANAGEMENT
-  #ifdef HAS_PWR_MGMT
-    #if defined(HAS_AXP192)
-      #include "AXP192.h"
+    #ifdef MARAUDER_DEV_BOARD_PRO
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      #define HAS_LED
+        #define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      #define HAS_SD
+      #define USE_SD
+      //#define HAS_TEMP_SENSOR
+      #define HAS_GPS
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
     #endif
 
-    #ifdef MARAUDER_M5STICKCP2 
-      // Prevent StickCP2 from turning off when disconnect USB cable
-      #define POWER_HOLD_PIN 4
+    #ifdef XIAO_ESP32_S3
+      #define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      #define HAS_LED
+        #define HAS_XIAO_LED
+
+      //#define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      //#define HAS_SD
+      //#define HAS_TEMP_SENSOR
+      //#define HAS_GPS
     #endif
 
     #ifdef MARAUDER_CYD_HMI
-      #define PWR_EN_PIN  10    // power to peripherals
-      #define PWR_ON_PIN  14    // Batt power to board
-      #define POWER_HOLD_PIN PWR_ON_PIN
-    #endif
-
-  #endif
-
-  #ifdef MARAUDER_CYD_HMI
-    #define PWR_EN_PIN  10    // power to peripherals
-    #define PWR_ON_PIN  14    // Batt power to board
-    #define POWER_HOLD_PIN PWR_ON_PIN
-  #endif
-
-  //// END POWER MANAGEMENT
-
-  //// BUTTON DEFINITIONS
-  #ifdef HAS_BUTTONS
-
-    #ifdef MARAUDER_REV_FEATHER
-      #define L_BTN -1
-      #define C_BTN 1
-      #define U_BTN 0
-      #define R_BTN -1
-      #define D_BTN 2
-
-      //#define HAS_L
-      //#define HAS_R
-      #define HAS_U
-      #define HAS_D
-      #define HAS_C
-
-      #define L_PULL true
-      #define C_PULL false
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL false
-    #endif
-
-    #ifdef MARAUDER_MINI
-      #define L_BTN 13
-      #define C_BTN 34
-      #define U_BTN 36
-      #define R_BTN 39
-      #define D_BTN 35
-
-      #define HAS_L
-      #define HAS_R
-      #define HAS_U
-      #define HAS_D
-      #define HAS_C
-
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif
-
-    #ifdef MARAUDER_V7
-      #define L_BTN 13
-      #define C_BTN 34
-      #define U_BTN 36
-      #define R_BTN 39
-      #define D_BTN 35
-
-      #define HAS_L
-      #define HAS_R
-      #define HAS_U
-      #define HAS_D
-      #define HAS_C
-
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif
-
-    #ifdef MARAUDER_V7_1
-      #define L_BTN 13
-      #define C_BTN 34
-      #define U_BTN 36
-      #define R_BTN 39
-      #define D_BTN 35
-
-      #define HAS_L
-      #define HAS_R
-      #define HAS_U
-      #define HAS_D
-      #define HAS_C
-
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif
-
-    #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
-      #define L_BTN -1
-      #define C_BTN 37
-      #if defined(MARAUDER_M5STICKCP2)
-        #define U_BTN 35
-      #else
-        #define U_BTN -1
+      #define HAS_TOUCH
+      #define HAS_BT
+      #define HAS_PWR_MGMT
+      #define HAS_BATTERY
+        #define BATTERY_ADC_PIN 5
+      #define HAS_RTC
+        #define HAS_PCF8523         // i2c real-time clock (RTC)
+      #define HAS_BUTTONS
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_SDMMC
+        #define HAS_SD
+        #define USE_SD
+      #define MSC_SHARE
+        #define USE_MMC_WRITE_SECTORS
+      #define HAS_CYD_TOUCH
+      #define ADJ_CPUFREQ
+      #define HAS_AW9364   //  1-wire Dimming LED Driver 
+      #define HAS_PSRAM
+        #define BK_LIGHT_PIN 38
+        #define TFT_BL 38
+      // #define HAS_GPS
+      #define HAS_CYD_PORTRAIT
+      #define HAS_NIMBLE_2
+      #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+        #define HAS_IDF_3
       #endif
-      #define R_BTN -1
-      #define D_BTN 39
+      #define HAS_PWR_MGMT
+        #define PWR_EN_PIN  10     // Powers peripherals
+        #define PWR_ON_PIN  14     // Latches battery power on
+     #endif
 
-      //#define HAS_L
-      //#define HAS_R
-      #if defined(MARAUDER_M5STICKCP2)
+    #ifdef MARAUDER_C5
+      //#define HAS_FLIPPER_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      #define HAS_NEOPIXEL_LED
+      #define HAS_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      #define HAS_GPS
+      #define HAS_C5_SD
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_DUAL_BAND
+      //#define HAS_PSRAM
+      //#define HAS_TEMP_SENSOR
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+    #endif
+
+    #ifdef MARAUDER_V8
+      #define HAS_TOUCH
+      //#define HAS_FLIPPER_LED
+      //#define FLIPPER_ZERO_HAT
+      #define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_SCREEN
+      #define HAS_FULL_SCREEN
+      #define HAS_GPS
+      #define HAS_C5_SD
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_DUAL_BAND
+      #define HAS_PSRAM
+      //#define HAS_TEMP_SENSOR
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+      #define HAS_ACT_LED
+    #endif
+
+    #ifdef MARAUDER_MINI_V3
+      //#define HAS_TOUCH
+      //#define HAS_FLIPPER_LED
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_BATTERY
+      #define HAS_BT
+      #define HAS_BUTTONS
+      //#define HAS_NEOPIXEL_LED
+      //#define HAS_PWR_MGMT
+      #define HAS_MINI_KB
+      #define HAS_SCREEN
+      #define HAS_MINI_SCREEN
+      #define HAS_GPS
+      #define HAS_C5_SD
+      #define HAS_SD
+      #define USE_SD
+      #define HAS_DUAL_BAND
+      #define HAS_PSRAM
+      //#define HAS_TEMP_SENSOR
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+      //#define HAS_SIMPLEX_DISPLAY
+      //#define HAS_DIRECT_UPLOAD
+    #endif
+
+    #if defined(MARAUDER_M5_NANO_C6)
+      //#define FLIPPER_ZERO_HAT
+      //#define HAS_MINI_KB
+      //#define HAS_BATTERY
+      #define HAS_BT
+      //#define HAS_BUTTONS
+      #define HAS_NEOPIXEL_LED
+      #define HAS_LED
+      //#define HAS_PWR_MGMT
+      //#define HAS_SCREEN
+      //#define HAS_MINI_SCREEN
+      //#define HAS_SD
+      //#define USE_SD
+      //#define HAS_TEMP_SENSOR
+      //#define HAS_GPS
+      #define HAS_NIMBLE_2
+      #define HAS_IDF_3
+    #endif
+    //// END BOARD FEATURES
+
+    //// POWER MANAGEMENT
+    #ifdef HAS_PWR_MGMT
+      #if defined(HAS_AXP192)
+        #include "AXP192.h"
+      #endif
+
+      #ifdef MARAUDER_M5STICKCP2 
+        // Prevent StickCP2 from turning off when disconnect USB cable
+        #define POWER_HOLD_PIN 4
+      #endif
+
+      #ifdef MARAUDER_CYD_HMI
+        #define PWR_EN_PIN  10    // power to peripherals
+        #define PWR_ON_PIN  14    // Batt power to board
+        #define POWER_HOLD_PIN PWR_ON_PIN
+      #endif
+
+    #endif
+
+    //// END POWER MANAGEMENT
+
+    //// BUTTON DEFINITIONS
+    #ifdef HAS_BUTTONS
+
+      #ifdef MARAUDER_REV_FEATHER
+        #define L_BTN -1
+        #define C_BTN 1
+        #define U_BTN 0
+        #define R_BTN -1
+        #define D_BTN 2
+
+        //#define HAS_L
+        //#define HAS_R
         #define HAS_U
+        #define HAS_D
+        #define HAS_C
+
+        #define L_PULL true
+        #define C_PULL false
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL false
       #endif
-      #define HAS_D
-      #define HAS_C
 
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif
+      #ifdef MARAUDER_MINI
+        #define L_BTN 13
+        #define C_BTN 34
+        #define U_BTN 36
+        #define R_BTN 39
+        #define D_BTN 35
 
-    #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
-      #define L_BTN -1
-      #define C_BTN 0
-      #define U_BTN -1
-      #define R_BTN -1
-      #define D_BTN -1
+        #define HAS_L
+        #define HAS_R
+        #define HAS_U
+        #define HAS_D
+        #define HAS_C
 
-      //#define HAS_L
-      //#define HAS_R
-      //#define HAS_U
-      //#define HAS_D
-      #define HAS_C
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif
 
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif
+      #ifdef MARAUDER_V7
+        #define L_BTN 13
+        #define C_BTN 34
+        #define U_BTN 36
+        #define R_BTN 39
+        #define D_BTN 35
 
-    #ifdef MARAUDER_V6
-      #define L_BTN -1
-      #define C_BTN 0
-      #define U_BTN -1
-      #define R_BTN -1
-      #define D_BTN -1
+        #define HAS_L
+        #define HAS_R
+        #define HAS_U
+        #define HAS_D
+        #define HAS_C
 
-      //#define HAS_L
-      //#define HAS_R
-      //#define HAS_U
-      //#define HAS_D
-      #define HAS_C
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif
 
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif
+      #ifdef MARAUDER_V7_1
+        #define L_BTN 13
+        #define C_BTN 34
+        #define U_BTN 36
+        #define R_BTN 39
+        #define D_BTN 35
 
-    #ifdef MARAUDER_V6_1
-      #define L_BTN -1
-      #define C_BTN 0
-      #define U_BTN -1
-      #define R_BTN -1
-      #define D_BTN -1
+        #define HAS_L
+        #define HAS_R
+        #define HAS_U
+        #define HAS_D
+        #define HAS_C
 
-      //#define HAS_L
-      //#define HAS_R
-      //#define HAS_U
-      //#define HAS_D
-      #define HAS_C
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif
 
-      #define L_PULL true
-      #define C_PULL true
-      #define U_PULL true
-      #define R_PULL true
-      #define D_PULL true
-    #endif  
+      #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+        #define L_BTN -1
+        #define C_BTN 37
+        #if defined(MARAUDER_M5STICKCP2)
+          #define U_BTN 35
+        #else
+          #define U_BTN -1
+        #endif
+        #define R_BTN -1
+        #define D_BTN 39
 
-    #ifdef MARAUDER_CYD_24
+        //#define HAS_L
+        //#define HAS_R
+        #if defined(MARAUDER_M5STICKCP2)
+          #define HAS_U
+        #endif
+        #define HAS_D
+        #define HAS_C
+
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif
+
+      #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
+        #define L_BTN -1
+        #define C_BTN 0
+        #define U_BTN -1
+        #define R_BTN -1
+        #define D_BTN -1
+
+        //#define HAS_L
+        //#define HAS_R
+        //#define HAS_U
+        //#define HAS_D
+        #define HAS_C
+
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif
+
+      #ifdef MARAUDER_V6
+        #define L_BTN -1
+        #define C_BTN 0
+        #define U_BTN -1
+        #define R_BTN -1
+        #define D_BTN -1
+
+        //#define HAS_L
+        //#define HAS_R
+        //#define HAS_U
+        //#define HAS_D
+        #define HAS_C
+
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif
+
+      #ifdef MARAUDER_V6_1
+        #define L_BTN -1
+        #define C_BTN 0
+        #define U_BTN -1
+        #define R_BTN -1
+        #define D_BTN -1
+
+        //#define HAS_L
+        //#define HAS_R
+        //#define HAS_U
+        //#define HAS_D
+        #define HAS_C
+
+        #define L_PULL true
+        #define C_PULL true
+        #define U_PULL true
+        #define R_PULL true
+        #define D_PULL true
+      #endif  
+
+      #ifdef MARAUDER_CYD_24
       #define L_BTN -1
       #define C_BTN 0
       #define U_BTN -1
@@ -1600,8 +1594,8 @@
       // #define I2C_SCL 32
 
       #ifdef HAS_PCF8523
-        #define RTC_SDA 16
-        #define RTC_SCL 15
+        #define RTC_SDA 17
+        #define RTC_SCL 18
       #endif
 
       #ifndef TFT_WIDTH
@@ -3597,4 +3591,6 @@
   #endif
 
 #endif
+
+#define FLASH_FN __attribute__((section(".irom0.text")))
 

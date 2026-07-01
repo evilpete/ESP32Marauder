@@ -43,14 +43,14 @@ void CST820::begin(int8_t _sda, int8_t _scl, int8_t _rst, int8_t _int, uint32_t 
     int i;
 
 
-      log_d("CST820::begin");
+      log_i("CST820::begin");
     #ifdef I2C_SDA
       if (_sda != -1 && _sda != I2C_SDA) {
         _wire = &Wire1;
-        log_d("CST820::begin using Wire1");
+        log_i("CST820::begin using Wire1");
       } else {
         _wire = &Wire;
-        log_d("CST820::begin using Wire0");
+        log_i("CST820::begin using Wire0");
       }
     #else
       _wire = &Wire;
@@ -70,13 +70,13 @@ void CST820::begin(int8_t _sda, int8_t _scl, int8_t _rst, int8_t _int, uint32_t 
         }
         */
 
-        log_d("CST820::RunSetup SDA=%d SCL=%d, freq=%d", _sda, _scl, freq);
+        log_i("CST820::RunSetup SDA=%d SCL=%d, freq=%d", _sda, _scl, freq);
         _wire->begin(_sda, _scl, freq);
     } else {
         _wire->begin();
         if (freq)
           _wire->setClock(freq);
-          log_d("CST820::begin setClock %d", freq);
+          log_i("CST820::begin setClock %d", freq);
     }
 
     _wire = &Wire;
