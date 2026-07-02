@@ -1103,8 +1103,8 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
-  #ifdef HAS_RTC
-    if((rtc_obj.synced) && (cur_millis & (1 << 12))) {
+  // #ifdef HAS_RTC
+    if((system_time_set) && (cur_millis & (1 << 12))) {
       char timeBuffer[16];
       struct tm timeinfo;
       // static uint32_t tic = 0;
@@ -1113,7 +1113,7 @@ void MenuFunctions::updateStatusBar()
       // tic = this->initTime;
 
       if(!getLocalTime(&timeinfo)){
-          Serial.println(F("Failed to obtain time"));
+          // Serial.println(F("Failed to obtain time"));
           return;
       }
 
@@ -1152,7 +1152,7 @@ void MenuFunctions::updateStatusBar()
       display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
     }
 
-  #endif
+  // #endif  // HAS_RTC
 
   // RAM Stuff
   wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
@@ -1173,9 +1173,9 @@ void MenuFunctions::updateStatusBar()
       display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
     #else
       if (cur_millis & (1 << 13))  // 13 -> 8.192 seconds
-        display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", 100, 0, 1);
+        display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
       else
-        display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", 100, 0, 1);
+        display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
     #endif
   #endif
   }
@@ -3087,15 +3087,20 @@ void  MenuFunctions::RunSetup()
           display_obj.tft.drawCentreString("Share Not Running", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
           return;
         }
-         esp_task_wdt_config_t wdt_config = {
+        #ifdef HAS_IDF_3
+          esp_task_wdt_config_t wdt_config = {
            .timeout_ms = 15000,    //150 seconds instead of default 5
            .idle_core_mask = 0,
            .trigger_panic = false  // log but don't panic during MSC
-        };
+          };
+           esp_task_wdt_reconfigure(&wdt_config);
+        #endif
         MSC_Share_obj.msc_pause();
-        wdt_config.timeout_ms = 5000;
-        wdt_config.trigger_panic = true;
-        esp_task_wdt_reconfigure(&wdt_config);
+        #ifdef HAS_IDF_3
+          wdt_config.timeout_ms = 5000;
+          wdt_config.trigger_panic = true;
+          esp_task_wdt_reconfigure(&wdt_config);
+        #endif
         display_obj.tft.drawCentreString("USB Share Pause", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
         Serial.println(F("USB Share Paused")); Serial.flush();
     });
@@ -3120,19 +3125,22 @@ void  MenuFunctions::RunSetup()
           return;
         }
 
+        #ifdef HAS_IDF_3
          esp_task_wdt_config_t wdt_config = {
            .timeout_ms = 15000,    //150 seconds instead of default 5
            .idle_core_mask = 0,
            .trigger_panic = false  // log but don't panic during MSC
         };
-
         esp_task_wdt_reconfigure(&wdt_config);
+        #endif
 
         MSC_Share_obj.ShareEnd();
 
-        wdt_config.timeout_ms = 5000;
-        wdt_config.trigger_panic = true;
-        esp_task_wdt_reconfigure(&wdt_config);
+        #ifdef HAS_IDF_3
+          wdt_config.timeout_ms = 5000;
+          wdt_config.trigger_panic = true;
+          esp_task_wdt_reconfigure(&wdt_config);
+        #endif
 
         display_obj.tft.drawCentreString("USB Share Stop", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
     });

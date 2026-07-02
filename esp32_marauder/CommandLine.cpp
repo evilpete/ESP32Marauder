@@ -239,6 +239,9 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_GPS_POI_CMD);
     Serial.println(HELP_GPS_TRACKER_CMD);
     Serial.println(HELP_SHUTDOWN_CMD);
+    Serial.println(HELP_NTP_SYNC);
+    Serial.println(HELP_DATE);
+    Serial.println(HELP_SETDATE);
 
     Serial.println(HELP_RESCANSD_CMD);
 
@@ -1860,16 +1863,63 @@ void CommandLine::runCommand(String input) {
     }
   }
 
-  #ifdef HAS_RTC
   else if (cmd_args.get(0) == NTP_SYNC) {
 
     if (!wifi_scan_obj.wifi_connected) {
       Serial.println(F("WIFI is not connected."));
       return;
     }
+  #ifdef HAS_RTC
     rtc_obj.sync_rtc_ntp();
-  }
+  #else
+    configTime(0, 0, "pool.ntp.org");
   #endif //  HAS_RTC
+  }
+
+  // "+%Y-%m-%d %HH:%MM:SS"
+  else if (cmd_args.get(0) == DATE_CMD) {
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+      Serial.println(&timeinfo, "%F %T");
+    } else {
+      log_w("getLocalTime Fail");
+    }
+  }
+
+  else if (cmd_args.get(0) == SETDATE_CMD) {
+    struct tm tm_info = {0}; 
+    extern bool set_system_time(const struct tm&);
+
+    if ( cmd_args.size() == 3 &&
+         strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
+         strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
+
+      set_system_time(tm_info);
+
+      /*
+      time_t t = mktime(&tm_info);
+      struct timeval now = { .tv_sec = t };
+      if( settimeofday(&now, NULL) ) {
+        Serial.println(F("settimeofday Failed"));
+      } else {
+        Serial.println(F("setdate succeed"));
+        system_time_set = true;
+        #ifdef HAS_RTC
+          rtc_obj.rtclock.adjust(DateTime(t));
+        #endif //  HAS_RTC
+
+        if (getLocalTime(&tm_info)) {
+          Serial.println(&tm_info, "%A, %B %d %Y %H:%M:%S");
+        } else {
+          log_w("getLocalTime Fail");
+        }
+      }
+      */
+    } else {
+      Serial.println(F("Failed to parse time string."));
+      Serial.println(F("expected format: YYYY-MM-DD HH:MM:SS"));
+    }
+  }
 
   // SSID stuff
   else if (cmd_args.get(0) == SSID_CMD) {

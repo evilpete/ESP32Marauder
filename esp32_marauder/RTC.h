@@ -69,6 +69,10 @@ class RTC  {    // RTC_PCF8523
     void setSystemTimeFromCompile();
     void syncFromRTC();
 
+    void adjust(const DateTime &dt) {
+      rtclock.adjust(dt);
+    }
+
   private:
     TwoWire *_wire;
 

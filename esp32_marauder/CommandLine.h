@@ -20,6 +20,8 @@
   #include "LedInterface.h"
 #endif
 
+extern bool system_time_set;
+
 #ifdef HAS_SCREEN
   extern MenuFunctions menu_function_obj;
   extern Display display_obj;
@@ -71,6 +73,9 @@ const char PROGMEM NMEA_CMD[] = "nmea";
 const char PROGMEM GPS_POI_CMD[] = "gpspoi";
 const char PROGMEM GPS_TRACKER_CMD[] = "gpstracker";
 const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
+const char PROGMEM NTP_SYNC[] = "ntp_sync";
+const char PROGMEM DATE_CMD[] = "date";
+const char PROGMEM SETDATE_CMD[] = "setdate";
 
 const char PROGMEM RESCANSD_CMD[] = "rescansd";
 #ifdef MSC_SHARE
@@ -129,7 +134,6 @@ const char PROGMEM MAC_CMD_B[] = "randstamac";
 const char PROGMEM MAC_CMD_C[] = "cloneapmac";
 const char PROGMEM MAC_CMD_D[] = "clonestamac";
 const char PROGMEM ADD_CMD[] = "add";
-const char PROGMEM NTP_SYNC[] = "ntp_sync";
 
 // Bluetooth sniff/scan
 const char PROGMEM BT_SPAM_CMD[] = "blespam";
@@ -157,6 +161,9 @@ const char PROGMEM HELP_GPS_POI_CMD[] = "gpspoi -s/-m/-e";
 const char PROGMEM HELP_GPS_TRACKER_CMD[] = "gpstracker -c <start/stop>";
 const char PROGMEM HELP_NMEA_CMD[] = "nmea";
 const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
+const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
+const char PROGMEM HELP_DATE[] = "date";
+const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
 
 
 const char PROGMEM HELP_RESCANSD_CMD[] = "rescansd : rescan for SD card";
@@ -213,7 +220,6 @@ const char PROGMEM HELP_MAC_CMD_C[] = "cloneapmac [-a <index>]";
 const char PROGMEM HELP_MAC_CMD_D[] = "clonestamac [-s <index>]";
 const char PROGMEM HELP_ADD_CMD_A[] = "add -a -b <mac> [-ch <channel>] [-e <ssid>]";
 const char PROGMEM HELP_ADD_CMD_B[] = "add -c -b <mac> -ap <ap_index>";
-const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
 
 // Bluetooth sniff/scan
 const char PROGMEM HELP_BT_SNIFF_CMD[] = "sniffbt [-t] <airtag/flipper/flock/meta>";

@@ -14,14 +14,14 @@
 // BM8563 : M5StickC_Plus / ONX2432G028
 
 #if !defined(RTC_SDA) && defined(I2C_SDA)
-  #define RTC_SDA I2C_SDA
-  #define RTC_SCL I2C_SCL
+#define RTC_SDA I2C_SDA
+#define RTC_SCL I2C_SCL
 #endif
 
 
 // default 100000UL
 #ifndef RTC_FREQ
-  #define RTC_FREQ -1
+#define RTC_FREQ -1
 #endif
 
 void RTC::RunSetup() {
@@ -60,7 +60,7 @@ void RTC::RunSetup() {
 
 bool RTC::setup() {
 
-  log_i("RTC::PCF8523_setup");
+log_i("RTC::PCF8523_setup");
 
   if (! rtclock.initialized() || rtclock.lostPower()) {
     #ifdef DEVELOPER
@@ -97,57 +97,80 @@ bool RTC::setup() {
 bool RTC::setup() {
 int error;
 
-  log_i("RTC::DS1307_setup");
+log_i("RTC::DS1307_setup");
 
-  _wire.beginTransmission(0x50);
-  error = _wire.endTransmission();
-  if (error == 0) 
-    Serial.print("I2C device found at address 0x50");
+_wire->beginTransmission(0x50);
+error = _wire->endTransmission();
+if (error == 0)  {
+  Serial.print("I2C device found at address 0x50");
+  log_d("I2C device found at address 0x50");
+}
 
-  _wire.beginTransmission(0x51);
-  error = _wire.endTransmission();
-  if (error == 0) 
-    Serial.print("I2C device found at address 0x51");
-
-  struct tm timeinfo;
-  if (getLocalTime(&timeinfo)) {
-    Serial.print("RTC::setup: ");
-    Serial.println(&timeinfo, "%F %T");
-  } else {
-    log_w("getLocalTime Fail");
+_wire->beginTransmission(0x51);
+error = _wire->endTransmission();
+if (error == 0)  {
+  Serial.print("I2C device found at address 0x51");
+  log_d("I2C device found at address 0x51");
   }
 
-    if (! rtclock.isrunning()) {
-      Serial.println(F("RTC NOT initialized"));
-      Serial.flush();
-      log_w("RTC is NOT initialized");
-      .adjust(DateTime(F(__DATE__), F(__TIME__)));
-    } else {
-      synced = true;
-      system_time_set = true;
-      syncFromRTC();
-      Serial.println(F("SystemTime set from RTC"));
-    }
+_wire->beginTransmission(0x40);
+error = _wire->endTransmission();
+if (error == 0)  {
+  Serial.print("I2C device found at address 0x40");
+  log_d("I2C device found at address 0x40");
+  }
 
-    // #ifdef DEVELOPER
-    //   log_d(dt_string());
-    // #else
-      Serial.println(dt_string());
-    // #endif
+_wire->beginTransmission(0x48);
+error = _wire->endTransmission();
+if (error == 0)  {
+  Serial.print("I2C device found at address 0x48");
+  log_d("I2C device found at address 0x48");
+  }
+
+struct tm timeinfo;
+if (getLocalTime(&timeinfo)) {
+  Serial.print("RTC::setup: getLocalTime=");
+  Serial.println(&timeinfo, "%F %T");
+} else {
+  log_w("getLocalTime Fail");
+  perror("getLocalTime");
+}
+
+  if (! rtclock.isrunning()) {
+    Serial.println(F("RTC NOT initialized"));
+    Serial.flush();
+    log_w("RTC is NOT initialized");
+  }  else {
+    synced = true;
+    system_time_set = true;
+    syncFromRTC();
+    Serial.println(F("SystemTime set from RTC"));
+  }
+
+  // #ifdef DEVELOPER
+  //   log_d(dt_string());
+  // #else
+    Serial.print("dt_string(): ");
+    log_d("dt_string(): %s", dt_string());
+  // #endif
+  log_i("RTC::DS1307_setup Done");
+
+  return supported;
 }
 
 
 // float RTC:getTemperature() { rtclock.getTemperature(); }
 
 #elif defined(HAS_BM8563)
-  bool RTC::setup() {
-    log_i("RTC::BM8563_setup");
-  }
+bool RTC::setup() {
+  log_i("RTC::BM8563_setup");
+}
 #endif
 
 void RTC::syncFromRTC() {
-  // 1. Read time from the PCF8523
-  
+// 1. Read time from the PCF8523
+
+#if defined(HAS_PCF8523) || defined(HAS_DS1307)
   DateTime now = rtclock.now();
 
   // 2. Populate the standard C tm structure
@@ -158,65 +181,68 @@ void RTC::syncFromRTC() {
   tm_time.tm_hour = now.hour();        // Hours (0-23)
   tm_time.tm_min  = now.minute();      // Minutes (0-59)
   tm_time.tm_sec  = now.second();      // Seconds (0-59)
-  
+
   // Set isdst to -1 to let the system decide based on your timezone settings
   tm_time.tm_isdst = -1;
 
   // 3. Convert tm to time_t and configure settimeofday
   time_t t = mktime(&tm_time);
   struct timeval tv = { .tv_sec = t, .tv_usec = 0 };
-  
+
   settimeofday(&tv, NULL);
   synced = true;
   system_time_set = true;
-  Serial.println(F("ESP32 system time successfully synced to PCF8523 RTC!"));
+  Serial.println(F("system time synced with RTC"));
+#elif defined(HAS_BM8563)
+  log_w("syncFromRTC: BM8563 not yet implemented");
+#endif
 }
 
 
-// Function to set system time from an ISO 8601 string (e.g., "2026-06-11T13:26:00")
-bool RTC::getSystemTimeFromString(const char* timeStr) {
-    struct tm timeinfo = {0};
-    
-    // Parse the string into the tm struct using format specifiers
-    // %Y = Year, %m = Month, %d = Day, %H = Hour, %M = Minute, %S = Second
-    if (strptime(timeStr, "%Y-%m-%dT%H:%M:%S", &timeinfo) == NULL) {
-        Serial.println(F("Failed to parse time string."));
-        return false;
-    }
-    
-    // Convert tm struct to Unix timestamp (seconds since Jan 1 1970)
-    time_t epochTime = mktime(&timeinfo);
-    if (epochTime == -1) {
-        Serial.println(F("Failed to convert tm to epoch time."));
-        return false;
-    }
-    
-    // Structure required by settimeofday
-    struct timeval tv;
-    tv.tv_sec = epochTime;
-    tv.tv_usec = 0;        // Microseconds
-    
-    // Apply time directly to ESP32 internal clock
-    if (settimeofday(&tv, NULL) != 0) {
-        Serial.println(F("Failed to update system time."));
-        return false;
-    }
-    
-    synced = true;
-    system_time_set = true;
-    Serial.println(F("System time updated successfully!"));
-    return true;
-}
-
-
-
-bool RTC::sync_rtc_ntp() {
-  struct tm timeinfo;
-
-  if (!supported) {
-    log_w("RTC not supported");
-    return false;
+  // Function to set system time from an ISO 8601 string (e.g., "2026-06-11T13:26:00")
+  bool RTC::getSystemTimeFromString(const char* timeStr) {
+      struct tm timeinfo = {0};
+      
+      // Parse the string into the tm struct using format specifiers
+      // %Y = Year, %m = Month, %d = Day, %H = Hour, %M = Minute, %S = Second
+      if (strptime(timeStr, "%Y-%m-%dT%H:%M:%S", &timeinfo) == NULL) {
+          Serial.println(F("Failed to parse time string."));
+          return false;
+      }
+      
+      // Convert tm struct to Unix timestamp (seconds since Jan 1 1970)
+      time_t epochTime = mktime(&timeinfo);
+      if (epochTime == -1) {
+          Serial.println(F("Failed to convert tm to epoch time."));
+          return false;
+      }
+      
+      // Structure required by settimeofday
+      struct timeval tv;
+      tv.tv_sec = epochTime;
+      tv.tv_usec = 0;        // Microseconds
+      
+      // Apply time directly to ESP32 internal clock
+      if (settimeofday(&tv, NULL) != 0) {
+          Serial.println(F("Failed to update system time."));
+          return false;
+      }
+      
+      synced = true;
+      system_time_set = true;
+      Serial.println(F("System time updated successfully!"));
+      return true;
   }
+
+
+
+  bool RTC::sync_rtc_ntp() {
+    struct tm timeinfo;
+
+    if (!supported) {
+      log_w("RTC not supported");
+      return false;
+    }
 
   if (!wifi_scan_obj.wifi_connected) {
     log_w("Wifi Not Connected");
@@ -237,9 +263,9 @@ bool RTC::sync_rtc_ntp() {
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   Serial.println(F("RTC successfully set via NTP!"));
 
- time_t now;
-  time(&now);
-  struct tm* timeStruct = localtime(&now);
+ time_t epoch_now;
+  time(&epoch_now);
+  struct tm* timeStruct = localtime(&epoch_now);
 
   DateTime ntpTime(
     timeStruct->tm_year + 1900, // Year starts from 1900
@@ -250,11 +276,9 @@ bool RTC::sync_rtc_ntp() {
     timeStruct->tm_sec          // Second
   );
 
-  #ifdef HAS_PCF8523
     rtclock.adjust(ntpTime);
-    Serial.println(F("PCF8523 RTC updated with NTP time."));
+    Serial.println(F("RTC updated with NTP time."));
     // log_d("PCF8523 RTC updated with NTP time.");
-  #endif
 
   /*
   rtclock.adjust(DateTime(
@@ -273,7 +297,7 @@ bool RTC::sync_rtc_ntp() {
 
 
 void RTC::setSystemTimeFromCompile() {
-    struct tm tm_build;
+    struct tm tm_build = {0};
 
     // Parse built-in compile time macros
     strptime(__DATE__, "%b %d %Y", &tm_build);
@@ -283,6 +307,11 @@ void RTC::setSystemTimeFromCompile() {
     tm_build.tm_isdst = -1; 
     time_t t_of_day = mktime(&tm_build);
 
+    if (t_of_day == (time_t)-1) {
+      log_w("setSystemTimeFromCompile: mktime failed");
+      return;
+    }
+
     // Update the system time
     struct timeval tv = { .tv_sec = t_of_day, .tv_usec = 0 };
     settimeofday(&tv, NULL);
@@ -291,7 +320,7 @@ void RTC::setSystemTimeFromCompile() {
 String RTC::dt_string() {
   if (!supported) { log_w("RTC not supported"); return ""; }
 
-  char format[] = "YYYY-MM-DD hh:mm:ss";
+  char format[] = "%Y-%m-%d %H:%M:%S";  // %F %T";
 
   return rtclock.now().toString(format);   // one I2C read
 }

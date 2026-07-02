@@ -27,6 +27,8 @@
   extern RTC rtc_obj;
 #endif
 
+extern bool system_time_set;
+
 #ifdef CYD_SOUND
   #include "Sound_CYD.h"
   extern Sound_CYD sound_obj;

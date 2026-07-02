@@ -594,20 +594,19 @@
     #ifdef MARAUDER_CYD_HMI
       #define HAS_TOUCH
       #define HAS_BT
-      #define HAS_PWR_MGMT
       #define HAS_BATTERY
         #define BATTERY_ADC_PIN 5
-      #define HAS_RTC
+      //#define HAS_RTC
         // #define HAS_PCF8523         // i2c real-time clock (RTC)
-        #define HAS_DS1307         // i2c real-time clock (RTC)
+       // #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BUTTONS
       #define HAS_SCREEN
       #define HAS_FULL_SCREEN
       #define HAS_SDMMC
         #define HAS_SD
         #define USE_SD
-      #define MSC_SHARE
-        #define USE_MMC_WRITE_SECTORS
+      // #define MSC_SHARE
+      //   #define USE_MMC_WRITE_SECTORS
       #define HAS_CYD_TOUCH
       #define ADJ_CPUFREQ
       #define HAS_AW9364   //  1-wire Dimming LED Driver 
@@ -3290,6 +3289,7 @@
       #define I2C_SDA 3
       #define HAS_MAX1704X
       #undef HAS_AXP2101
+      #undef HAS_AXP192
       #undef HAS_IP5306
 
     #elif defined(MARAUDER_CYD_HMI)

@@ -330,16 +330,31 @@ void print_reset_reason() {
   Serial.println(resetReasonName());
 }
 
-bool set_system_time(const struct tm& time_info)
+bool system_time_set = false;
+
+bool set_system_time(const struct tm& timeInfo) {
+    struct tm tmp = timeInfo;
+    time_t t = mktime(&tmp);
+    if (t == (time_t)-1) {
+        log_w("set_system_time: mktime failed");
+        return false;
+    }
+    struct timeval now = { .tv_sec = t, .tv_usec = 0 };
+    if (settimeofday(&now, NULL) != 0) {
+        log_w("settimeofday failed");
+        return false;
+    }
+    system_time_set = true;
+    return true;
+}
 
 bool set_system_time(const String& time_str) {
-  struct tm tm_info = {0};
-
-  if (strptime(time_str.c_str(), "%F %T", &tm_info)) {
-  	return set_system_time(&tm_info);
-  }
-  log_d("set_system_time: invalid time_str");
-  return false;
+    struct tm tm_info = {0};
+    if (strptime(time_str.c_str(), "%F %T", &tm_info) != NULL) {
+        return set_system_time(tm_info);
+    }
+    log_d("set_system_time: invalid time_str '%s'", time_str.c_str());
+    return false;
 }
 
 void setup()
@@ -381,13 +396,13 @@ void setup()
     print_reset_reason();
   #endif
 
+  log_d("30");
   #ifdef HAS_C5_SD
     sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
     delay(100);
   #endif
 
   #ifdef HAS_SCREEN
-    log_d("pinMode(TFT_BL, OUTPUT");
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH); // ???
   #endif
@@ -397,6 +412,7 @@ void setup()
     backlightOff();
   #endif
 
+
   #if BATTERY_ANALOG_ON == 1
     pinMode(BATTERY_PIN, OUTPUT);
     pinMode(CHARGING_PIN, INPUT);
@@ -404,6 +420,7 @@ void setup()
 
   // Preset SPI CS pins to avoid bus conflicts
   #if defined(HAS_SCREEN) && defined(TFT_CS)
+    pinMode(TFT_CS, OUTPUT);
     digitalWrite(TFT_CS, HIGH);
   #endif
   
@@ -437,7 +454,7 @@ void setup()
 
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
-    Serial.print("RTC::setup: ");
+    Serial.print("Boot Clock: ");
     Serial.println(&timeinfo, "%F %T");
   } else {
     log_w("getLocalTime Fail");
