@@ -23,6 +23,8 @@
 
 extern WiFiScan wifi_scan_obj;
 
+// If system time/date has been set
+extern bool system_time_set;
 
 
 /*
@@ -31,20 +33,6 @@ const long gmtOffset_sec = -28800;      // Replace with your offset (e.g., -2880
 const int daylightOffset_sec = 3600;    // Adjust daylight savings (e.g., 3600 for DST)
 */
 
-// Temp 
-// AHT20  comming from Ada
-// Si7021  comming from Ada
-//  PCT2075  Have STEMMA
-//   opt :AHT20 BMP280 = Ali $3
-
-//
-// RTC
-//   DS3231  
-// PCF8523  FeatherLogger
-//   opt :DS1307 = coming from Ali
-//   opt :DS1302 = Ali $3
-//   opt :AT24C32 = Ali $6
-//
 
 class RTC  {    // RTC_PCF8523
 

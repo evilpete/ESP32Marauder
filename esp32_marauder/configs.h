@@ -598,7 +598,8 @@
       #define HAS_BATTERY
         #define BATTERY_ADC_PIN 5
       #define HAS_RTC
-        #define HAS_PCF8523         // i2c real-time clock (RTC)
+        // #define HAS_PCF8523         // i2c real-time clock (RTC)
+        #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BUTTONS
       #define HAS_SCREEN
       #define HAS_FULL_SCREEN
@@ -712,6 +713,12 @@
       #define HAS_IDF_3
     #endif
     //// END BOARD FEATURES
+
+
+    #if defined(HAS_PCF8523) || defined(HAS_DS1307)
+        #define HAS_RTC         // i2c real-time clock (RTC)
+    #endif
+
 
     //// POWER MANAGEMENT
     #ifdef HAS_PWR_MGMT
@@ -1444,7 +1451,7 @@
       #define HAS_ST7789
 
       // CN1
-      #if defined(HAS_PCF8523) && !defined(RTC_SDA)
+      #if defined(HAS_RTC) && !defined(RTC_SDA)
         #define RTC_SDA 21
         #define RTC_SCL 22
       #endif
@@ -1593,7 +1600,7 @@
       // #define I2C_SDA 33
       // #define I2C_SCL 32
 
-      #ifdef HAS_PCF8523
+      #if defined(HAS_RTC) && !defined(RTC_SDA)
         #define RTC_SDA 17
         #define RTC_SCL 18
       #endif

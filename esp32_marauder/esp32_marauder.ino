@@ -8,6 +8,8 @@ https://www.online-utility.org/image/convert/to/XBM
 #include <Arduino.h>
 #include "configs.h"
 #include "driver/gpio.h"
+#include <time.h>
+#include <sys/time.h>
 
 
 #ifdef I2C_FREQ
@@ -328,6 +330,17 @@ void print_reset_reason() {
   Serial.println(resetReasonName());
 }
 
+bool set_system_time(const struct tm& time_info)
+
+bool set_system_time(const String& time_str) {
+  struct tm tm_info = {0};
+
+  if (strptime(time_str.c_str(), "%F %T", &tm_info)) {
+  	return set_system_time(&tm_info);
+  }
+  log_d("set_system_time: invalid time_str");
+  return false;
+}
 
 void setup()
 {
@@ -421,6 +434,14 @@ void setup()
     led_obj.RunSetup();
   #endif
   */
+
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    Serial.print("RTC::setup: ");
+    Serial.println(&timeinfo, "%F %T");
+  } else {
+    log_w("getLocalTime Fail");
+  }
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
   #ifdef ESP_ARDUINO_VERSION_STR

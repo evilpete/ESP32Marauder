@@ -75,6 +75,7 @@ bool RTC::setup() {
     log_i("SystemTime set from Build time");
   } else {
     synced = true;
+    system_time_set = true;
     syncFromRTC();
     log_i("SystemTime set from RTC");
   }
@@ -94,16 +95,36 @@ bool RTC::setup() {
 // M5StickC_Plus
 
 bool RTC::setup() {
+int error;
 
   log_i("RTC::DS1307_setup");
+
+  _wire.beginTransmission(0x50);
+  error = _wire.endTransmission();
+  if (error == 0) 
+    Serial.print("I2C device found at address 0x50");
+
+  _wire.beginTransmission(0x51);
+  error = _wire.endTransmission();
+  if (error == 0) 
+    Serial.print("I2C device found at address 0x51");
+
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    Serial.print("RTC::setup: ");
+    Serial.println(&timeinfo, "%F %T");
+  } else {
+    log_w("getLocalTime Fail");
+  }
 
     if (! rtclock.isrunning()) {
       Serial.println(F("RTC NOT initialized"));
       Serial.flush();
       log_w("RTC is NOT initialized");
-      rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+      .adjust(DateTime(F(__DATE__), F(__TIME__)));
     } else {
       synced = true;
+      system_time_set = true;
       syncFromRTC();
       Serial.println(F("SystemTime set from RTC"));
     }
@@ -147,6 +168,7 @@ void RTC::syncFromRTC() {
   
   settimeofday(&tv, NULL);
   synced = true;
+  system_time_set = true;
   Serial.println(F("ESP32 system time successfully synced to PCF8523 RTC!"));
 }
 
@@ -181,6 +203,7 @@ bool RTC::getSystemTimeFromString(const char* timeStr) {
     }
     
     synced = true;
+    system_time_set = true;
     Serial.println(F("System time updated successfully!"));
     return true;
 }
@@ -209,6 +232,7 @@ bool RTC::sync_rtc_ntp() {
     return false;
   }
   synced = true;
+  system_time_set = true;
 
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   Serial.println(F("RTC successfully set via NTP!"));
