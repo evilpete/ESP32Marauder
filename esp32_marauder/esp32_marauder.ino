@@ -332,26 +332,35 @@ void print_reset_reason() {
 
 bool system_time_set = false;
 
-bool set_system_time(const struct tm& timeInfo) {
-    struct tm tmp = timeInfo;
-    time_t t = mktime(&tmp);
+bool set_system_time(struct tm *timeInfo) {
+     log_d("set_system_time timeInfo");
+    // struct tm tmp = timeInfo;
+    time_t t = mktime(timeInfo);
     if (t == (time_t)-1) {
         log_w("set_system_time: mktime failed");
         return false;
     }
     struct timeval now = { .tv_sec = t, .tv_usec = 0 };
     if (settimeofday(&now, NULL) != 0) {
-        log_w("settimeofday failed");
+        log_d("settimeofday failed");
         return false;
     }
     system_time_set = true;
+        log_d("settimeofday worked");
+
+    #ifdef HAS_RTC
+      log_d("set_system_time: calling rtc_obj.adjust_rtc");
+      rtc_obj.adjust_rtc(t);
+    #endif
+
     return true;
 }
 
 bool set_system_time(const String& time_str) {
     struct tm tm_info = {0};
+    log_d("set_system_time: '%s'", time_str.c_str());
     if (strptime(time_str.c_str(), "%F %T", &tm_info) != NULL) {
-        return set_system_time(tm_info);
+        return set_system_time(&tm_info);
     }
     log_d("set_system_time: invalid time_str '%s'", time_str.c_str());
     return false;
@@ -380,7 +389,7 @@ void setup()
     esp_spiram_init();
   #endif
 
-  Serial.begin(460800);  // 115200);
+  Serial.begin(115200);  // 460800);
 
   #ifdef HAS_ACT_LED
     pinMode(ACT_LED_PIN, OUTPUT);
@@ -483,10 +492,10 @@ void setup()
       // Do some SD stuff
       if(!sd_obj.initSD())
         Serial.println(F("SD Card NOT Supported"));
-      else:
+      else
         Serial.println(F("SD Card SUPPORTED"));
     #else
-        Serial.println(F("SD NOT Installed"));
+        Serial.println(F("SD NOT Configured"));
     #endif
   #endif
 
@@ -547,17 +556,6 @@ void setup()
 
   buffer_obj = Buffer();
 
-  #ifndef HAS_SIMPLEX_DISPLAY
-    #if defined(HAS_SD)
-      // Do some SD stuff
-      if(!sd_obj.initSD())
-        Serial.println(F("SD Card NOT Supported"));
-      else
-        Serial.println(F("SD Card SUPPORTED"));
-    #else
-        Serial.println(F("SD NOT Installed"));
-    #endif
-  #endif
 
   Serial.println("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
@@ -571,23 +569,26 @@ void setup()
   #ifdef HAS_RTC
     rtc_obj.RunSetup();
   #else
-    Serial.println(F("RTC NOT Installed"));
+    Serial.println(F("RTC NOT Configured"));
   #endif
 
+  /*
   #ifdef HAS_TEMP_SENSOR
     tsensor_obj.RunSetup();
   #else
-    Serial.println(F("TEMP_SENSOR NOT Installed"));
+    Serial.println(F("TEMP_SENSOR NOT Configured"));
   #endif
+  */
 
   evil_portal_obj.setup();
 
+  /*
   #if defined(HAS_CST820)
-      // github.com/evilpete/CST820
       Serial.println(F("CST820_touch.begin()")); Serial.flush();
       CST820_touch.begin(CST820_SDA, CST820_SCL, CST820_RST, CST820_INT);
       // delay(500);
   #endif
+  */
 
   #ifdef HAS_BATTERY
     battery_obj.RunSetup();

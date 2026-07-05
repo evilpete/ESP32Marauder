@@ -2633,7 +2633,7 @@ void  MenuFunctions::RunSetup()
     this->changeMenu(current_menu, true);
   });
   #ifdef HAS_RTC
-    this->addNodes(&wifiGeneralMenu, "Sync RTC with WiFi", TFTRED, 0, []() {
+    this->addNodes(&wifiGeneralMenu, "Sync RTC with WiFi", TFTPINK, 0, []() {
       rtc_obj.sync_rtc_ntp();
     });
   #endif

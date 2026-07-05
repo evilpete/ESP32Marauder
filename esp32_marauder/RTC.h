@@ -10,8 +10,12 @@
 #include <Arduino.h>
 #if defined(HAS_PCF8523) || defined(HAS_DS1307)
   #include "RTClib.h"
-#elif defined(HAS_BM8563)
-  #include "I2C_BM8563.h"
+// #elif defined(HAS_BM8563)
+//   #include "I2C_BM8563.h"
+#endif
+
+#ifndef NTPSERVER
+  #define NTPSERVER "pool.ntp.org"
 #endif
 
 #include <time.h>
@@ -42,8 +46,8 @@ class RTC  {    // RTC_PCF8523
       RTC_PCF8523 rtclock;
     #elif defined(HAS_DS1307)
       RTC_DS1307 rtclock;
-    #elif defined(HAS_BM8563)
-      RTC_BM8563 rtclock;
+//     #elif defined(HAS_BM8563)
+//       RTC_BM8563 rtclock;
     #endif
 
     bool setup();
@@ -52,7 +56,7 @@ class RTC  {    // RTC_PCF8523
     bool supported = false;
     String dt_string();
     String millis_dt_string();
-    bool sync_rtc_ntp();
+    bool sync_rtc_ntp(const char* ntpServer = NTPSERVER);
     bool synced = false;
 
 
@@ -63,12 +67,21 @@ class RTC  {    // RTC_PCF8523
     //  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
     //  };
 
-    const char* ntpServer = "pool.ntp.org";
+    // const char* ntpServer = NTPSERVER;
     const long gmtOffset_sec = 0;   // Always 0 for UTC
     const int daylightOffset_sec = 0;
     void setSystemTimeFromCompile();
     void syncFromRTC();
 
+    // template <typename T>
+    // void adjust_rtc(T& tm);
+
+    void adjust_rtc(const char *time_str);
+    void adjust_rtc(struct tm *timeInfo);
+    void adjust_rtc(const DateTime &dt);
+    void adjust_rtc(uint32_t t);
+
+    // helper for direct calls
     void adjust(const DateTime &dt) {
       rtclock.adjust(dt);
     }
@@ -77,6 +90,12 @@ class RTC  {    // RTC_PCF8523
     TwoWire *_wire;
 
 };
+
+// template <typename T>
+// void adjust_rtc(T tm) {
+//   rtclock.adjust(DateTime(tm));
+// }
+
 
 #endif // rtc_h
 

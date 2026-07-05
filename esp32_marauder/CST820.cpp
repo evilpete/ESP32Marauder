@@ -74,9 +74,10 @@ void CST820::begin(int8_t _sda, int8_t _scl, int8_t _rst, int8_t _int, uint32_t 
         _wire->begin(_sda, _scl, freq);
     } else {
         _wire->begin();
-        if (freq)
+        if (freq) {
           _wire->setClock(freq);
           log_i("CST820::begin setClock %d", freq);
+        }
     }
 
     _wire = &Wire;
@@ -289,4 +290,4 @@ uint8_t CST820::getTouch(uint16_t *x, uint16_t *y, uint16_t ignore) {
       return EVENT_TYPES[data.event];
   }
 
-#endif HAS_CST820
+#endif  // HAS_CST820

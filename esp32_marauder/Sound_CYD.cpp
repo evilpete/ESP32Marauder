@@ -11,6 +11,8 @@
 void Sound_CYD::RunSetup() {
   // Serial.println("Sound_CYD::RunSetup");
 
+  // setToneChannel(3)
+
   log_i("Sound_CYD::RunSetup: SOUND_PIN=%d RESOLUTION=%d, CHANNEL=%d", SOUND_PIN, LEDC_RESOLUTION, SND_CHANNEL);
   // duty_cycle = DUTY;
 
@@ -42,6 +44,7 @@ void Sound_CYD::RunSetup() {
 
 void Sound_CYD::gen_tone(uint32_t f, uint32_t t) {
     // log_d("Sound_CYD::gen_tone f=%d t=%d SND_ID=%d", f, t, SND_ID);
+    // tone(SOUND_PIN,ef, t)
     ledcWriteTone(SND_ID, f);
     delay(t);
 

@@ -155,7 +155,7 @@ uint8_t bl_level_idx = 9; // default brightness
   #endif
 
   void brightnessInit() {
-      log_i("flipperLED::RunSetup: TFT_BL=%d", TFT_BL);
+      log_d("flipperLED::RunSetup: TFT_BL=%d", TFT_BL);
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
       bl_prefs.begin("backlight", false);

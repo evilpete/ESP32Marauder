@@ -315,8 +315,9 @@
       #define HAS_TOUCH
       #define HAS_LED
         #define HAS_FLIPPER_LED
-      // #define HAS_RTC
-      //   #define HAS_PCF8523         // i2c real-time clock (RTC)
+      #define HAS_RTC
+         #define HAS_PCF8523         // i2c real-time clock (RTC)
+         // #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BT
       #define HAS_BUTTONS
       #define HAS_SCREEN
@@ -501,8 +502,9 @@
     #ifdef MARAUDER_JC2432W328C
       #define HAS_TOUCH
         #define HAS_CST820      // i2c self-capacitive touch controller
-       #define HAS_RTC
+        #define HAS_RTC
           #define HAS_PCF8523         // i2c real-time clock (RTC)
+          // #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_LED
         #define HAS_FLIPPER_LED
       //#define FLIPPER_ZERO_HAT
@@ -510,7 +512,7 @@
       // #define HAS_BT_REMOTE
       #define HAS_BUTTONS
       #define HAS_SCREEN
-      #define HAS_FULL_SCREEN
+        #define HAS_FULL_SCREEN
       #define HAS_SD
       #define USE_SD
       // #define HAS_GPS
@@ -596,12 +598,12 @@
       #define HAS_BT
       #define HAS_BATTERY
         #define BATTERY_ADC_PIN 5
-      //#define HAS_RTC
+      #define HAS_RTC
         // #define HAS_PCF8523         // i2c real-time clock (RTC)
-       // #define HAS_DS1307         // i2c real-time clock (RTC)
+       #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BUTTONS
       #define HAS_SCREEN
-      #define HAS_FULL_SCREEN
+        #define HAS_FULL_SCREEN
       #define HAS_SDMMC
         #define HAS_SD
         #define USE_SD
@@ -609,10 +611,10 @@
       //   #define USE_MMC_WRITE_SECTORS
       #define HAS_CYD_TOUCH
       #define ADJ_CPUFREQ
-      #define HAS_AW9364   //  1-wire Dimming LED Driver 
       #define HAS_PSRAM
-        #define BK_LIGHT_PIN 38
-        #define TFT_BL 38
+      #define HAS_AW9364   //  1-wire Dimming LED Driver 
+      #define TFT_BL 38
+      // #define BK_LIGHT_PIN 38
       // #define HAS_GPS
       #define HAS_CYD_PORTRAIT
       #define HAS_NIMBLE_2
