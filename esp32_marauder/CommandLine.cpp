@@ -228,91 +228,91 @@ void CommandLine::runCommand(String input) {
     Serial.println(FPSTR(HELP_HEAD));
     Serial.println(FPSTR(HELP_CH_CMD));
     Serial.println(FPSTR(HELP_SETTINGS_CMD));
-    Serial.println(FPSTR(HELP_CLEARAP_CMD_A);
-    Serial.println(FPSTR(HELP_REBOOT_CMD);
-    Serial.println(FPSTR(HELP_UPDATE_CMD_A);
-    Serial.println(FPSTR(HELP_LS_CMD);
-    Serial.println(FPSTR(HELP_LED_CMD);
-    Serial.println(FPSTR(HELP_GPS_DATA_CMD);
-    Serial.println(FPSTR(HELP_GPS_CMD);
-    Serial.println(FPSTR(HELP_NMEA_CMD);
-    Serial.println(FPSTR(HELP_GPS_POI_CMD);
-    Serial.println(FPSTR(HELP_GPS_TRACKER_CMD);
-    Serial.println(FPSTR(HELP_SHUTDOWN_CMD);
-    Serial.println(FPSTR(HELP_NTP_SYNC);
-    Serial.println(FPSTR(HELP_DATE);
-    Serial.println(FPSTR(HELP_SETDATE);
+    Serial.println(FPSTR(HELP_CLEARAP_CMD_A));
+    Serial.println(FPSTR(HELP_REBOOT_CMD));
+    Serial.println(FPSTR(HELP_UPDATE_CMD_A));
+    Serial.println(FPSTR(HELP_LS_CMD));
+    Serial.println(FPSTR(HELP_LED_CMD));
+    Serial.println(FPSTR(HELP_GPS_DATA_CMD));
+    Serial.println(FPSTR(HELP_GPS_CMD));
+    Serial.println(FPSTR(HELP_NMEA_CMD));
+    Serial.println(FPSTR(HELP_GPS_POI_CMD));
+    Serial.println(FPSTR(HELP_GPS_TRACKER_CMD));
+    Serial.println(FPSTR(HELP_SHUTDOWN_CMD));
+    Serial.println(FPSTR(HELP_NTP_SYNC));
+    Serial.println(FPSTR(HELP_DATE));
+    Serial.println(FPSTR(HELP_SETDATE));
 
-    Serial.println(FPSTR(HELP_RESCANSD_CMD);
+    Serial.println(FPSTR(HELP_RESCANSD_CMD));
 
     #ifdef MSC_SHARE
-      Serial.println(FPSTR(HELP_MSC_CMD);
+      Serial.println(FPSTR(HELP_MSC_CMD));
     #endif
     #ifdef ADJ_CPUFREQ
-      Serial.println(FPSTR(HELP_CPUFREQ_CMD);
+      Serial.println(FPSTR(HELP_CPUFREQ_CMD));
     #endif
-    Serial.println(FPSTR(HELP_RESET_REASON_CMD);
+    Serial.println(FPSTR(HELP_RESET_REASON_CMD));
     
     // WiFi sniff/scan
-    Serial.println(FPSTR(HELP_EVIL_PORTAL_CMD);
-    Serial.println(FPSTR(HELP_KARMA_CMD);
-    Serial.println(FPSTR(HELP_PACKET_COUNT_CMD);
-    Serial.println(FPSTR(HELP_PING_CMD);
-    Serial.println(FPSTR(HELP_ARP_SCAN_CMD);
-    Serial.println(FPSTR(HELP_PORT_SCAN_CMD);
-    Serial.println(FPSTR(HELP_SIGSTREN_CMD);
-    Serial.println(FPSTR(HELP_SCAN_ALL_CMD);
-    //Serial.println(FPSTR(HELP_SCANSTA_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_RAW_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_BEACON_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_PROBE_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_PWN_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_PINESCAN_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_MULTISSID_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_DEAUTH_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_PMKID_CMD);
-    Serial.println(FPSTR(HELP_SNIFF_SAE_CMD);
-    Serial.println(FPSTR(HELP_STOPSCAN_CMD);
+    Serial.println(FPSTR(HELP_EVIL_PORTAL_CMD));
+    Serial.println(FPSTR(HELP_KARMA_CMD));
+    Serial.println(FPSTR(HELP_PACKET_COUNT_CMD));
+    Serial.println(FPSTR(HELP_PING_CMD));
+    Serial.println(FPSTR(HELP_ARP_SCAN_CMD));
+    Serial.println(FPSTR(HELP_PORT_SCAN_CMD));
+    Serial.println(FPSTR(HELP_SIGSTREN_CMD));
+    Serial.println(FPSTR(HELP_SCAN_ALL_CMD));
+    //Serial.println(FPSTR(HELP_SCANSTA_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_RAW_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_BEACON_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_PROBE_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_PWN_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_PINESCAN_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_MULTISSID_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_DEAUTH_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_PMKID_CMD));
+    Serial.println(FPSTR(HELP_SNIFF_SAE_CMD));
+    Serial.println(FPSTR(HELP_STOPSCAN_CMD));
     #ifdef HAS_GPS
-      Serial.println(FPSTR(HELP_WARDRIVE_CMD);
-      Serial.println(FPSTR(HELP_WARDRIVEPOI_CMD);
+      Serial.println(FPSTR(HELP_WARDRIVE_CMD));
+      Serial.println(FPSTR(HELP_WARDRIVEPOI_CMD));
     #endif
-    Serial.println(FPSTR(HELP_MAC_TRACK_CMD);
+    Serial.println(FPSTR(HELP_MAC_TRACK_CMD));
     
     // WiFi attack
-    Serial.println(FPSTR(HELP_ATTACK_CMD);
+    Serial.println(FPSTR(HELP_ATTACK_CMD));
     
     // WiFi Aux
-    Serial.println(FPSTR(HELP_INFO_CMD);
-    Serial.println(FPSTR(HELP_LIST_AP_CMD_A);
-    Serial.println(FPSTR(HELP_LIST_AP_CMD_B);
-    Serial.println(FPSTR(HELP_LIST_AP_CMD_C);
-    Serial.println(FPSTR(HELP_LIST_AP_CMD_D);
-    Serial.println(FPSTR(HELP_LIST_AP_CMD_E);
-    Serial.println(FPSTR(HELP_LIST_AP_CMD_F);
-    Serial.println(FPSTR(HELP_SEL_CMD_A);
-    Serial.println(FPSTR(HELP_SSID_CMD_A);
-    Serial.println(FPSTR(HELP_SSID_CMD_B);
-    Serial.println(FPSTR(HELP_SAVE_CMD);
-    Serial.println(FPSTR(HELP_LOAD_CMD);
-    Serial.println(FPSTR(HELP_SORT_CMD);
-    Serial.println(FPSTR(HELP_JOIN_CMD);
-    Serial.println(FPSTR(HELP_MAC_CMD_A);
-    Serial.println(FPSTR(HELP_MAC_CMD_B);
-    Serial.println(FPSTR(HELP_MAC_CMD_C);
-    Serial.println(FPSTR(HELP_MAC_CMD_D);
-    Serial.println(FPSTR(HELP_ADD_CMD_A);
-    Serial.println(FPSTR(HELP_ADD_CMD_B);
+    Serial.println(FPSTR(HELP_INFO_CMD));
+    Serial.println(FPSTR(HELP_LIST_AP_CMD_A));
+    Serial.println(FPSTR(HELP_LIST_AP_CMD_B));
+    Serial.println(FPSTR(HELP_LIST_AP_CMD_C));
+    Serial.println(FPSTR(HELP_LIST_AP_CMD_D));
+    Serial.println(FPSTR(HELP_LIST_AP_CMD_E));
+    Serial.println(FPSTR(HELP_LIST_AP_CMD_F));
+    Serial.println(FPSTR(HELP_SEL_CMD_A));
+    Serial.println(FPSTR(HELP_SSID_CMD_A));
+    Serial.println(FPSTR(HELP_SSID_CMD_B));
+    Serial.println(FPSTR(HELP_SAVE_CMD));
+    Serial.println(FPSTR(HELP_LOAD_CMD));
+    Serial.println(FPSTR(HELP_SORT_CMD));
+    Serial.println(FPSTR(HELP_JOIN_CMD));
+    Serial.println(FPSTR(HELP_MAC_CMD_A));
+    Serial.println(FPSTR(HELP_MAC_CMD_B));
+    Serial.println(FPSTR(HELP_MAC_CMD_C));
+    Serial.println(FPSTR(HELP_MAC_CMD_D));
+    Serial.println(FPSTR(HELP_ADD_CMD_A));
+    Serial.println(FPSTR(HELP_ADD_CMD_B));
 
     // Bluetooth sniff/scan
     #ifdef HAS_BT
-      Serial.println(FPSTR(HELP_BT_SNIFF_CMD);
-      Serial.println(FPSTR(HELP_BT_SPAM_CMD);
-      Serial.println(FPSTR(HELP_BT_SPOOFAT_CMD);
-      Serial.println(FPSTR(HELP_BT_SKIM_CMD);
+      Serial.println(FPSTR(HELP_BT_SNIFF_CMD));
+      Serial.println(FPSTR(HELP_BT_SPAM_CMD));
+      Serial.println(FPSTR(HELP_BT_SPOOFAT_CMD));
+      Serial.println(FPSTR(HELP_BT_SKIM_CMD));
     #endif
-    Serial.println(FPSTR(HELP_BRIGHTNESS_CMD);
-    Serial.println(FPSTR(HELP_FOOT);
+    Serial.println(FPSTR(HELP_BRIGHTNESS_CMD));
+    Serial.println(FPSTR(HELP_FOOT));
     return;
   }
 

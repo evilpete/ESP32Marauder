@@ -1103,7 +1103,7 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
-  // #ifdef HAS_RTC
+   #ifdef HAS_RTC
     if((system_time_set) && (cur_millis & (1 << 12))) {
       char timeBuffer[16];
       struct tm timeinfo;
@@ -1112,47 +1112,48 @@ void MenuFunctions::updateStatusBar()
 
       // tic = this->initTime;
 
-      if(!getLocalTime(&timeinfo)){
+      if(getLocalTime(&timeinfo)){
           // Serial.println(F("Failed to obtain time"));
-          return;
+
+        //  "%H:%M"
+        strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+
+        int tx, ty, tw, th;
+        tw = (5 * 8) - 4;
+
+        #ifdef HAS_BATTERY
+          if (battery_obj.supported) {
+            th = 15;
+            bg_color = TFT_BLACK;
+          } else
+        #endif
+          th = 0;
+
+        #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
+          tx = TFT_HEIGHT - tw;
+          // ty = TFT_WIDTH - th; // Bottom Right
+          ty = th;   // Near Top Right
+        #else
+          tx = TFT_WIDTH - tw;
+          // ty = TFT_HEIGHT - th;    // Bottom Right
+          ty = th;   // Near Top Right
+        #endif
+
+        // Serial.print("time: ");
+        // Serial.println(timeBuffer);
+        // Serial.println((String) tx + " : " + (String) ty);
+
+        display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
+        display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
+        display_obj.tft.drawString(timeBuffer, tx , ty , 2);
+
+        display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
+      } else {
+      // system_time_set = false;
       }
-
-      //  "%H:%M"
-      strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
-
-      int tx, ty, tw, th;
-      tw = (5 * 8) - 4;
-
-      #ifdef HAS_BATTERY
-        if (battery_obj.supported) {
-          th = 15;
-          bg_color = TFT_BLACK;
-        } else
-      #endif
-        th = 0;
-
-      #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
-        tx = TFT_HEIGHT - tw;
-        // ty = TFT_WIDTH - th; // Bottom Right
-        ty = th;   // Near Top Right
-      #else
-        tx = TFT_WIDTH - tw;
-        // ty = TFT_HEIGHT - th;    // Bottom Right
-        ty = th;   // Near Top Right
-      #endif
-
-      // Serial.print("time: ");
-      // Serial.println(timeBuffer);
-      // Serial.println((String) tx + " : " + (String) ty);
-
-      display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
-      display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
-      display_obj.tft.drawString(timeBuffer, tx , ty , 2);
-
-      display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
     }
 
-  // #endif  // HAS_RTC
+   #endif  // HAS_RTC
 
   // RAM Stuff
   wifi_scan_obj.free_ram = String(esp_get_free_heap_size());

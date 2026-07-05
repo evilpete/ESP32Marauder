@@ -60,7 +60,7 @@ void RTC::RunSetup() {
 
   if (!supported) {
     log_w("Couldn't find RTC");
-    // return supported;
+     return;
   }
 
   setup();
