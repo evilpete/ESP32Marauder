@@ -379,6 +379,14 @@ void setup()
     digitalWrite(PWR_EN_PIN, HIGH);
   #endif
 
+  #if defined(HAS_FLIPPER_LED) && defined(G_PIN)
+   pinMode(G_PIN, OUTPUT);
+   digitalWrite(G_PIN, LOW);
+  #elif defined(TFT_BL)
+    pinMode(POWER_HOLD_PIN, OUTPUT);
+    digitalWrite(POWER_HOLD_PIN, HIGH);
+  #endif
+
   randomSeed(esp_random());
 
   #ifndef DEVELOPER

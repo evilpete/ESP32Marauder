@@ -598,7 +598,7 @@
       #define HAS_BT
       #define HAS_BATTERY
         #define BATTERY_ADC_PIN 5
-      #define HAS_RTC
+       #define HAS_RTC
         // #define HAS_PCF8523         // i2c real-time clock (RTC)
        #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BUTTONS
@@ -3579,6 +3579,20 @@
 
   #if !defined(HAS_FLIPPER_LED) || !defined(HAS_XIAO_LED) || !defined(HAS_STICKC_LED) || !defined(HAS_NEOPIXEL_LED)
     #undef HAS_LED
+  #endif
+
+  #if defined(MSC_SHARE) 
+    #if !defined(ARDUINO_USB_MODE) || ARDUINO_USB_MODE == 1 || !defined(SOC_USB_OTG_SUPPORTED)
+      undef MSC_SHARE
+      #warning "MSC_SHARE disabled :   USB is not  in OTG mode"
+    #endif
+  #endif
+
+  #if defined(CYD_SOUND) && !defined(SOUND_PIN)
+    #ifdef CYD_SOUND
+      #warning "CYD_SOUND disabled :  SOUND_PIN not set"
+      #undef CYD_SOUND
+    #endif
   #endif
 
 

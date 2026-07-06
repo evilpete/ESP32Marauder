@@ -92,7 +92,7 @@ bool RTC::setup() {
   rtclock.start();
 
   // log_d(dt_string());
-  Serial.println(dt_string());
+  // Serial.println(dt_string());
 
   return supported;
 }
@@ -328,8 +328,11 @@ String RTC::dt_string() {
 
   char format[] = "%Y-%m-%d %H:%M:%S";  // %F %T";
 
+  Serial.print("now.toString  ");
   Serial.println(now.toString("%F %T"));
   Serial.println(now.toString(format));
+  Serial.flush();
+
 
 
   return now.toString(format);   // one I2C read

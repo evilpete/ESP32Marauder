@@ -1,7 +1,7 @@
 
 #include "configs.h"
 
-#if defined(MSC_SHARE)
+#if defined(MSC_SHARE) && defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 0
 
 #include "MSC_Share.h"
 #include "esp_task_wdt.h"

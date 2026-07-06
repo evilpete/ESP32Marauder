@@ -3057,24 +3057,33 @@ void  MenuFunctions::RunSetup()
   this->addNodes(&adminMenu, text09, TFTLIGHTGREY, 0, [this]() {
     this->changeMenu(adminMenu.parentMenu, true);
   });
-#ifdef HAS_SD
+
+#if defined(HAS_SD) || defined(USE_SD)
   this->addNodes(&adminMenu, "Rescan SD", TFTPINK, SD_UPDATE, [this]() {
     this->changeMenu(&adminMenu, true);
     sd_obj.initSD();
   });
+#endif
     adminSubMenu.parentMenu = &adminMenu;
     this->addNodes(&adminSubMenu, text09, TFTLIGHTGREY, 0, [this]() {
       this->changeMenu(adminSubMenu.parentMenu, true);
     });
-#if defined(MSC_SHARE)
+#if defined(MSC_SHARE) && defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 0
 
     this->addNodes(&adminMenu, "Share SD", TFTCYAN, SD_UPDATE, [this]() {
         this->changeMenu(&adminSubMenu, true);
         display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
+
+        if (!sd_obj.supported) {
+            display_obj.tft.drawCentreString("SD not Connected", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+            Serial.println(F("Error: SD not Connected"));
+            return;
+         }
+
         if (MSC_Share_obj.msc_started) {
           display_obj.tft.drawCentreString("Share Already Running", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
           Serial.println(F("Share Already Running"));
-          return;
+        return;
         }
         MSC_Share_obj.RunSetup();
         display_obj.tft.drawCentreString("USB Share Started", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
@@ -3146,8 +3155,7 @@ void  MenuFunctions::RunSetup()
         display_obj.tft.drawCentreString("USB Share Stop", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
     });
 
-  #endif // MSC_SHARE
-#endif // HAS_SD
+#endif // MSC_SHARE
   #ifdef HAS_GPS
     if ( !gps_obj.gps_enabled)
       this->addNodes(&saveFileMenu, "Probe GPS", TFTSKYBLUE, SD_UPDATE, [this]() {
