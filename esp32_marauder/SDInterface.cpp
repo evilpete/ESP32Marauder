@@ -63,7 +63,7 @@ bool  SDInterface::initSD() {
         this->spiExt = new SPIClass(FSPI);
       #endif
       Serial.println(F("Using external SPI configuration..."));
-      Serial.printf("SPI_SCK=%d SPI_MISO=%d SPI_MOSI=%d SD_CS=%d\n", SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
+      log_d("SPI_SCK=%d SPI_MISO=%d SPI_MOSI=%d SD_CS=%d\n", SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
       this->spiExt->begin(SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
       delay(10);
 

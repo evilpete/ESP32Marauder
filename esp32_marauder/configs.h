@@ -315,8 +315,8 @@
       #define HAS_TOUCH
       #define HAS_LED
         #define HAS_FLIPPER_LED
-      #define HAS_RTC
-         #define HAS_PCF8523         // i2c real-time clock (RTC)
+      // #define HAS_RTC
+        //  #define HAS_PCF8523         // i2c real-time clock (RTC)
          // #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BT
       #define HAS_BUTTONS
@@ -719,7 +719,13 @@
     #if defined(HAS_PCF8523) || defined(HAS_DS1307)
         #define HAS_RTC         // i2c real-time clock (RTC)
     #endif
+    #ifndef GMTOFFSET_SEC
+      #define GMTOFFSET_SEC 0  // -8 hours for Pacific Time
+    #endif
 
+    #ifndef DAYLIGHTOFFSET_SEC
+      #define DAYLIGHTOFFSET_SEC 0
+    #endif
 
     //// POWER MANAGEMENT
     #ifdef HAS_PWR_MGMT

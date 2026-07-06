@@ -1103,7 +1103,7 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
-   #ifdef HAS_RTC
+   // #ifdef HAS_RTC
     if((system_time_set) && (cur_millis & (1 << 12))) {
       char timeBuffer[16];
       struct tm timeinfo;
@@ -1153,7 +1153,7 @@ void MenuFunctions::updateStatusBar()
       }
     }
 
-   #endif  // HAS_RTC
+   // #endif  // HAS_RTC
 
   // RAM Stuff
   wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
@@ -1643,7 +1643,10 @@ void  MenuFunctions::RunSetup()
 
   // Bluetooth menu stuff
   bluetoothSnifferMenu.list = new LinkedList<MenuNode>();
+
+#ifndef NO_BT_SPAM
   bluetoothAttackMenu.list = new LinkedList<MenuNode>();
+#endif
 
   // Settings stuff
   generateSSIDsMenu.list = new LinkedList<MenuNode>();
@@ -1698,7 +1701,9 @@ void  MenuFunctions::RunSetup()
   bluetoothSnifferMenu.name = text_table1[23];
 
   bluetoothSnifferMenu.name = text_table1[23];
+#ifndef NO_BT_SPAM
   bluetoothAttackMenu.name = "Bluetooth Attacks";
+#endif
   generateSSIDsMenu.name = text_table1[27];
   clearSSIDsMenu.name = text_table1[28];
   clearAPsMenu.name = text_table1[29];
@@ -2633,11 +2638,31 @@ void  MenuFunctions::RunSetup()
     wifi_scan_obj.StartScan(WIFI_SCAN_OFF, TFT_RED);
     this->changeMenu(current_menu, true);
   });
-  #ifdef HAS_RTC
-    this->addNodes(&wifiGeneralMenu, "Sync RTC with WiFi", TFTPINK, 0, []() {
-      rtc_obj.sync_rtc_ntp();
+  // #ifdef HAS_RTC
+    this->addNodes(&wifiGeneralMenu, "NTP Sync Tine", TFTPINK, 0, []() {
+      #ifdef HAS_RTC
+        log_d("rtc_obj.supported %d", rtc_obj.supported);
+        if(rtc_obj.supported) {
+          rtc_obj.sync_rtc_ntp();
+        } else
+      #endif //  HAS_RTC
+        configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
+
+        struct tm timeinfo;
+        if (getLocalTime(&timeinfo)) {
+          char timeBuffer[64];
+          system_time_set = true;
+          strftime(timeBuffer, sizeof(timeBuffer), "%F %T", &timeinfo);
+          display_obj.tft.drawCentreString(timeBuffer, TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          Serial.println(&timeinfo, "%F %T");
+        } else {
+          display_obj.tft.drawCentreString("Connection Failed", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          log_d("getLocalTime Fail");
+       }
+
+
     });
-  #endif
+  // #endif
 
 
   // Menu for generating and setting MAC addrs for AP and STA
@@ -2732,10 +2757,11 @@ void  MenuFunctions::RunSetup()
   this->addNodes(&bluetoothMenu, text_table1[31], TFTYELLOW, SNIFFERS, [this]() {
     this->changeMenu(&bluetoothSnifferMenu, true);
   });
+#ifndef NO_BT_SPAM
   this->addNodes(&bluetoothMenu, "Bluetooth Attacks", TFTRED, ATTACKS, [this]() {
     this->changeMenu(&bluetoothAttackMenu, true);
   });
-
+#endif
   // Build bluetooth sniffer Menu
   bluetoothSnifferMenu.parentMenu = &bluetoothMenu; // Second Menu is third menu parent
   this->addNodes(&bluetoothSnifferMenu, text09, TFTLIGHTGREY, 0, [this]() {
@@ -2809,11 +2835,13 @@ void  MenuFunctions::RunSetup()
     this->changeMenu(&foxHuntMenu, true);
   });
 
+#ifndef NO_BT_SPAM
   // Bluetooth Attack menu
   bluetoothAttackMenu.parentMenu = &bluetoothMenu; // Second Menu is third menu parent
   this->addNodes(&bluetoothAttackMenu, text09, TFTLIGHTGREY, 0, [this]() {
     this->changeMenu(bluetoothAttackMenu.parentMenu, true);
   });
+
   this->addNodes(&bluetoothAttackMenu, "Sour Apple", TFTGREEN, DEAUTH_SNIFF, [this]() {
     display_obj.clearScreen();
     this->drawStatusBar();
@@ -2850,6 +2878,7 @@ void  MenuFunctions::RunSetup()
     wifi_scan_obj.StartScan(BT_ATTACK_SPAM_ALL, TFT_MAGENTA);
   });
 
+#endif
 #endif
 
   //#ifndef HAS_ILI9341
@@ -3199,11 +3228,31 @@ void  MenuFunctions::RunSetup()
       });
     #endif // ADJ_CPUFREQ
 
-    #ifdef HAS_RTC
-      this->addNodes(&adminMenu, "Sync RTC with WiFi", TFTPINK, SETTINGS, []() {
-        rtc_obj.sync_rtc_ntp();
-      });
-    #endif
+      this->addNodes(&adminMenu, "Sync RTC with WiFi", TFTPINK, SETTINGS, [this]() {
+        this->changeMenu(&adminSubMenu, true);
+        display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
+
+        #ifdef HAS_RTC
+          log_d("rtc_obj.supported %d", rtc_obj.supported);
+          if(rtc_obj.supported) {
+            rtc_obj.sync_rtc_ntp();
+          } else
+        #endif //  HAS_RTC
+          configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
+
+        struct tm timeinfo;
+        if (getLocalTime(&timeinfo)) {
+          char timeBuffer[64];
+          system_time_set = true;
+          strftime(timeBuffer, sizeof(timeBuffer), "%F %T", &timeinfo);
+          display_obj.tft.drawCentreString(timeBuffer, TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          Serial.println(&timeinfo, "%F %T");
+        } else {
+          display_obj.tft.drawCentreString("Connection Failed", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          log_d("getLocalTime Fail");
+       }
+
+    });
 
     this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
       this->changeMenu(&adminSubMenu, true);

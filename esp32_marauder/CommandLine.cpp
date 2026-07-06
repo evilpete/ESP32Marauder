@@ -307,7 +307,9 @@ void CommandLine::runCommand(String input) {
     // Bluetooth sniff/scan
     #ifdef HAS_BT
       Serial.println(FPSTR(HELP_BT_SNIFF_CMD));
+#ifndef  NO_BT_SPAM
       Serial.println(FPSTR(HELP_BT_SPAM_CMD));
+#endif
       Serial.println(FPSTR(HELP_BT_SPOOFAT_CMD));
       Serial.println(FPSTR(HELP_BT_SKIM_CMD));
     #endif
@@ -1134,6 +1136,7 @@ void CommandLine::runCommand(String input) {
         #endif
       }
     }
+#ifndef NO_BT_SPAM
     else if (cmd_args.get(0) == BT_SPAM_CMD) {
       int bt_type_sw = this->argSearch(&cmd_args, "-t");
       if (bt_type_sw != -1) {
@@ -1180,6 +1183,7 @@ void CommandLine::runCommand(String input) {
         #endif
       }
     }
+#endif
     // Bluetooth CC Skimmer scan
     else if (cmd_args.get(0) == BT_SKIM_CMD) {
       #ifdef HAS_BT
@@ -1870,10 +1874,24 @@ void CommandLine::runCommand(String input) {
       return;
     }
   #ifdef HAS_RTC
-    rtc_obj.sync_rtc_ntp();
-  #else
-    configTime(0, 0, "pool.ntp.org");
+    log_d("rtc_obj.supported %d", rtc_obj.supported);
+    if(rtc_obj.supported) {
+      rtc_obj.sync_rtc_ntp();
+    } else
   #endif //  HAS_RTC
+    configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
+
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+        char timeBuffer[64];
+        system_time_set = true;
+        strftime(timeBuffer, sizeof(timeBuffer), "%F %T", &timeinfo);
+        Serial.println(&timeinfo, "%F %T");
+    } else {
+        log_w("getLocalTime Fail");
+        perror("getLocalTime");
+    }
+
   }
 
   // "+%Y-%m-%d %HH:%MM:SS"

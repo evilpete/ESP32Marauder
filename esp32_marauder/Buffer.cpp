@@ -40,7 +40,7 @@ void Buffer::createFile(const char* name, bool is_pcap, bool is_gpx) {
   char buf[64];   // LFN can be up to 255 chars on FatFs
 
   // With timestamp if system time is set:
-  if (system_time_set) {
+  if (system_time_set && settings_obj.loadSetting<bool>("Timestamp PCAP files")) {
     struct tm timeinfo;
     getLocalTime(&timeinfo);
     if (is_pcap) {
