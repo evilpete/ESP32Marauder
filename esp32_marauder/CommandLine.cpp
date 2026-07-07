@@ -242,6 +242,7 @@ void CommandLine::runCommand(String input) {
     Serial.println(FPSTR(HELP_NTP_SYNC));
     Serial.println(FPSTR(HELP_DATE));
     Serial.println(FPSTR(HELP_SETDATE));
+    Serial.println(FPSTR(HELP_MAX_WIFI_TX));
 
     Serial.println(FPSTR(HELP_RESCANSD_CMD));
 
@@ -1879,13 +1880,12 @@ void CommandLine::runCommand(String input) {
       rtc_obj.sync_rtc_ntp();
     } else
   #endif //  HAS_RTC
+    log_d("configTime: GMTOFFSET_SEC=%d DAYLIGHTOFFSET_SEC=%d", GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC);
     configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
 
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
-        char timeBuffer[64];
         system_time_set = true;
-        strftime(timeBuffer, sizeof(timeBuffer), "%F %T", &timeinfo);
         Serial.println(&timeinfo, "%F %T");
     } else {
         log_w("getLocalTime Fail");
@@ -1921,6 +1921,25 @@ void CommandLine::runCommand(String input) {
       Serial.println(F("expected format: YYYY-MM-DD HH:MM:SS"));
     }
   }
+
+  else if (cmd_args.get(0) == MAX_WIFI_TX_CMD) {
+    int8_t txpower = 20;
+    extern int8_t wifi_power;
+    if (cmd_args.size() > 1) {
+        txpower = cmd_args.get(1).toInt();
+    }
+    if (txpower < 8 || txpower > 84) {
+        Serial.println(F("Invalid level: use X value between 8>84"));
+    }
+
+    wifi_power = txpower;
+    esp_wifi_set_max_tx_power(txpower);
+
+    if (txpower == 80) {
+        Serial.println(F("Set to default level: 80 (20dBm)"));
+    }
+  }
+
 
   // SSID stuff
   else if (cmd_args.get(0) == SSID_CMD) {

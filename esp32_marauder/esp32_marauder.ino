@@ -155,7 +155,10 @@ CommandLine cli_obj;
   MenuFunctions menu_function_obj;
 #endif
 
-#if defined(HAS_SD) && !defined(HAS_C5_SD)
+#ifdef HAS_C5_SD
+  SPIClass sharedSPI(SPI);
+  SDInterface sd_obj = SDInterface(&sharedSPI, SD_CS);
+#elif defined(HAS_SD) && !defined(HAS_C5_SD)
   SDInterface sd_obj;
 #endif
 
@@ -300,10 +303,6 @@ uint32_t currentTime  = 0;
   }
 // #endif  // SHUTDOWN
 
-#ifdef HAS_C5_SD
-  SPIClass sharedSPI(SPI);
-  SDInterface sd_obj = SDInterface(&sharedSPI, SD_CS);
-#endif
 
 //  Converts reason type to a C string.
 //  Type is located in /tools/sdk/esp32/include/esp_system/include/esp_system.h
@@ -379,12 +378,17 @@ void setup()
     digitalWrite(PWR_EN_PIN, HIGH);
   #endif
 
+  // #include "USB.h"
+  // USB.manufacturerName("ESP32_Marauder");
+  // USB.productName(HARDWARE_NAME);
+  // USB.serialNumber("12345678"); 
+
   #if defined(HAS_FLIPPER_LED) && defined(G_PIN)
    pinMode(G_PIN, OUTPUT);
    digitalWrite(G_PIN, LOW);
   #elif defined(TFT_BL)
-    pinMode(POWER_HOLD_PIN, OUTPUT);
-    digitalWrite(POWER_HOLD_PIN, HIGH);
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);
   #endif
 
   randomSeed(esp_random());
@@ -393,7 +397,7 @@ void setup()
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
 
-  #ifndef HAS_IDF_3
+  #if defined(HAS_IDF_3) && defined(HAS_PSRAM)
     esp_spiram_init();
   #endif
 
@@ -430,7 +434,7 @@ void setup()
   #endif
 
 
-  #if BATTERY_ANALOG_ON == 1
+  #if BATTERY_ANALOG_ON == 1 && defined(BATTERY_PIN) && defined(CHARGING_PIN)
     pinMode(BATTERY_PIN, OUTPUT);
     pinMode(CHARGING_PIN, INPUT);
   #endif
@@ -454,20 +458,8 @@ void setup()
   //  delay(10);
 
   #ifdef CYD_SOUND
-      sound_obj.RunSetup();
+    sound_obj.RunSetup();
   #endif
-
-  /*
-  #ifdef HAS_FLIPPER_LED
-    led_obj.RunSetup();
-  #elif defined(XIAO_ESP32_S3)
-    xiao_led.RunSetup();
-  #elif defined(MARAUDER_M5STICKC)
-    stickc_led.RunSetup();
-  #elif defined(HAS_NEOPIXEL_LED)
-    led_obj.RunSetup();
-  #endif
-  */
 
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
@@ -562,8 +554,16 @@ void setup()
     settings_obj.createDefaultSettings(SPIFFS);
   }
 
+
   buffer_obj = Buffer();
 
+  #ifndef HAS_SIMPLEX_DISPLAY
+    #if defined(HAS_SD)
+      // Do some SD stuff
+      if(!sd_obj.initSD())
+        Serial.println(F("SD Card NOT Supported"));
+    #endif
+  #endif
 
   Serial.println("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
@@ -603,7 +603,8 @@ void setup()
   #endif
 
   #ifdef HAS_BATTERY
-    battery_obj.battery_level = battery_obj.getBatteryLevel();
+    if (battery_obj.supported)
+      battery_obj.battery_level = battery_obj.getBatteryLevel();
   #endif
 
   // Do some LED stuff
@@ -654,10 +655,6 @@ void setup()
 // #ifdef defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL
 //     gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK);
 // #endif
-
-#ifdef I2C_FREQ
-  Wire.setClock(I2C_FREQ);           // reset I2C_FREQ incase it was chamged
-#endif
 
     getBrightnessLevel();
 

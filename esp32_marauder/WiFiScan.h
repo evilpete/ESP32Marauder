@@ -19,6 +19,13 @@
     extern MSC_Share MSC_Share_obj;
 #endif
 
+
+//  WIFI_POWER_21dBm = 84,      // 21dBm
+//  WIFI_POWER_20_5dBm = 82,    // 20.5dBm
+//  WIFI_POWER_20dBm = 80,      // 20dBm
+
+int8_t wifi_power = 80;
+
 /*#ifdef HAS_IDF_3
   extern "C" {
     #include "esp_netif.h"
@@ -27,6 +34,7 @@
 #endif*/
 
 //#include <WiFi.h>
+#include <WiFiGeneric.h>
 #include <ESP32Ping.h>
 #include "EvilPortal.h"
 #include <math.h>

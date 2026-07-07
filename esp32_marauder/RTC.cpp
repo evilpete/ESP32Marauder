@@ -60,7 +60,10 @@ void RTC::RunSetup() {
 
   if (!supported) {
     log_w("Couldn't find RTC");
-     return;
+    // #if defined(I2C_SDA) && (RTC_SDA != I2C_SDA)
+    //   Wire1.end;
+    // #endif
+    return;
   }
 
   setup();
@@ -229,7 +232,8 @@ void RTC::syncFromRTC() {
     return false;
   }
 
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  log_d("configTime: GMTOFFSET_SEC=%d DAYLIGHTOFFSET_SEC=%d", GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC);
+  configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, ntpServer);
 
   delay(1000);
 

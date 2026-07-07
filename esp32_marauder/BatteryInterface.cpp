@@ -70,6 +70,8 @@ void BatteryInterface::RunSetup() {
 
 
         #ifdef HAS_MAX1704X
+        log_d("I2C_SDA=%d I2C_SCL=%d", I2C_SDA, I2C_SCL);
+
           Wire.beginTransmission(MAX17048_ADDR);
           error = Wire.endTransmission();
 
@@ -83,6 +85,7 @@ void BatteryInterface::RunSetup() {
         #endif
 
   #endif //  other i2c
+    Serial.println(F("BatteryInterface::endif"));
 
     this->initTime = millis();
   #else

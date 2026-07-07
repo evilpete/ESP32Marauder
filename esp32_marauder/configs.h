@@ -315,9 +315,9 @@
       #define HAS_TOUCH
       #define HAS_LED
         #define HAS_FLIPPER_LED
-      // #define HAS_RTC
+       #define HAS_RTC
         //  #define HAS_PCF8523         // i2c real-time clock (RTC)
-         // #define HAS_DS1307         // i2c real-time clock (RTC)
+          #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_BT
       #define HAS_BUTTONS
       #define HAS_SCREEN
@@ -327,9 +327,9 @@
       // #define HAS_GPS
       #define HAS_CYD_PORTRAIT
       #define HAS_NIMBLE_2
-      #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-        #define HAS_IDF_3
-      #endif
+      // #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      //   #define HAS_IDF_3
+      // #endif
       #define CYD_SOUND
         #define SOUND_PIN 26
     #endif
@@ -432,8 +432,8 @@
       #define HAS_LED
       //#define FLIPPER_ZERO_HAT
       //#define HAS_BATTERY
-      #define HAS_BT
-      #define HAS_BT_REMOTE
+      // #define HAS_BT
+      // #define HAS_BT_REMOTE
       #define HAS_BUTTONS
       //#define HAS_NEOPIXEL_LED
       //#define HAS_PWR_MGMT
@@ -502,9 +502,9 @@
     #ifdef MARAUDER_JC2432W328C
       #define HAS_TOUCH
         #define HAS_CST820      // i2c self-capacitive touch controller
-        #define HAS_RTC
-          #define HAS_PCF8523         // i2c real-time clock (RTC)
-          // #define HAS_DS1307         // i2c real-time clock (RTC)
+      #define HAS_RTC
+        #define HAS_PCF8523         // i2c real-time clock (RTC)
+        // #define HAS_DS1307         // i2c real-time clock (RTC)
       #define HAS_LED
         #define HAS_FLIPPER_LED
       //#define FLIPPER_ZERO_HAT
@@ -715,6 +715,10 @@
     #endif
     //// END BOARD FEATURES
 
+
+    #ifdef NO_BT
+      #undef HAS_BT
+    #endif
 
     #if defined(HAS_PCF8523) || defined(HAS_DS1307)
         #define HAS_RTC         // i2c real-time clock (RTC)
@@ -2805,7 +2809,7 @@
   #endif
 
   #if defined(MARAUDER_CYD_HMI)
-    #define BANNER_TIME 100
+    #define BANNER_TIME 1000
 
     #define COMMAND_PREFIX "!"
 
@@ -3259,11 +3263,6 @@
       #define I2C_SCL 16
       #define HAS_IP5306
 
-    #ifdef MARAUDER_CYD_24
-      #define I2C_SDA 33
-      #define I2C_SCL 36
-    #endif
-
     #elif defined(MARAUDER_V7_1)
       #define I2C_SDA 33
       #define I2C_SCL 27
@@ -3302,21 +3301,19 @@
 
     #elif defined(MARAUDER_CYD_HMI)
       #define BATTERY_ADC_PIN 5
-    #endif
 
-    #ifdef MARAUDER_REV_FEATHER
+    #elif MARAUDER_REV_FEATHER
       #define I2C_SCL 4
       #define I2C_SDA 3
-    #endif
 
     /*
-    #ifdef MARAUDER_JC2432W328C
+    #elif MARAUDER_JC2432W328C
       #define I2C_SDA 33
       #define I2C_SCL 32
-    #endif
     */
     //  If we know what we have, we can delete what we're not using
-    #ifdef BATTERY_ADC_PIN
+
+    #elif BATTERY_ADC_PIN
       #undef HAS_AXP2101
       #undef HAS_IP5306
       #undef HAS_MAX1704X
@@ -3524,9 +3521,9 @@
     #endif
   #endif
 
-  #ifdef CONFIG_IDF_TARGET_ESP32
-    #undef ADJ_CPUFREQ
-  #endif
+  // #ifdef CONFIG_IDF_TARGET_ESP32
+  //   #undef ADJ_CPUFREQ
+  // #endif
 
   //// FUNNY FLIPPER LED STUFF
 
@@ -3589,7 +3586,7 @@
 
   #if defined(MSC_SHARE) 
     #if !defined(ARDUINO_USB_MODE) || ARDUINO_USB_MODE == 1 || !defined(SOC_USB_OTG_SUPPORTED)
-      undef MSC_SHARE
+      #undef MSC_SHARE
       #warning "MSC_SHARE disabled :   USB is not  in OTG mode"
     #endif
   #endif

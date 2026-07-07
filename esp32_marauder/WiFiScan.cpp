@@ -314,7 +314,7 @@ extern "C" {
 
           if ((wifi_scan_obj.currentScanMode == BT_SCAN_AIRTAG) ||
               (wifi_scan_obj.currentScanMode == BT_SCAN_AIRTAG_MON)) { 
-            //Serial.println("Getting payload length...");
+            //Serial.println(F("Getting payload length..."));
             //Serial.flush();
             #ifndef HAS_NIMBLE_2
               uint8_t* payLoad = advertisedDevice->getPayload();
@@ -1692,6 +1692,7 @@ void WiFiScan::RunSetup() {
     esp_wifi_start();
     this->wifi_initialized = true;
     esp_wifi_get_mac(WIFI_IF_STA, this->sta_mac);
+    if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
     delay(10);
     esp_wifi_get_mac(WIFI_IF_AP, this->ap_mac);
     //Serial.println("Setting MAC...");
@@ -1880,6 +1881,8 @@ bool WiFiScan::joinWiFi(String ssid, String password, bool gui) {
     
   WiFi.begin(ssid.c_str(), password.c_str());
 
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
+
   #ifdef HAS_SCREEN
     if (gui) {
       display_obj.clearScreen();
@@ -1963,6 +1966,8 @@ bool WiFiScan::startWiFi(String ssid, String password, bool gui) {
   else
     WiFi.softAP(ssid.c_str());
 
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
+
   #ifdef HAS_SCREEN
     if (gui) {
       display_obj.clearScreen();
@@ -1995,6 +2000,7 @@ void WiFiScan::initWiFi(uint8_t scan_mode) {
   if (scan_mode != WIFI_SCAN_OFF) {
     //Serial.println(F("Initializing WiFi settings..."));
     this->changeChannel();
+    if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   
     this->force_pmkid = settings_obj.loadSetting<bool>(text_table4[5]);
     this->force_probe = settings_obj.loadSetting<bool>(text_table4[6]);
@@ -2264,6 +2270,7 @@ void WiFiScan::startWiFiAttacks(uint8_t scan_mode, uint16_t color, const char* t
         
   packets_sent = 0;
   esp_wifi_init(&cfg);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
   #endif
@@ -3086,6 +3093,7 @@ void WiFiScan::RunPingScan(uint8_t scan_mode, uint16_t color) {
   initTime = millis();
 }
 
+#ifndef NO_WIFI_Scanner
 void WiFiScan::RunPortScanAll(uint8_t scan_mode, uint16_t color) {
   if (scan_mode == WIFI_SCAN_SSH)
     startLog("sshscan");
@@ -3151,6 +3159,7 @@ void WiFiScan::RunPortScanAll(uint8_t scan_mode, uint16_t color) {
   this->scan_complete = false;
   initTime = millis();
 }
+#endif
 
 void WiFiScan::RunLoadATList() {
   #ifdef HAS_SD
@@ -3588,9 +3597,11 @@ void WiFiScan::RunEvilPortal(uint8_t scan_mode, uint16_t color) {
   #endif
 
   #ifdef HAS_IDF_3
+     if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
     esp_wifi_init(&cfg);
   #endif
 
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   evil_portal_obj.begin(ssids, access_points);
   this->wifi_initialized = true;
   initTime = millis();
@@ -3635,6 +3646,7 @@ void WiFiScan::RunAPScan(uint8_t scan_mode, uint16_t color) {
   esp_event_loop_create_default();
 
   esp_wifi_init(&cfg2);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
     esp_event_loop_create_default();
@@ -4116,6 +4128,7 @@ void WiFiScan::RunInfo() {
     display_obj.tft.println("Flash Size: " + (String)flashSize);
     display_obj.tft.println("PSRAM Size: " + (String) psramtat);
     display_obj.tft.println("CpuFrequency = " + (String)getCpuFrequencyMhz() + " Mhz");
+    display_obj.tft.printf("Current Wi-Fi TX power: %d units (%.2f dBm)\n", wifi_power, wifi_power * 0.25);
 
   #endif
 
@@ -4131,6 +4144,7 @@ void WiFiScan::RunInfo() {
   Serial.println("Flash Size: " + (String)flashSize);
   Serial.println("PSRAM Size: " + (String) psramtat);
   Serial.println("CpuFrequency: " + (String)getCpuFrequencyMhz() + " Mhz");
+  Serial.printf("Current Wi-Fi TX power: %d units (%.2f dBm)\n", wifi_power, wifi_power * 0.25);
 
   if (this->wsl_bypass_enabled) {
     #ifdef HAS_SCREEN
@@ -4163,7 +4177,7 @@ void WiFiScan::RunInfo() {
       Serial.println(text_table4[28]);
       Serial.print(text_table4[29]);
       Serial.print(sd_obj.card_sz);
-      Serial.println("MB");
+      Serial.println(F("MB"));
     } else {
       #ifdef HAS_SCREEN
         display_obj.tft.println(text_table4[30]);
@@ -4301,6 +4315,7 @@ void WiFiScan::RunPacketMonitor(uint8_t scan_mode, uint16_t color) {
 
   //Serial.println(F("Running packet scan..."));
   esp_wifi_init(&cfg2);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
     esp_event_loop_create_default();
@@ -4377,6 +4392,7 @@ void WiFiScan::RunEapolScan(uint8_t scan_mode, uint16_t color) {
 //  #endif
 
   esp_wifi_init(&cfg);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
     esp_event_loop_create_default();
@@ -4416,6 +4432,7 @@ void WiFiScan::RunPineScan(uint8_t scan_mode, uint16_t color) {
   #endif
 
   esp_wifi_init(&cfg2);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
     esp_event_loop_create_default();
@@ -4454,6 +4471,7 @@ void WiFiScan::RunMultiSSIDScan(uint8_t scan_mode, uint16_t color) {
   #endif
   
   esp_wifi_init(&cfg2);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
     esp_event_loop_create_default();
@@ -4481,6 +4499,7 @@ void WiFiScan::RunPwnScan(uint8_t scan_mode, uint16_t color) {
   #endif
   
   esp_wifi_init(&cfg2);
+  if (wifi_power) esp_wifi_set_max_tx_power(wifi_power);
   #ifdef HAS_IDF_3
     esp_wifi_set_country(&country);
     esp_event_loop_create_default();
@@ -4503,7 +4522,7 @@ void WiFiScan::executeBLESpam(EBLEPayloadType type) {
     NimBLEDevice::init("");
     #ifdef HAS_NIMBLE_2
       if (!NimBLEDevice::setPower(20))
-        Serial.println("Failed to set NimBLE output power");
+        Serial.println(F("Failed to set NimBLE output power"));
     #endif
     NimBLEServer *pServer = NimBLEDevice::createServer();
 
@@ -4542,7 +4561,7 @@ void WiFiScan::executeBLESpam(EBLEPayloadType type) {
       NimBLEDevice::init("");
       #ifdef HAS_NIMBLE_2
         if (!NimBLEDevice::setPower(20))
-          Serial.println("Failed to set NimBLE output power");
+          Serial.println(F("Failed to set NimBLE output power"));
       #endif
       NimBLEServer *pServer = NimBLEDevice::createServer();
 
@@ -4582,7 +4601,7 @@ void WiFiScan::executeBLESpam(EBLEPayloadType type) {
 
         #ifdef HAS_NIMBLE_2
           if (!NimBLEDevice::setPower(20))
-            Serial.println("Failed to set NimBLE output power");
+            Serial.println(F("Failed to set NimBLE output power"));
         #endif
 
         NimBLEServer *pServer = NimBLEDevice::createServer();
@@ -4614,7 +4633,7 @@ void WiFiScan::executeBLESpam(EBLEPayloadType type) {
 
     #ifdef HAS_NIMBLE_2
       if (!NimBLEDevice::setPower(20))
-        Serial.println("Failed to set NimBLE output power");
+        Serial.println(F("Failed to set NimBLE output power"));
     #endif
 
     NimBLEServer *pServer = NimBLEDevice::createServer();
@@ -9939,6 +9958,7 @@ bool WiFiScan::checkHostPort(IPAddress ip, uint16_t port, uint16_t timeout) {
   }
 #endif
 
+#ifndef NO_WIFI_Scanner
 void WiFiScan::pingScan(uint8_t scan_mode) {
   String display_string = "";
   String output_line = "";
@@ -10011,6 +10031,7 @@ void WiFiScan::pingScan(uint8_t scan_mode) {
     }
   }
 }
+#endif  // NO_WIFI_Scanner
 
 void WiFiScan::portScan(uint8_t scan_mode, uint16_t targ_port) {
   String display_string = "";
@@ -10168,7 +10189,7 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
     if (apiKey.isEmpty()) {
       //display.clearScreen();
       //display.drawCenteredText("No WDG API key", true);
-      Serial.println("[WDG] No WDG Wars API key configured");
+      Serial.println(F("[WDG] No WDG Wars API key configured"));
       return false;
     }
 
@@ -10198,7 +10219,7 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
       client->stop();
       //display.clearScreen();
       //display.drawCenteredText("WDG connect fail", true);
-      Serial.println("[WDG] Failed to connect to wdgwars.pl");
+      Serial.println(F("[WDG] Failed to connect to wdgwars.pl"));
       return false;
     }
 
@@ -10297,7 +10318,7 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
       fileToUpload.close();
       //display.clearScreen();
       //display.drawCenteredText("No wigle creds", true);
-      Serial.println("Missing wigle credentials");
+      Serial.println(F("Missing wigle credentials"));
       return false;
     }
 
@@ -10325,7 +10346,7 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
     Serial.println("part3.length(): " + String(part3.length()));
     Serial.println("Total Content-Length: " + String(totalLength));
 
-    Serial.print("File size: ");
+    Serial.print(F("File size: "));
     Serial.println(fileToUpload.size());
 
     // Connect manually via WiFiClientSecure
@@ -10339,16 +10360,16 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
       client->stop();
       //display.clearScreen();
       //display.drawCenteredText("Could not connect", true);
-      Serial.println("Failed to connected to api.wigle.net");
+      Serial.println(F("Failed to connected to api.wigle.net"));
       return false;
     }
 
-    Serial.println("Connected");
+    Serial.println(F("Connected"));
 
     // Compose headers
     String auth = base64Encode(username + ":" + token);
 
-    Serial.println("Finished encoding");
+    Serial.println(F("Finished encoding"));
 
     client->println("POST /api/v2/file/upload HTTP/1.1");
     client->println("Host: api.wigle.net");
@@ -10361,14 +10382,14 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
     client->println();
     delay(100);
 
-    Serial.println("Finished sending header");
+    Serial.println(F("Finished sending header"));
 
     // Send body
     client->print(part1);
     const size_t BUFFER_SIZE = 4096; // 1KB at a time
     uint8_t buffer[BUFFER_SIZE];
 
-    Serial.println("Finished sending part1");
+    Serial.println(F("Finished sending part1"));
 
     uint8_t percent_sent = 0;
 
@@ -10380,7 +10401,7 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
       totalBytesSent += bytesRead;
       Serial.print("Writing ");
       Serial.print(totalBytesSent);
-      Serial.println(" bytes...");
+      Serial.println(F(" bytes..."));
       percent_sent = (totalBytesSent * 100) / fileToUpload.size();
       //display.tft->drawRect(0, (TFT_HEIGHT / 3) * 2, TFT_WIDTH, TFT_HEIGHT, ST77XX_BLACK);
       //display.tft->setCursor(0, (TFT_HEIGHT / 3) * 2);
@@ -10394,7 +10415,7 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
     client->print(part2);
     client->print(part3);
 
-    Serial.println("Finished sending part2 and part3");
+    Serial.println(F("Finished sending part2 and part3"));
 
     fileToUpload.close();
 
@@ -10410,9 +10431,9 @@ uint16_t WiFiScan::rssiToColor(int8_t rssi) {
     }
 
     if (millis() - timeout > 5000)
-      Serial.println("Timeout reached");
+      Serial.println(F("Timeout reached"));
     if (!client->connected())
-      Serial.println("Client disconnected");
+      Serial.println(F("Client disconnected"));
         
     client->stop();
 
@@ -10633,6 +10654,7 @@ void WiFiScan::main(uint32_t currentTime)
       this->fullARP();
     #endif
   }
+#ifndef NO_WIFI_SCANNER
   else if (currentScanMode == WIFI_PORT_SCAN_ALL) {
     this->portScan(WIFI_PORT_SCAN_ALL);
   }
@@ -10657,6 +10679,7 @@ void WiFiScan::main(uint32_t currentTime)
   else if (currentScanMode == WIFI_SCAN_RDP) {
     this->pingScan(WIFI_SCAN_RDP);
   }
+#endif
   else if (currentScanMode == BT_SCAN_AIRTAG_MON) {
     if (currentTime - initTime >= this->channel_hop_delay * 500) {
       initTime = millis();
@@ -10773,6 +10796,7 @@ void WiFiScan::main(uint32_t currentTime)
            (currentScanMode == BT_ATTACK_GOOGLE_SPAM) ||
            (currentScanMode == BT_ATTACK_FLIPPER_SPAM) ||
            (currentScanMode == BT_SPOOF_AIRTAG)) {
+    #ifndef NO_BT_SPAM
     #ifdef HAS_BT
       if (currentTime - initTime >= 1000) {
         initTime = millis();
@@ -10815,6 +10839,7 @@ void WiFiScan::main(uint32_t currentTime)
       if (currentScanMode == BT_SPOOF_AIRTAG)
         this->executeBLESpam(Airtag);
 
+    #endif
     #endif
   }
   else if (currentScanMode == WIFI_SCAN_DISPLAY_AP_INFO) {

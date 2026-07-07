@@ -28,6 +28,7 @@
 #endif
 
 extern bool system_time_set;
+extern int8_t wifi_power;
 
 #ifdef CYD_SOUND
   #include "Sound_CYD.h"
@@ -160,6 +161,7 @@ class MenuFunctions
     uint8_t mini_kb_index = 0;
     uint8_t old_gps_sat_count = 0;
     uint8_t max_graph_value = 0;
+    uint8_t prev_battery_level = 0;
 
     // Main menu stuff
     Menu mainMenu;

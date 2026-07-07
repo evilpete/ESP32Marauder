@@ -76,6 +76,7 @@ const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
 const char PROGMEM NTP_SYNC[] = "ntp_sync";
 const char PROGMEM DATE_CMD[] = "date";
 const char PROGMEM SETDATE_CMD[] = "setdate";
+const char PROGMEM MAX_WIFI_TX_CMD[] = "setTxPower";
 
 const char PROGMEM RESCANSD_CMD[] = "rescansd";
 #ifdef MSC_SHARE
@@ -164,6 +165,7 @@ const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
 const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
 const char PROGMEM HELP_DATE[] = "date";
 const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
+const char PROGMEM HELP_MAX_WIFI_TX[] = "setTxPower [power_level] (8-84, default = 80)";
 
 
 const char PROGMEM HELP_RESCANSD_CMD[] = "rescansd : rescan for SD card";

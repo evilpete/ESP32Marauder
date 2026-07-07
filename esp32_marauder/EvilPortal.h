@@ -70,6 +70,18 @@ struct AccessPoint {
   bool has_msg_3;
   bool has_msg_4;
   uint32_t last_seen_ms;
+
+// #ifdef HAS_PSRAM
+//   static void* operator new(size_t size) {
+//     void* ptr = heap_caps_malloc(size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+//     if (!ptr) ptr = malloc(size);
+//     return ptr;
+//   }
+//   static void operator delete(void* ptr) {
+//     heap_caps_free(ptr);
+//   }
+// #endif
+
 };
 
 class CaptiveRequestHandler : public AsyncWebHandler {

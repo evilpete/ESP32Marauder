@@ -191,7 +191,7 @@ void MenuFunctions::main(uint32_t currentTime)
 
         #endif
       }
-    }
+    }  // >= BANNER_TIME
   }
 
 
@@ -965,12 +965,14 @@ void MenuFunctions::battery(bool initial)
 }
 void MenuFunctions::battery2(bool initial)
 {
+
   uint16_t the_color;
   if ( digitalRead(CHARGING_PIN) == 1) the_color = TFT_BLUE;
   else if (battery_analog < 20) the_color = TFT_RED;
   else if (battery_analog < 40)  the_color = TFT_YELLOW;
   else the_color = TFT_GREEN;
 
+  log_d("STATUS_BAT");
   display_obj.tft.setTextColor(the_color, STATUSBAR_COLOR);
   display_obj.tft.fillRect(186, 0, 50, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
   display_obj.tft.drawXBitmap(186,
@@ -989,18 +991,34 @@ void MenuFunctions::battery(bool initial)
     uint16_t the_color;
     if (battery_obj.supported)
     {
-      // Could use int compare maybe idk
-      if (((String)battery_obj.battery_level != "25") && ((String)battery_obj.battery_level != "0"))
-        the_color = TFT_GREEN;
-      else
-        the_color = TFT_RED;
 
-      if ((battery_obj.battery_level != battery_obj.old_level) || (initial)) {
-        battery_obj.old_level = battery_obj.battery_level;
-        display_obj.tft.fillRect(204, 0, SCREEN_WIDTH, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
+    if (battery_obj.battery_level == prev_battery_level)
+        return;
+
+      prev_battery_level = battery_obj.battery_level;
+
+      the_color = TFT_WHITE;
+      if (battery_obj.battery_level < 20) {
+        the_color = TFT_RED;
+      } else if  (battery_obj.battery_level < 35) {
+        the_color = TFT_ORANGE;
       }
 
-      display_obj.tft.setCursor(0, 1);
+
+      /*
+      // Could use int compare maybe idk
+      if (((String)battery_obj.battery_level != "25") && ((String)battery_obj.battery_level != "0"))
+        // the_color = TFT_GREEN;
+      else
+        the_color = TFT_RED;
+        */
+
+      // if ((battery_obj.battery_level != battery_obj.old_level) || (initial)) {
+      //   battery_obj.old_level = battery_obj.battery_level;
+      //   display_obj.tft.fillRect(204, 0, SCREEN_WIDTH, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
+      // }
+
+      // display_obj.tft.setCursor(0, 1);
       /*if (!this->disable_touch) {
         display_obj.tft.drawXBitmap(186,
                                     0,
@@ -1010,11 +1028,14 @@ void MenuFunctions::battery(bool initial)
                                     STATUSBAR_COLOR,
                                     the_color);
       }*/
+      display_obj.tft.setTextColor(the_color, STATUSBAR_COLOR, true);
+      // display_obj.tft.fillRect(204, 0, 50,  10, TFT_BLUE);  // STATUSBAR_COLOR);
       #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
-        display_obj.tft.drawString((String)battery_obj.battery_level + "%", 204, 0, 1);
+        display_obj.tft.drawString((String)battery_obj.battery_level + "%  ", 204, 0, 1);
       #else
-        display_obj.tft.drawString((String)battery_obj.battery_level + "%", 204, 0, 2);
+        display_obj.tft.drawString((String)battery_obj.battery_level + "%  ", 204, 0, 2);
       #endif
+      display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
     }
   #endif
 }
@@ -1028,7 +1049,6 @@ void MenuFunctions::updateStatusBar()
 {
   display_obj.tft.setTextSize(1);
 
-  uint32_t cur_millis = millis();
 
   bool status_changed = false;
   
@@ -1104,7 +1124,7 @@ void MenuFunctions::updateStatusBar()
   }
 
    // #ifdef HAS_RTC
-    if((system_time_set) && (cur_millis & (1 << 12))) {
+    if((system_time_set) && (this->initTime & (1 << 12))) {  // ~4 sec
       char timeBuffer[16];
       struct tm timeinfo;
       // static uint32_t tic = 0;
@@ -1173,7 +1193,7 @@ void MenuFunctions::updateStatusBar()
     #ifndef HAS_PSRAM
       display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
     #else
-      if (cur_millis & (1 << 13))  // 13 -> 8.192 seconds
+      if (this->initTime & (1 << 13))  // 13 -> 8.192 seconds
         display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
       else
         display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
@@ -1620,7 +1640,9 @@ void  MenuFunctions::RunSetup()
   infoMenu.list = new LinkedList<MenuNode>();
   // WiFi menu stuff
   wifiSnifferMenu.list = new LinkedList<MenuNode>();
+#ifndef NO_WIFI_SCANNER
   wifiScannerMenu.list = new LinkedList<MenuNode>();
+#endif 
   wifiAttackMenu.list = new LinkedList<MenuNode>();
   /*#ifdef HAS_GPS
     wardrivingMenu.list = new LinkedList<MenuNode>();
@@ -1687,7 +1709,9 @@ void  MenuFunctions::RunSetup()
   settingsMenu.name = text_table1[18];
   bluetoothMenu.name = text_table1[19];
   wifiSnifferMenu.name = text_table1[20];
+#ifndef NO_WIFI_SCANNER
   wifiScannerMenu.name = "Scanners";
+#endif
   wifiAttackMenu.name = text_table1[21];
   wifiGeneralMenu.name = text_table1[22];
   saveFileMenu.name = "Save/Load Files";
@@ -1776,9 +1800,12 @@ void  MenuFunctions::RunSetup()
   this->addNodes(&wifiMenu, text_table1[31], TFTYELLOW, SNIFFERS, [this]() {
     this->changeMenu(&wifiSnifferMenu, true);
   });
+#ifndef NO_WIFI_SCANNER
   this->addNodes(&wifiMenu, "Scanners", TFTORANGE, SCANNERS, [this]() {
     this->changeMenu(&wifiScannerMenu, true);
   });
+#endif
+
   /*#ifdef HAS_GPS
     this->addNodes(&wifiMenu, "Wardriving", TFTGREEN, BEACON_SNIFF, [this]() {
       this->changeMenu(&wardrivingMenu, true);
@@ -1791,6 +1818,7 @@ void  MenuFunctions::RunSetup()
     this->changeMenu(&wifiGeneralMenu, true);
   });
 
+#ifndef NO_WIFI_SCANNER
   // Build WiFi scanner Menu
   wifiScannerMenu.parentMenu = &wifiMenu; // Main Menu is second menu parent
   this->addNodes(&wifiScannerMenu, text09, TFTLIGHTGREY, 0, [this]() {
@@ -1863,6 +1891,7 @@ void  MenuFunctions::RunSetup()
     this->drawStatusBar();
     wifi_scan_obj.StartScan(WIFI_SCAN_RDP, TFT_CYAN);
   });
+#endif
 
   // Build WiFi sniffer Menu
   wifiSnifferMenu.parentMenu = &wifiMenu; // Main Menu is second menu parent
@@ -2560,6 +2589,7 @@ void  MenuFunctions::RunSetup()
             // Join WiFi using touch screen keyboard
             #ifdef HAS_TOUCH
               char passwordBuf[64] = {0};  // or prefill with existing SSID
+              display_obj.tft.setCursor(0, SCREEN_HEIGHT/3);
               if (keyboardInput(passwordBuf, sizeof(passwordBuf), "Enter Password")) {
                 wifi_scan_obj.joinWiFi(access_points->get(i).essid, String(passwordBuf), true);
               }
@@ -2646,6 +2676,7 @@ void  MenuFunctions::RunSetup()
           rtc_obj.sync_rtc_ntp();
         } else
       #endif //  HAS_RTC
+        log_d("configTime: GMTOFFSET_SEC=%d DAYLIGHTOFFSET_SEC=%d", GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC);
         configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
 
         struct tm timeinfo;
@@ -3192,8 +3223,43 @@ void  MenuFunctions::RunSetup()
       });
   #endif //  HAS_GPS
 
-  #ifdef ADJ_CPUFREQ
-      this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
+      this->addNodes(&adminMenu, "WifiTx 21dBm (Max)", TFTGREEN, WIFI, [this]() {
+          // WIFI_POWER_21dBm = 84,
+          wifi_power = 84;
+          esp_wifi_set_max_tx_power(wifi_power);
+         this->changeMenu(&adminMenu, true);
+      });
+      this->addNodes(&adminMenu, "WifiTx 20dBm (Default)", TFTGREEN, WIFI, [this]() {
+        // this->changeMenu(&adminSubMenu, true);
+          // WIFI_POWER_20dB = 80
+          wifi_power = 78;
+          esp_wifi_set_max_tx_power(wifi_power);
+         this->changeMenu(&adminMenu, true);
+      });
+
+      this->addNodes(&adminMenu, "WifiTx 15dBm", TFTGREEN, WIFI, [this]() {
+        // this->changeMenu(&adminSubMenu, true);
+         // WIFI_POWER_15dBm = 60
+          wifi_power = 60;
+          esp_wifi_set_max_tx_power(wifi_power);
+         this->changeMenu(&adminMenu, true);
+      });
+      this->addNodes(&adminMenu, "WifiTx 8.5dBm", TFTGREEN, WIFI, [this]() {
+        // this->changeMenu(&adminSubMenu, true);
+        // WIFI_POWER_8_5dBm = 34
+          wifi_power = 34;
+          esp_wifi_set_max_tx_power(wifi_power);
+         this->changeMenu(&adminMenu, true);
+      });
+      this->addNodes(&adminMenu, "WifiTx 5dBm", TFTGREEN, WIFI, [this]() {
+        // this->changeMenu(&adminSubMenu, true);
+          // WIFI_POWER_5dBm = 20,
+          wifi_power = 20;
+          esp_wifi_set_max_tx_power(wifi_power);
+         this->changeMenu(&adminMenu, true);
+      });
+
+      this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTMAGENTA, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
           Serial.println(F("Set CPU to 240Mhz"));
           setCpuFrequencyMhz(240);
@@ -3201,17 +3267,20 @@ void  MenuFunctions::RunSetup()
           display_obj.tft.drawCentreString("Set CPU 240Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
       });
 
-      this->addNodes(&adminMenu, "Throttle CPU 160Mhz", TFTGREENYEL, SETTINGS, [this]() {
+      this->addNodes(&adminMenu, "Throttle CPU 160Mhz", TFTVIOLET, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
         Serial.println(F("Set CPU 160Mhz"));
         setCpuFrequencyMhz(160); // 1. Throttle CPU Save Batt
         display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
         display_obj.tft.drawCentreString("Set CPU 160Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
-
       });
 
-      this->addNodes(&adminMenu, "Throttle CPU 80Mhz", TFTGREENYEL, SETTINGS, [this]() {
+  // #define TFTMAGENTA   8
+  //   #define TFTVIOLET    9
+  //     #define TFTORANGE    10
+  #ifdef ADJ_CPUFREQ
+      this->addNodes(&adminMenu, "Throttle CPU 80Mhz", TFTVIOLET, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
          Serial.println(F("Set CPU CpuFrequency 80Mhz"));
          setCpuFrequencyMhz(80); // 1. Throttle CPU Save Batt
@@ -3219,13 +3288,13 @@ void  MenuFunctions::RunSetup()
         display_obj.tft.drawCentreString("Set CPU 80Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
       });
 
-      this->addNodes(&adminMenu, "Throttle CPU 40Mhz", TFTLIME, SETTINGS, [this]() {
-        this->changeMenu(&adminSubMenu, true);
-         Serial.println(F("Set CPU CpuFrequency 40Mhz"));
-         setCpuFrequencyMhz(40); // 1. Throttle CPU Save Batt
-        display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
-        display_obj.tft.drawCentreString("Set CPU 40Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
-      });
+//      this->addNodes(&adminMenu, "Throttle CPU 40Mhz", TFTLIME, SETTINGS, [this]() {
+//       this->changeMenu(&adminSubMenu, true);
+//         Serial.println(F("Set CPU CpuFrequency 40Mhz"));
+//         setCpuFrequencyMhz(40); // 1. Throttle CPU Save Batt
+//        display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+//        display_obj.tft.drawCentreString("Set CPU 40Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+//      });
     #endif // ADJ_CPUFREQ
 
       this->addNodes(&adminMenu, "Sync RTC with WiFi", TFTPINK, SETTINGS, [this]() {
@@ -3238,6 +3307,7 @@ void  MenuFunctions::RunSetup()
             rtc_obj.sync_rtc_ntp();
           } else
         #endif //  HAS_RTC
+          log_d("configTime: GMTOFFSET_SEC=%d DAYLIGHTOFFSET_SEC=%d", GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC);
           configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
 
         struct tm timeinfo;
@@ -3246,7 +3316,8 @@ void  MenuFunctions::RunSetup()
           system_time_set = true;
           strftime(timeBuffer, sizeof(timeBuffer), "%F %T", &timeinfo);
           display_obj.tft.drawCentreString(timeBuffer, TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
-          Serial.println(&timeinfo, "%F %T");
+          Serial.println(timeBuffer);
+          // Serial.println(&timeinfo, "%F %T");
         } else {
           display_obj.tft.drawCentreString("Connection Failed", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
           log_d("getLocalTime Fail");
@@ -3254,7 +3325,7 @@ void  MenuFunctions::RunSetup()
 
     });
 
-    this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
+    this->addNodes(&adminMenu, "Reset Reasion", TFTRED, SETTINGS, [this]() {
       this->changeMenu(&adminSubMenu, true);
         display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
         display_obj.tft.drawCentreString(resetReasonName(), TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
