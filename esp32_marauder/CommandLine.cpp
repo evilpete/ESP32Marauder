@@ -204,7 +204,9 @@ void CommandLine::startScanFromCLI(int scan_mode, uint16_t color, const char* sc
   Serial.print(F(". Stop with "));
   Serial.println(STOPSCAN_CMD);
   #ifdef HAS_SCREEN
+  Serial.println("display_obj.clearScreen");
     display_obj.clearScreen();
+  Serial.println("menu_function_obj.drawStatusBar");
     menu_function_obj.drawStatusBar();
   #endif
   wifi_scan_obj.StartScan(scan_mode, color);
@@ -325,7 +327,9 @@ void CommandLine::runCommand(String input) {
 
     // If we don't do this, the text and button coordinates will be off
     #ifdef HAS_SCREEN
+    Serial.println("STOPSCAN_CMD display_obj.init");
       display_obj.init();
+    Serial.println("STOPSCAN_CMD menu_function_obj.changeMenu");
       menu_function_obj.changeMenu(menu_function_obj.current_menu);
     #endif
   }

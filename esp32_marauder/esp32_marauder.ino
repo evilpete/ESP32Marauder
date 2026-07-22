@@ -12,6 +12,9 @@ https://www.online-utility.org/image/convert/to/XBM
   #define Display_h
 #endif
 
+
+#include "ESP32_PinDebug.h"
+
 #include <stdio.h>
 
 #ifdef HAS_GPS
@@ -46,6 +49,17 @@ https://www.online-utility.org/image/convert/to/XBM
 #ifdef HAS_SCREEN
   #include "Display.h"
   #include "MenuFunctions.h"
+#endif
+
+#ifdef HAS_CH32V003
+    #include <CH32V003_IOExpander.h>
+    CH32V003_IOExpander CH32V003_obj;
+#endif
+
+// Yet another Cap Touch
+#ifdef HAS_CST3530
+    #include <CST3530.h>
+    CST3530 CST3530_obj;
 #endif
 
 #ifdef HAS_BUTTONS
@@ -110,114 +124,16 @@ const String PROGMEM version_number = MARAUDER_VERSION;
 
 uint32_t currentTime  = 0;
 
-// PWM Brightness Control
-#ifdef HAS_SCREEN
-  #include <Preferences.h>
-  #define BL_CHANNEL 0
-  #define BL_FREQ 5000
-  #define BL_RESOLUTION 8
-  const uint8_t BL_LEVELS[] = {26, 51, 77, 102, 128, 153, 179, 204, 230, 255};
-  const uint8_t BL_NUM_LEVELS = 10;
-  uint8_t bl_level_idx = 9; // default full brightness
-  Preferences bl_prefs;
-#endif
-
-// Helper macros for LEDC API compatibility (2.x vs 3.x board package)
-#ifdef HAS_SCREEN
-  #ifndef HAS_MINI_SCREEN
-    #if ESP_ARDUINO_VERSION_MAJOR >= 3
-      #define BL_SETUP()       ledcAttach(TFT_BL, BL_FREQ, BL_RESOLUTION)
-      #define BL_SET(duty)     ledcWrite(TFT_BL, (duty))
-    #else
-      #define BL_SETUP()       do { ledcSetup(BL_CHANNEL, BL_FREQ, BL_RESOLUTION); ledcAttachPin(TFT_BL, BL_CHANNEL); } while(0)
-      #define BL_SET(duty)     ledcWrite(BL_CHANNEL, (duty))
-    #endif
-  #endif
-#endif
-
-#ifndef HAS_MINI_SCREEN
-  void brightnessInit() {
-    #ifdef HAS_SCREEN
-      BL_SETUP();
-      bl_prefs.begin("backlight", false);
-      bl_level_idx = bl_prefs.getUChar("level", 9);
-      if (bl_level_idx >= BL_NUM_LEVELS) bl_level_idx = 9;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-    #endif
-  }
-
-  void brightnessCycle() {
-    #ifdef HAS_SCREEN
-      bl_level_idx = (bl_level_idx + 1) % BL_NUM_LEVELS;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-      bl_prefs.putUChar("level", bl_level_idx);
-      Serial.print(F("[Brightness] Level "));
-      Serial.print(bl_level_idx + 1);
-      Serial.print(F("/"));
-      Serial.print(BL_NUM_LEVELS);
-      Serial.print(F(" ("));
-      Serial.print(BL_LEVELS[bl_level_idx] * 100 / 255);
-      Serial.println(F("%)"));
-    #endif
-  }
-
-  uint8_t getBrightnessLevel() {
-    #ifdef HAS_SCREEN
-      return bl_level_idx;
-    #else
-      return 0;
-    #endif
-  }
-
-  void brightnessSave(uint8_t level) {
-    #ifdef HAS_SCREEN
-      if (level >= BL_NUM_LEVELS) level = BL_NUM_LEVELS - 1;
-      bl_level_idx = level;
-      BL_SET(BL_LEVELS[bl_level_idx]);
-      bl_prefs.putUChar("level", bl_level_idx);
-    #endif
-  }
-
-  void backlightOn() {
-    #ifdef HAS_SCREEN
-      BL_SET(BL_LEVELS[bl_level_idx]);
-    #endif
-  }
-
-  void backlightOff() {
-    #ifdef HAS_SCREEN
-      BL_SET(0);
-    #endif
-  }
-#else
-  void backlightOn() {
-    #ifdef HAS_SCREEN
-      #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, LOW);
-      #endif
-    
-      #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, HIGH);
-      #endif
-    #endif
-  }
-
-  void backlightOff() {
-    #ifdef HAS_SCREEN
-      #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, HIGH);
-      #endif
-    
-      #if !defined(MARAUDER_MINI) && !defined(MARAUDER_MINI_V3)
-        digitalWrite(TFT_BL, LOW);
-      #endif
-    #endif
-  }
-#endif
-
 #ifdef HAS_C5_SD
   SPIClass sharedSPI(SPI);
   SDInterface sd_obj = SDInterface(&sharedSPI, SD_CS);
+#endif
+
+// Screen backlight moved to Backlight.cpp
+#ifdef HAS_SCREEN
+  extern void brightnessInit();
+  extern void backlightOn();
+  extern void backlightOff();
 #endif
 
 void setup()
@@ -233,6 +149,16 @@ void setup()
   #endif
 
   Serial.begin(115200);
+
+  #ifdef HAS_CH32V003
+    log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", TP_SDA, TP_SCL);
+    Wire.begin(TP_SDA, TP_SCL);
+    if (CH32V003_obj.begin()) {
+      Serial.println("CH32V003 found");
+    } else {
+      Serial.println("CH32V003 not found - check wiring and I2C address");
+    }
+  #endif
 
   #ifdef HAS_ACT_LED
     pinMode(ACT_LED_PIN, OUTPUT);
@@ -253,7 +179,8 @@ void setup()
     digitalWrite(POWER_HOLD_PIN, HIGH);
   #endif
   
-  #ifdef HAS_SCREEN
+  #ifdef HAS_SCREEN && defined(TFT_BL)
+    log_d("pinMode %d OUTPUT", TFT_BL);
     pinMode(TFT_BL, OUTPUT);
   #endif
   
@@ -263,6 +190,50 @@ void setup()
     pinMode(CHARGING_PIN, INPUT);
   #endif
   
+
+  #ifdef MARAUDER_WS_C5_28
+
+    // Must happen before display init CH32V003 controls LCD_RST and backlight
+    log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", TP_SDA, TP_SCL);
+    // Wire.begin(TP_SDA, TP_SCL);
+    // Wire.setPins(TP_SDA, TP_SCL);
+    // Wire.begin(TP_SDA, TP_SCL);
+
+    // log_d("CH32V003_obj.begin start");
+    // while(!CH32V003_obj.begin()) {
+    //  Serial.println("CH32V003 not found - check wiring and I2C address");
+    //  delay(1000);
+    // }
+    // log_d("CH32V003 found");
+    // Serial.println("CH32V003 found");
+
+
+    log_d("CH32V003_obj.lcdReset");
+    CH32V003_obj.lcdReset();      // pulses LCD_RST via EXIO1
+
+    #if defined(TFT_CS) && TFT_CS >= 0
+      pinMode(TFT_CS, OUTPUT);
+    #endif
+
+    log_d("CH32V003_obj.setPWM");
+    CH32V003_obj.setPWM(80); // 80% brightness
+
+    log_d("CH32V003_obj.touchReset");
+    CH32V003_obj.touchReset();    // pulses Touch_RST via EXIO0
+
+    #ifdef HAS_CST3530
+      CST3530_obj.begin();
+      // #if defined(TP_INT) && TP_INT >= 0
+      //   CST3530_obj.enableInterrupt(TP_INT);
+      // #endif
+      // CST3530_obj.begin(&Wire, TP_RST, TP_INT, TP_FREQ);
+      log_d("CST3530_obj.begin done");
+    #else
+      log_d("HAS_CST3530 False");
+    #endif
+
+  #endif
+
   // Preset SPI CS pins to avoid bus conflicts
   #ifdef HAS_SCREEN
     digitalWrite(TFT_CS, HIGH);
@@ -300,6 +271,8 @@ void setup()
     #endif
   #endif
 
+  Serial.println("display_obj.RunSetup");
+  describeAllPins();
   #ifdef HAS_SCREEN
     display_obj.RunSetup();
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -348,6 +321,8 @@ void setup()
 
   buffer_obj = Buffer();
 
+  Serial.println("ifndef HAS_SIMPLEX_DISPLAY defined(HAS_SD)");
+  describeAllPins();
   #ifndef HAS_SIMPLEX_DISPLAY
     #if defined(HAS_SD)
       // Do some SD stuff
@@ -366,6 +341,8 @@ void setup()
 
   evil_portal_obj.setup();
 
+  Serial.println("battery_obj.RunSetup");
+  describeAllPins();
   #ifdef HAS_BATTERY
     battery_obj.RunSetup();
   #endif
@@ -411,15 +388,26 @@ void setup()
   menu_function_obj.changeMenu(menu_function_obj.current_menu);*/
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
-  
+
   cli_obj.RunSetup();
+  describeAllPins();
 }
 
+
+int opins = 1;
 
 void loop()
 {
   currentTime = millis();
   bool mini = false;
+
+  /*
+  int apins = currentTime & (1 << 13);
+  if (apins != opins) {
+     opins = apins;
+     describeAllPins();
+  }
+  */
 
   #ifdef SCREEN_BUFFER
     #ifndef HAS_ILI9341
@@ -435,6 +423,7 @@ void loop()
         else
           menu_function_obj.disable_touch = true;
 
+        Serial.println("!esp32_marauder.ino: menu_function_obj.updateStatusBar");
         menu_function_obj.updateStatusBar();
 
         while (!c_btn.justReleased())
@@ -457,10 +446,13 @@ void loop()
   #ifdef HAS_BATTERY
     battery_obj.main(currentTime);
   #endif
+  menu_function_obj.updateStatusBar();
   if ((wifi_scan_obj.currentScanMode != WIFI_PACKET_MONITOR) ||
       (mini)) {
     #ifdef HAS_SCREEN
       menu_function_obj.main(currentTime);
+    #else
+      Serial.println("!!!!!esp32_marauder.ino: HAS_SCREEN menu_function_obj.main");
     #endif
   }
   #ifdef HAS_FLIPPER_LED
