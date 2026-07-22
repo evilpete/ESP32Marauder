@@ -55,19 +55,16 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
      if (CST3530_obj.available()) {
        // if (CST3530_obj.data.event == 0) {  // Down event
          CST3530_obj.readData();
-         // *x = CST3530_obj.data->x;
-         // *y = CST3530_obj.data->y;
+         *x = CST3530_obj.data->x;
+         *y = CST3530_obj.data->y;
 
          // CST3530Point p = touch.getPoint(i);
          // *x = p.x;
          // *y = p.y;
 
-         CST3530_obj.getTouch(x, y);
+         // CST3530_obj.getTouch(x, y);
 
-
-         if ( *x || *y ) {
-           log_d("x=%d y=%d", *x, *y);
-         }
+         // if ( *x || *y ) { log_d("x=%d y=%d", *x, *y); }
          return 1;
      //   }
      } else {

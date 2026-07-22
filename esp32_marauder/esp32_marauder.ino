@@ -166,7 +166,13 @@ void setup()
     digitalWrite(ACT_LED_PIN, LOW);
   #endif
 
-  while(!Serial)
+  /*
+  #if ESP_ARDUINO_VERSION_MAJOR >= 3 &&  defined(ARDUINO_USB_CDC_ON_BOOT)
+    Serial.setTxTimeoutMs(0);
+  #endif
+  */
+
+  while(!Serial || millis() < 3000)
     delay(10);
 
   #ifdef HAS_C5_SD

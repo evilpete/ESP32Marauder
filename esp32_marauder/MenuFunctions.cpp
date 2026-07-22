@@ -139,7 +139,6 @@ void MenuFunctions::displayMenuButtons() {
 // Function to check menu input
 void MenuFunctions::main(uint32_t currentTime)
 {
-
   #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
     this->updateKeyboard();
   #endif
@@ -199,7 +198,6 @@ void MenuFunctions::main(uint32_t currentTime)
   // This is code from bodmer's keypad example
   uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 
-  // log_d("Get the display buffer out of the way");
   // Get the display buffer out of the way
   if ((wifi_scan_obj.currentScanMode != WIFI_SCAN_OFF ) &&
       (wifi_scan_obj.currentScanMode != WIFI_CONNECTED) &&
@@ -227,8 +225,6 @@ void MenuFunctions::main(uint32_t currentTime)
     if (!this->disable_touch)
       pressed = display_obj.updateTouch(&t_x, &t_y);
   #endif
-  if(t_x ||  t_y)
-    log_d("t_x=%d, t_y=%d\n", t_x, t_y);
 
 
   // Brightness gesture: hold top or bottom zone 1.5s to enter brightness mode
@@ -285,7 +281,6 @@ void MenuFunctions::main(uint32_t currentTime)
       }
     }
   #endif
-
 
   // This is if there are scans/attacks going on
   #ifdef HAS_ILI9341
@@ -382,7 +377,6 @@ void MenuFunctions::main(uint32_t currentTime)
 
   #ifdef HAS_BUTTONS
 
-
     #if (C_BTN >= 0) && !defined(MARAUDER_CARDPUTER) && !defined(MARAUDER_CARDPUTER_ADV)
       bool c_btn_press = c_btn.justPressed();
     #elif defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
@@ -390,7 +384,6 @@ void MenuFunctions::main(uint32_t currentTime)
     #endif
 
     #ifndef HAS_ILI9341
-
     
       if ((c_btn_press) &&
           (wifi_scan_obj.currentScanMode != WIFI_SCAN_OFF) &&
@@ -547,21 +540,8 @@ void MenuFunctions::main(uint32_t currentTime)
       // Detect up, down, select
       uint8_t menu_button = display_obj.menuButton(&t_x, &t_y, pressed);
 
-      if (t_x || t_y)  {
-        log_d("UP_BUTTON=%d  DOWN_BUTTON=%d SELECT_BUTTON=%d", UP_BUTTON, DOWN_BUTTON, SELECT_BUTTON);
-        log_d("display_obj.menuButton=%d  t_x=%d t_y=%d pressed=%d\n",  menu_button, t_x, t_y, pressed);
-        log_d("BUTTON_ARRAY_LEN = %d", BUTTON_ARRAY_LEN);
-      }
-
       if (menu_button > -1) {
-
-      if (t_x || t_y) {
-        log_d("??_BUTTONed %d %d", menu_button, UP_BUTTON);
-        log_d("??_BUTTONed %u %u", menu_button, UP_BUTTON);
-      }
-
         if (menu_button == UP_BUTTON) {
-        log_d("UP_BUTTONed %d %d", menu_button, UP_BUTTON);
           if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) ||
               (wifi_scan_obj.currentScanMode == WIFI_CONNECTED) ||
               (wifi_scan_obj.currentScanMode == OTA_UPDATE)) {
@@ -625,10 +605,7 @@ void MenuFunctions::main(uint32_t currentTime)
             wifi_scan_obj.drawChannelLine();
           }
         }
-      if (t_x || t_y)
-        log_d("??_BUTTONed %u %u", menu_button, DOWN_BUTTON);
         if (menu_button == DOWN_BUTTON) {
-        log_d("DOWN_BUTTONed %d %d", menu_button,  DOWN_BUTTON);
           if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) ||
               (wifi_scan_obj.currentScanMode == WIFI_CONNECTED) ||
               (wifi_scan_obj.currentScanMode == OTA_UPDATE)) {
@@ -698,7 +675,6 @@ void MenuFunctions::main(uint32_t currentTime)
           }
         }
         if(menu_button == SELECT_BUTTON) {
-          log_d("menu_button == SELECT_BUTTON");
           current_menu->list->get(current_menu->selected).callable();
         }
         else {
@@ -1036,7 +1012,6 @@ void MenuFunctions::battery(bool initial)
 }
 void MenuFunctions::battery2(bool initial)
 {
-  Serial.println("===MenuFunctions::battery2"); Serial.flush(); delay(2);
   MenuFunctions::battery(initial);
 }
 #endif
@@ -3770,15 +3745,7 @@ void MenuFunctions::RunSetup()
 
             uint8_t menu_button = display_obj.menuButton(&t_x, &t_y, touched);
 
-      if (t_x || t_y)  {
-        log_d(">> UP_BUTTON=%d  DOWN_BUTTON=%d SELECT_BUTTON=%d", UP_BUTTON, DOWN_BUTTON, SELECT_BUTTON);
-        log_d(">> display_obj.menuButton=%d  t_x=%d t_y=%d touched=%d\n",  menu_button, t_x, t_y, touched);
-        log_d("BUTTON_ARRAY_LEN = %d", BUTTON_ARRAY_LEN);
-      }
-
             // Cycle char previous
-      if (t_x || t_y)
-        log_d(">>??_BUTTONed %d %d", menu_button, UP_BUTTON);
             if (menu_button == UP_BUTTON) {
               pressed = true;
               if (this->mini_kb_index > 0)
@@ -3794,8 +3761,6 @@ void MenuFunctions::RunSetup()
             }
 
             // Cycle char next
-      if (t_x || t_y)
-        log_d(">>??_BUTTONed %d %d", menu_button, DOWN_BUTTON);
             if (menu_button == DOWN_BUTTON) {
               pressed = true;
               if (this->mini_kb_index < str_len - 2)
@@ -4305,10 +4270,6 @@ void MenuFunctions::buildButtons(Menu *menu, int starting_index, const char* but
                                   buf,
                                   KEY_TEXTSIZE);
 
-    log_d("key i=%d x=%d y=%d w=%d h=%d buf=%s", i,
-     KEY_X, KEY_Y + i * (KEY_H + KEY_SPACING_Y), KEY_W, KEY_H,
-    buf);
-
     #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
       display_obj.key[i].setLabelDatum(BUTTON_PADDING - (KEY_W / 2), 4, ML_DATUM);
     #else
@@ -4317,14 +4278,12 @@ void MenuFunctions::buildButtons(Menu *menu, int starting_index, const char* but
   }
 
   for (int i = BUTTON_ARRAY_LEN; i < BUTTON_ARRAY_LEN + 3; i++) {
-   //  uint16_t x = TFT_WIDTH / 2;
-    uint16_t x = 1;
+    // uint16_t x = TFT_WIDTH / 2;
     // uint16_t y = TFT_HEIGHT / 3 * (i - BUTTON_ARRAY_LEN) + ((TFT_HEIGHT / 3) / 2);
+    uint16_t x = 15;
     uint16_t y = TFT_HEIGHT / 3 * (i - BUTTON_ARRAY_LEN);
-    uint16_t w = TFT_WIDTH;
+    uint16_t w = TFT_WIDTH - 30;
     uint16_t h = TFT_HEIGHT / 3 - 1;
-
-    log_d("key i=%d x=%d y=%d w=%d h=%d", i, x, y, w, h);
 
     display_obj.key[i].initButtonUL(&display_obj.tft,
                                   x,

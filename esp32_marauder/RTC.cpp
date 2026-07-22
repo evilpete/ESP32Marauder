@@ -1,4 +1,4 @@
-#include "configs.h"
+einclude "configs.h"
 
 #ifdef HAS_RTC
 
@@ -154,6 +154,33 @@ log_i("RTC::DS1307_setup");
 //   log_i("RTC::BM8563_setup");
 // }
 
+#ifdef HAS_PCF85063
+
+
+bool RTC::setup() {
+  log_i("RTC::PCF85063_setup");
+
+  if (!rtclock.isClockIntegrityOK()
+      log_d("RTC is NOT initialized");
+      Serial.println(F("RTC is NOT initialized"));
+
+    // rtclock.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    synced = false;
+    // setSystemTimeFromCompile();
+    // log_i("SystemTime set from Build time");
+  } else {
+    synced = true;
+    system_time_set = true;
+    syncFromRTC();
+    log_i("SystemTime set from RTC");
+  }
+
+  // log_d(dt_string());
+  Serial.println(dt_string());
+
+  return supported;
+}
+
 #endif
 
 void RTC::syncFromRTC() {
@@ -171,6 +198,23 @@ void RTC::syncFromRTC() {
   tm_time.tm_min  = now.minute();       // Minutes (0-59)
   tm_time.tm_sec  = now.second();       // Seconds (0-59)
 
+#ifdef HAS_PCF85063
+
+  PCF85063DateTime dt;
+  if (!rtc.getDateTime(dt)) {
+    Serial.println("PCF85063 read failed");
+    return false;
+  }
+  struct tm tm_time;
+  tm_time.tm_year = dt.year ; 
+  tm_time.tm_mon  = dt.month;    // Months (0-11)
+  tm_time.tm_mday = dt.day;          // Day of the month (1-31)
+  tm_time.tm_hour = dt.hour;         // Hours (0-23)
+  tm_time.tm_min  = dt.minute;       // Minutes (0-59)
+  tm_time.tm_sec  = dt.second;       // Seconds (0-59)
+
+#endif
+
   // Set isdst to -1 to let the system decide based on your timezone settings
   tm_time.tm_isdst = -1;
 
@@ -182,9 +226,6 @@ void RTC::syncFromRTC() {
   synced = true;
   system_time_set = true;
   Serial.println(F("system time synced with RTC"));
-// #elif defined(HAS_BM8563)
-//   log_w("syncFromRTC: BM8563 not yet implemented");
-#endif
 }
 
 
@@ -255,6 +296,8 @@ void RTC::syncFromRTC() {
   time(&epoch_now);
   struct tm* timeStruct = localtime(&epoch_now);
 
+
+#if defined(HAS_PCF8523) || defined(HAS_DS1307)
   DateTime ntpTime(
     timeStruct->tm_year + 1900,  // Year starts from 1900
     timeStruct->tm_mon + 1,      // Month (1-12)
@@ -268,16 +311,18 @@ void RTC::syncFromRTC() {
     Serial.println(F("RTC updated with NTP time."));
     // log_d("PCF8523 RTC updated with NTP time.");
 
-  /*
-  rtclock.adjust(DateTime(
-    timeinfo.tm_year + 1900,
-    timeinfo.tm_mon + 1,
-    timeinfo.tm_mday,
-    timeinfo.tm_hour,
-    timeinfo.tm_min,
-    timeinfo.tm_sec
-  ));
-  */
+#else
+
+  return rtclock.setDateTime(
+    timeStruct->tm_year + 1900,  // Year starts from 1900
+    timeStruct->tm_mon + 1,      // Month (1-12)
+    timeStruct->tm_mday,         // Day of the month
+    timeStruct->tm_hour,         // Hour
+    timeStruct->tm_min,          // Minute
+    timeStruct->tm_sec           // Second
+  );
+
+#endif
 
   return true;
 }
@@ -294,8 +339,13 @@ void RTC::adjust_rtc(const char *time_str) {
 
 void RTC::adjust_rtc(struct tm *timeInfo) {
     // struct tm tmp = timeInfo;
+#ifdef HAS_PCF85063
+    return  rtclock.setDateTime(timeInfo);
+
+#elif defined(HAS_PCF8523) || defined(HAS_DS1307)
     time_t t = mktime(timeInfo);
-    rtclock.adjust(DateTime(t));
+    return rtclock.adjust(DateTime(t));
+#endif
 }
 
 void RTC::adjust_rtc(const DateTime &dt) {
@@ -303,7 +353,12 @@ void RTC::adjust_rtc(const DateTime &dt) {
 }
 
 void RTC::adjust_rtc(uint32_t t) {
+#ifdef HAS_PCF85063
+  struct tm *timeinfo = localtime(&epoch);
+  rtclock.setDateTime(timeInfo);
+#elif defined(HAS_PCF8523) || defined(HAS_DS1307)
   rtclock.adjust(DateTime(t));
+#endif
 }
 
 /*

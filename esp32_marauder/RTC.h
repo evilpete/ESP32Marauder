@@ -12,6 +12,8 @@
   #include "RTClib.h"
 // #elif defined(HAS_BM8563)
 //   #include "I2C_BM8563.h"
+#elif defined(HAS_PCF85063)
+  #include "PCF85063.h"
 #endif
 
 #ifndef NTPSERVER
@@ -46,6 +48,11 @@ class RTC  {    // RTC_PCF8523
       RTC_PCF8523 rtclock;
     #elif defined(HAS_DS1307)
       RTC_DS1307 rtclock;
+    #elif defined(HAS_PCF85063)
+    #elif defined(HAS_PCF85063)
+    #elif defined(HAS_PCF85063)
+      PCF85063 rtc;
+
 //     #elif defined(HAS_BM8563)
 //       RTC_BM8563 rtclock;
     #endif

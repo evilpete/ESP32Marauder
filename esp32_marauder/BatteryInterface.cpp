@@ -108,7 +108,7 @@ int8_t BatteryInterface::getBatteryLevel() {
     #ifdef HAS_CH32V003
       if (this->has_adc_battery) {
         float bVolt =    CH32V003_obj.readBatteryVoltage();
-        log_d("BatteryVoltage = %f", bVolt);
+        // log_d("BatteryVoltage = %f", bVolt);
         // float batteryPct = (bVolt - 3.0) / (4.2 - 3.0) * 100.0;
         float batteryPct = (bVolt - 3.0) / (4.15 - 3.0) * 100.0;
         int8_t bPct = constrain(batteryPct, 0, 100);
