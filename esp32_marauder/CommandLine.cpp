@@ -1882,6 +1882,54 @@ void CommandLine::runCommand(String input) {
     }
   }
 
+  else if (cmd_args.get(0) == DATE_CMD) {
+    struct tm timeinfo;
+    #ifdef HAS_RTC
+    if (!rtc_obj.supported) {
+      Serial.println("RTC: Not Supported");
+    } else if ( !rtc_obj.rtc_synced ) {
+      Serial.println("RTC: Not Synced / Time not set");
+    } else {
+      Serial.print("RTC: ");
+      Serial.println(rtc_obj.dt_string());
+    }
+    #endif
+    Serial.print(F("system_time_set: ")); Serial.println(system_time_set);
+    if (getLocalTime(&timeinfo)) {
+      Serial.println(&timeinfo, "%F %T");
+    } else {
+      log_w("getLocalTime Fail");
+    }
+  }
+
+  else if (cmd_args.get(0) == "setdata4") {
+      #ifdef HAS_RTC
+      Serial.println(rtc_obj.dt_string());
+        rtc_obj.adjust_rtc(cmd_args.get(1).c_str());
+      Serial.println(rtc_obj.dt_string());
+      #endif
+  }
+  else if (cmd_args.get(0) == "setdata3") {
+    struct tm tm_info = {0}; 
+    extern bool set_system_time(struct tm *timeInfo);
+    log_d("SETDATE_CMD: %s %s", cmd_args.get(1).c_str(), cmd_args.get(2).c_str());
+    if ( cmd_args.size() == 3 &&
+         strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
+         strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
+      #ifdef HAS_RTC
+      Serial.println(rtc_obj.dt_string());
+        uint32_t t = mktime(&tm_info);
+        rtc_obj.adjust_rtc(t);
+      Serial.println(rtc_obj.dt_string());
+      #endif
+      set_system_time(&tm_info);
+    } else {
+      Serial.println(F("Failed to parse time string."));
+      Serial.println(F("expected format: YYYY-MM-DD HH:MM:SS"));
+    }
+  }
+
+
   else if (cmd_args.get(0) == SETDATE_CMD) {
     struct tm tm_info = {0}; 
     extern bool set_system_time(struct tm *timeInfo);
@@ -1890,6 +1938,12 @@ void CommandLine::runCommand(String input) {
     if ( cmd_args.size() == 3 &&
          strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
          strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
+
+      #ifdef HAS_RTC
+      Serial.println(rtc_obj.dt_string());
+        rtc_obj.adjust(&tm_info);
+      Serial.println(rtc_obj.dt_string());
+      #endif
 
       set_system_time(&tm_info);
 

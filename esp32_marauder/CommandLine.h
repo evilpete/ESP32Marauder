@@ -150,8 +150,8 @@ const char PROGMEM HELP_GPS_POI_CMD[] = "gpspoi -s/-m/-e";
 const char PROGMEM HELP_GPS_TRACKER_CMD[] = "gpstracker -c <start/stop>";
 const char PROGMEM HELP_NMEA_CMD[] = "nmea";
 const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
-const char PROGMEM HELP_DATE[] = "date";
 const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
+const char PROGMEM HELP_DATE[] = "print system time/date";
 
 // WiFi sniff/scan
 const char PROGMEM HELP_EVIL_PORTAL_CMD[] = "evilportal [-c start [-w html.html]/sethtml <html.html>]";

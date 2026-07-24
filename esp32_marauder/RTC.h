@@ -1,18 +1,22 @@
-
 #include "configs.h"
 
-#ifdef HAS_RTC
+#if defined(HAS_RTC) && (defined(HAS_DS1307) || defined(HAS_PCF8523) || defined(HAS_PCF85063))
 
 #ifndef rtc_h
 #define rtc_h
 
-
 #include <Arduino.h>
+#include <Wire.h>
+#include <time.h>
+#include <sys/time.h>
+
+// -- RTClib path (PCF8523 / DS1307) -------------------------------------------
 #if defined(HAS_PCF8523) || defined(HAS_DS1307)
   #include "RTClib.h"
-// #elif defined(HAS_BM8563)
-//   #include "I2C_BM8563.h"
-#elif defined(HAS_PCF85063)
+#endif
+
+// -- PCF85063 driver - RTClib-compatible interface -----------------------------
+#if defined(HAS_PCF85063)
   #include "PCF85063.h"
 #endif
 
@@ -20,90 +24,50 @@
   #define NTPSERVER "pool.ntp.org"
 #endif
 
-#include <time.h>
-#include <sys/time.h>
-
-#include <Wire.h>
 #include "WiFiScan.h"
-
-
 extern WiFiScan wifi_scan_obj;
-
-// If system time/date has been set
 extern bool system_time_set;
 
+// -- RTC class -----------------------------------------------------------------
+class RTC {
+public:
 
-/*
-const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = -28800;      // Replace with your offset (e.g., -28800 for PST)
-const int daylightOffset_sec = 3600;    // Adjust daylight savings (e.g., 3600 for DST)
-*/
+  // -- Hardware object - one per build target ----------------------------------
+  #if defined(HAS_PCF8523)
+    RTC_PCF8523  rtclock;
+  #elif defined(HAS_DS1307)
+    RTC_DS1307   rtclock;
+  #elif defined(HAS_PCF85063)
+    PCF85063     rtclock;
+  #endif
 
+  bool   supported = false;
+  bool   rtc_synced = false;
 
-class RTC  {    // RTC_PCF8523
+  void   RunSetup();
+  bool   setup();
 
-  public:
+  // -- Time string helpers -----------------------------------------------------
+  String dt_string();
+  String millis_dt_string();
 
-    #if defined(HAS_PCF8523)
-      RTC_PCF8523 rtclock;
-    #elif defined(HAS_DS1307)
-      RTC_DS1307 rtclock;
-    #elif defined(HAS_PCF85063)
-    #elif defined(HAS_PCF85063)
-    #elif defined(HAS_PCF85063)
-      PCF85063 rtc;
+  // -- Sync -------------------------------------------------------------------
+  void syncFromRTC();
+  bool sync_rtc_ntp(const char *ntpServer = NTPSERVER);
+  bool getSystemTimeFromString(const char *timeStr);
+  void setSystemTimeFromCompile();
 
-//     #elif defined(HAS_BM8563)
-//       RTC_BM8563 rtclock;
-    #endif
+  // -- Adjust overloads - all chips use DateTime now --------------------------
+  void adjust_rtc(const char *time_str);   // ISO8601 string
+  void adjust_rtc(struct tm *timeInfo);
+  void adjust_rtc(const DateTime &dt);
+  void adjust_rtc(uint32_t t);             // Unix epoch
+  void adjust_rtc(time_t t) { rtclock.adjust((uint32_t) t); }             // Unix epoch
+  void adjust(const DateTime &dt) { rtclock.adjust(dt); }
 
-    bool setup();
-
-    void RunSetup();
-    bool supported = false;
-    String dt_string();
-    String millis_dt_string();
-    bool sync_rtc_ntp(const char* ntpServer = NTPSERVER);
-    bool synced = false;
-
-
-    // float getTemperature();  // PCF8523 only
-
-    bool getSystemTimeFromString(const char* timeStr);
-    // static const char* const daysOfTheWeek[] PROGMEM = {
-    //  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-    //  };
-
-    // const char* ntpServer = NTPSERVER;
-    // const long gmtOffset_sec = 0;   // Always 0 for UTC
-    // const int daylightOffset_sec = 0;
-    void setSystemTimeFromCompile();
-    void syncFromRTC();
-
-    // template <typename T>
-    // void adjust_rtc(T& tm);
-
-    void adjust_rtc(const char *time_str);
-    void adjust_rtc(struct tm *timeInfo);
-    void adjust_rtc(const DateTime &dt);
-    void adjust_rtc(uint32_t t);
-
-    // helper for direct calls
-    void adjust(const DateTime &dt) {
-      rtclock.adjust(dt);
-    }
-
-  private:
-    TwoWire *_wire;
-
+private:
+  TwoWire *_wire = nullptr;
 };
 
-// template <typename T>
-// void adjust_rtc(T tm) {
-//   rtclock.adjust(DateTime(tm));
-// }
-
-
 #endif // rtc_h
-
 #endif // HAS_RTC

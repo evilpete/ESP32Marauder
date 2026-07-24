@@ -1094,8 +1094,11 @@ void MenuFunctions::updateStatusBar()
   }
 
 
+  static uint32_t clock_update = 1;
   // #ifdef HAS_RTC
-    if((system_time_set) && (cur_millis & (1 << 12))) {  // we dont need to update the clock several time a sec.
+    uint32_t ct = cur_millis & (1 << 12);
+    if((system_time_set) && (ct != clock_update)) {  // we dont need to update the clock several time a sec.
+      clock_update = ct;
       char timeBuffer[16];
       struct tm timeinfo;
       // static uint32_t tic = 0;
@@ -1112,12 +1115,14 @@ void MenuFunctions::updateStatusBar()
         tw = (5 * 8) - 4;
 
         #ifdef HAS_BATTERY
-          if (battery_obj.i2c_supported) {
+          if (battery_obj.supported) {
             th = 15;
             bg_color = TFT_BLACK;
           } else
         #endif
           th = 0;
+
+        log_d("getLocalTime: %s  th=%d", timeBuffer, th);
 
         #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
           tx = TFT_HEIGHT - tw;

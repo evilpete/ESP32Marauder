@@ -663,8 +663,7 @@
       // #define BATTERY_ADC_PIN 0x06    // CH32V003 Reg Id
 
       #define HAS_RTC
-        #define HAS_PCF8523         // i2c real-time clock (RTC)
-        // #define HAS_DS1307         // i2c real-time clock (RTC)
+        #define HAS_PCF85063         // i2c real-time clock (RTC)
 
       #define TFT_WIDTH         240
       #define TFT_HEIGHT        320

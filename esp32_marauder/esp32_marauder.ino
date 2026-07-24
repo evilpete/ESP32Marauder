@@ -141,6 +141,32 @@ uint32_t currentTime  = 0;
   extern void backlightOff();
 #endif
 
+//   Converts reason type to a C string.
+//  Type is located in /tools/sdk/esp32/include/esp_system/include/esp_system.h
+const char *resetReasonName() {
+  esp_reset_reason_t r = esp_reset_reason();
+  switch (r) {
+    case ESP_RST_UNKNOWN:   return "Unknown";
+    case ESP_RST_POWERON:   return "PowerOn";    //Power on or RST pin toggled
+    case ESP_RST_EXT:       return "ExtPin";     //External pin - not applicable for ESP32
+    case ESP_RST_SW:        return "Reboot";     //esp_restart()
+    case ESP_RST_PANIC:     return "Crash";      //Exception/panic
+    case ESP_RST_INT_WDT:   return "WDT_Int";    //Interrupt watchdog (software or hardware)
+    case ESP_RST_TASK_WDT:  return "WDT_Task";   //Task watchdog
+    case ESP_RST_WDT:       return "WDT_Other";  //Other watchdog
+    case ESP_RST_DEEPSLEEP: return "Sleep";      //Reset after exiting deep sleep mode
+    case ESP_RST_BROWNOUT:  return "BrownOut";   //Brownout reset (software or hardware)
+    case ESP_RST_SDIO:      return "SDIO";       //Reset over SDIO
+    default:                return "";
+  }
+}
+
+void print_reset_reason() {
+  Serial.print(F("Last reset reason: "));
+  Serial.println(resetReasonName());
+}
+
+
 bool system_time_set = false;
 
 bool set_system_time(struct tm *timeInfo) {
@@ -191,7 +217,7 @@ void setup()
   Serial.begin(115200);
 
   #ifdef HAS_CH32V003
-    log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", TP_SDA, TP_SCL);
+    log_d("HAS_CH32V003: Wire: I2C_SDA=%d  I2C_SCL=%d", TP_SDA, TP_SCL);
     Wire.begin(TP_SDA, TP_SCL);
     if (CH32V003_obj.begin()) {
       Serial.println("CH32V003 found");
