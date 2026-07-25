@@ -62,6 +62,12 @@ https://www.online-utility.org/image/convert/to/XBM
     CST3530 CST3530_obj;
 #endif
 
+#if defined(HAS_SHTC3) && defined(HAS_TEMP_SENSOR)
+    #include <SHTC3.h>
+    SHTC3 SHTC3_obj;
+#endif
+
+
 #ifdef HAS_BUTTONS
   #include "Switches.h"
   
@@ -186,7 +192,7 @@ bool set_system_time(struct tm *timeInfo) {
 
     #ifdef HAS_RTC
       log_d("set_system_time: calling rtc_obj.adjust_rtc");
-      rtc_obj.adjust_rtc(t);
+      rtc_obj.adjust_rtc(timeInfo);
     #endif
 
     return true;
@@ -251,7 +257,7 @@ void setup()
     digitalWrite(POWER_HOLD_PIN, HIGH);
   #endif
   
-  #ifdef HAS_SCREEN && defined(TFT_BL)
+  #ifdef HAS_SCREEN && defined(TFT_BL) && TFT_BL >= 0
     log_d("pinMode %d OUTPUT", TFT_BL);
     pinMode(TFT_BL, OUTPUT);
   #endif
@@ -294,7 +300,7 @@ void setup()
     CH32V003_obj.touchReset();    // pulses Touch_RST via EXIO0
 
     #ifdef HAS_CST3530
-      CST3530_obj.begin();
+      CST3530_obj.begin(Wire);
       // #if defined(TP_INT) && TP_INT >= 0
       //   CST3530_obj.enableInterrupt(TP_INT);
       // #endif
@@ -304,7 +310,12 @@ void setup()
       log_d("HAS_CST3530 False");
     #endif
 
-  #endif
+    #if defined(HAS_SHTC3) && defined(HAS_TEMP_SENSOR)
+      SHTC3_obj.begin(&Wire);
+      log_d("SHTC3_obj.begin done");
+    #endif
+
+  #endif  // MARAUDER_WS_C5_28
 
   // Preset SPI CS pins to avoid bus conflicts
   #ifdef HAS_SCREEN

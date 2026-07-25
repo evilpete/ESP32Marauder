@@ -641,6 +641,8 @@
       // #define USE_SD
       // #define HAS_C5_SDC
       #define HAS_TEMP_SENSOR
+        #define HAS_SHTC3 1
+      #define HAS_:esp32_ma
       // #define HAS_GPS
 
       #define I2C_SDA           0

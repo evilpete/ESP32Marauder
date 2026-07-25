@@ -58,6 +58,13 @@ extern BatteryInterface battery_obj;
 // #endif
 extern Settings settings_obj;
 
+
+#ifdef HAS_SHTC3
+  #include "SHTC3.h"
+  extern SHTC3 SHTC3_obj;
+#endif
+
+
 #define FLASH_BUTTON 0
 
 #if BATTERY_ANALOG_ON == 1

@@ -1902,46 +1902,36 @@ void CommandLine::runCommand(String input) {
     }
   }
 
-  else if (cmd_args.get(0) == "setdata4") {
-      #ifdef HAS_RTC
-      Serial.println(rtc_obj.dt_string());
-        rtc_obj.adjust_rtc(cmd_args.get(1).c_str());
-      Serial.println(rtc_obj.dt_string());
-      #endif
-  }
-  else if (cmd_args.get(0) == "setdata3") {
-    struct tm tm_info = {0}; 
-    extern bool set_system_time(struct tm *timeInfo);
-    log_d("SETDATE_CMD: %s %s", cmd_args.get(1).c_str(), cmd_args.get(2).c_str());
-    if ( cmd_args.size() == 3 &&
-         strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
-         strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
-      #ifdef HAS_RTC
-      Serial.println(rtc_obj.dt_string());
-        uint32_t t = mktime(&tm_info);
-        rtc_obj.adjust_rtc(t);
-      Serial.println(rtc_obj.dt_string());
-      #endif
-      set_system_time(&tm_info);
-    } else {
-      Serial.println(F("Failed to parse time string."));
-      Serial.println(F("expected format: YYYY-MM-DD HH:MM:SS"));
-    }
-  }
-
-
   else if (cmd_args.get(0) == SETDATE_CMD) {
     struct tm tm_info = {0}; 
     extern bool set_system_time(struct tm *timeInfo);
 
+    /* 
+    if ( cmd_args.size() == 2 && cmd_args.get(1).length == 19 ) {
+      String arg_str = cmd_args.get(1);
+      if (arg_str[10] == ' ')
+        arg_str[10] = 'T';
+
+      Serial.println(F("Failed to parse time string."));
+      Serial.print("strlen arg_str: ");
+      Serial.println(arg_str.length());
+      Serial.printf("char 10 = %c", tmstr);
+    }
+    */
+
     log_d("SETDATE_CMD: %s %s", cmd_args.get(1).c_str(), cmd_args.get(2).c_str());
     if ( cmd_args.size() == 3 &&
          strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
          strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
 
+
       #ifdef HAS_RTC
+      Serial.print("SETDATE_CMD tm_info: ");
+      Serial.println(tm_info.tm_year);
+      Serial.print("rtc_obj.dt_string: ");
       Serial.println(rtc_obj.dt_string());
         rtc_obj.adjust(&tm_info);
+      Serial.print("rtc_obj.dt_string: ");
       Serial.println(rtc_obj.dt_string());
       #endif
 

@@ -1003,9 +1003,11 @@ void MenuFunctions::battery(bool initial)
                                     the_color);
       }*/
       #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
-        display_obj.tft.drawString((String)battery_obj.battery_level + "%", SB_BAT_X, 0, 1);
+        // display_obj.tft.drawString((String)battery_obj.battery_level + "%", SB_BAT_X, 0, 1);
+        display_obj.tft.drawRightString((String)battery_obj.battery_level + "%", SCREEN_WIDTH, 0, 1);
       #else
-        display_obj.tft.drawString((String)battery_obj.battery_level + "%", SB_BAT_X, 0, 2);
+        // display_obj.tft.drawString((String)battery_obj.battery_level + "%", SB_BAT_X, 0, 2);
+        display_obj.tft.drawRightString((String)battery_obj.battery_level + "%", SCREEN_WIDTH, 0, 2);
       #endif
     }
   #endif
@@ -1109,7 +1111,6 @@ void MenuFunctions::updateStatusBar()
       if(getLocalTime(&timeinfo)){
 
         //  "%H:%M"
-        strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
 
         int tx, ty, tw, th;
         tw = (5 * 8) - 4;
@@ -1122,14 +1123,14 @@ void MenuFunctions::updateStatusBar()
         #endif
           th = 0;
 
-        log_d("getLocalTime: %s  th=%d", timeBuffer, th);
+        // log_d("getLocalTime: %s  th=%d", timeBuffer, th);
 
         #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
-          tx = TFT_HEIGHT - tw;
+          tx = TFT_HEIGHT; //  - tw;
           // ty = TFT_WIDTH - th; // Bottom Right
           ty = th;   // Near Top Right
         #else
-          tx = TFT_WIDTH - tw;
+          tx = TFT_WIDTH;  // - tw;
           // ty = TFT_HEIGHT - th;    // Bottom Right
           ty = th;   // Near Top Right
         #endif
@@ -1138,10 +1139,33 @@ void MenuFunctions::updateStatusBar()
         // Serial.println(timeBuffer);
         // Serial.println((String) tx + " : " + (String) ty);
 
-        display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
-        display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
-        display_obj.tft.drawString(timeBuffer, tx , ty , 2);
+        static int16_t  str_w = 32;
 
+
+        // display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
+        // Serial.printf("Str width = %d\n", str_w);
+        display_obj.tft.fillRect(TFT_WIDTH - str_w, ty, str_w, th, bg_color);
+        display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
+
+        #ifdef HAS_SHTC3 
+        if (clock_update) {
+          strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+          str_w = display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
+        } else {
+          float temp, hum;
+
+          SHTC3_obj.read(temp, hum);
+          snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", temp);
+          // display_obj.tft.drawString(timeBuffer, tx , ty , 2);
+          str_w = display_obj.tft.drawRightString(timeBuffer, tx, ty , 2);
+          // Serial.println(timeBuffer);
+        }
+        #else
+          strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+          str_w = display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
+        #endif
+
+        // reset TextColor
         display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
       } else {
           // Serial.println(F("Failed to obtain time"));
@@ -1150,7 +1174,6 @@ void MenuFunctions::updateStatusBar()
 
       }
   }
-
   //#endif
 
   // RAM Stuff
