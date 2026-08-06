@@ -85,8 +85,6 @@ class GpsInterface {
     String generateGXrmc();
     bool gps_enabled = false;
 
-    bool gps_enabled = false;
-
   private:
     enum type_t {
       GPSTYPE_NATIVE = 0,

@@ -23,8 +23,10 @@
 
 #ifdef HAS_RTC
   #include "RTC.h"
-  extern RTC rtc_obj;
 #endif
+
+#define USE_CPU_TEMP
+#include "sys_temp_sensor.hpp"
 
 // If system time/date has been set
 extern bool system_time_set;
@@ -57,6 +59,15 @@ extern SDInterface sd_obj;
 extern BatteryInterface battery_obj;
 // #endif
 extern Settings settings_obj;
+
+extern void shutdown();
+extern void DeepSleep(int8_t);
+
+extern bool system_time_set;            // has system time been set yet
+
+
+bool sync_ntp(const char *ntpServer);
+
 
 #define FLASH_BUTTON 0
 
@@ -177,6 +188,7 @@ class MenuFunctions
     /*#ifdef HAS_GPS
       Menu wardrivingMenu;
     #endif*/
+      Menu wardrivingMenu;
     Menu wifiGeneralMenu;
     Menu wifiAPMenu;
     Menu wifiIPMenu;
@@ -310,6 +322,9 @@ class MenuFunctions
     void main(uint32_t currentTime);
     void RunSetup();
     void orientDisplay();
+
+    void update_time_temp_disp();
+
 };
 
 

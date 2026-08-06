@@ -100,7 +100,7 @@ bool sync_ntp(const char *ntpServer = nullptr) {
   #ifdef HAS_RTC
   if (rtc_obj.supported && !rtc_obj.rtc_synced) {
       log_d("set_system_time: updating RTC");
-      rtc_obj.adjust_rtc(&timeinfo);
+      rtc_obj.adjust_rtc(timeinfo);
   }
   #endif
 

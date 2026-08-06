@@ -1,6 +1,8 @@
 #include "Buffer.h"
 #include "lang_var.h"
 
+extern bool system_time_set;
+
 Buffer::Buffer(){
   bufA = (uint8_t*)malloc(BUF_SIZE);
   bufB = (uint8_t*)malloc(BUF_SIZE);
@@ -39,13 +41,14 @@ void Buffer::createFile(const char* name, bool is_pcap, bool is_gpx) {
   int i = 0;
   char buf[64];   // LFN can be up to 255 chars on FatFs
 
-  // With timestamp if system time is set:
-  if (system_time_set) {
-    struct tm timeinfo;
-    getLocalTime(&timeinfo);
-    if (is_pcap) {
+
+  if (is_pcap) {
+    // With timestamp if system time is set:
+    if (system_time_set) {
+      struct tm timeinfo;
+      getLocalTime(&timeinfo);
       do {
-        snprintf(buf, sizeof(buf), "/%s_%04d%02d%02d_%02d%02d%02d_%d.pcap",
+        snprintf(buf, sizeof(buf), "/PCAP/%s_%04d%02d%02d_%02d%02d%02d_%d.pcap",
           name,
           timeinfo.tm_year + 1900,
           timeinfo.tm_mon + 1,
@@ -55,19 +58,27 @@ void Buffer::createFile(const char* name, bool is_pcap, bool is_gpx) {
           timeinfo.tm_sec,
           i++);
       } while (fs->exists(buf));
-    }
-    // similar for log/gpx...
-  } else {
-    // fallback to existing numeric scheme
-    if (is_pcap) {
+    } else {   // system_time_set
       do {
-        snprintf(buf, sizeof(buf), "/%s_%d.pcap", name, i++);
+        snprintf(buf, sizeof(buf), "/PCAP/%s_%d.pcap", name, i++);
       } while (fs->exists(buf));
-    }
+    }   // system_time_set
+    fileName = String(buf);
+    Serial.println(fileName);
+  }   // is_pcap
+  else if ((!is_pcap) && (!is_gpx)) {
+    do{
+      fileName = "/"+String(name)+"_"+(String)i+".log";
+      i++;
+    } while(fs->exists(fileName));
+  }
+  else {
+    do{
+      fileName = "/"+String(name)+"_"+(String)i+".gpx";
+      i++;
+    } while(fs->exists(fileName));
   }
 
-  fileName = String(buf);
-  Serial.println(fileName);
   file = fs->open(fileName, FILE_WRITE);
   file.close();
 }
