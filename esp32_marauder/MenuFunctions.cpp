@@ -339,6 +339,7 @@ void MenuFunctions::main(uint32_t currentTime)
           (wifi_scan_obj.currentScanMode == BT_SCAN_ALL) ||
           (wifi_scan_obj.currentScanMode == BT_SCAN_FOX_HUNT) ||
           (wifi_scan_obj.currentScanMode == WIFI_SCAN_SIG_STREN) ||
+          (wifi_scan_obj.currentScanMode == BT_ATTACK_FINDMY_LIVE) ||
           (wifi_scan_obj.currentScanMode == BT_SCAN_RAYBAN) ||
           (wifi_scan_obj.currentScanMode == BT_SCAN_AIRTAG) ||
           (wifi_scan_obj.currentScanMode == BT_SCAN_AIRTAG_MON) ||
@@ -407,6 +408,7 @@ void MenuFunctions::main(uint32_t currentTime)
             (wifi_scan_obj.currentScanMode == WIFI_SCAN_DISPLAY_AP_INFO) ||
             (wifi_scan_obj.currentScanMode == WIFI_SCAN_EVIL_PORTAL) ||
             (wifi_scan_obj.currentScanMode == WIFI_SCAN_SIG_STREN) ||
+            (wifi_scan_obj.currentScanMode == BT_ATTACK_FINDMY_LIVE) ||
             (wifi_scan_obj.currentScanMode == WIFI_SCAN_AP_STA) ||
             (wifi_scan_obj.currentScanMode == WIFI_PING_SCAN) ||
             (wifi_scan_obj.currentScanMode == WIFI_ARP_SCAN) ||
@@ -2651,7 +2653,8 @@ void MenuFunctions::RunSetup()
   });
 
   this->addNodes(&wifiGeneralMenu, "Shutdown WiFi", TFTRED, 0, [this]() {
-    WiFi.disconnect(true);
+    WiFi.softAPdisconnect(true); // Also shut down the SoftAP if it is running
+	WiFi.disconnect(true);
     delay(100);
     wifi_scan_obj.StartScan(WIFI_SCAN_OFF, TFT_RED);
     this->changeMenu(current_menu, true);
@@ -3147,12 +3150,12 @@ void MenuFunctions::RunSetup()
     this->drawStatusBar();
     wifi_scan_obj.StartScan(BT_SCAN_FLIPPER, TFT_ORANGE);
   });
-  this->addNodes(&bluetoothSnifferMenu, "Airtag Sniff", TFTWHITE, BLUETOOTH_SNIFF, [this]() {
+  this->addNodes(&bluetoothSnifferMenu, "FindMy Sniff", TFTWHITE, BLUETOOTH_SNIFF, [this]() {
     display_obj.clearScreen();
     this->drawStatusBar();
     wifi_scan_obj.StartScan(BT_SCAN_AIRTAG, TFT_WHITE);
   });
-  this->addNodes(&bluetoothSnifferMenu, "Airtag Monitor", TFTWHITE, BLUETOOTH_SNIFF, [this]() {
+  this->addNodes(&bluetoothSnifferMenu, "FindMy Monitor", TFTWHITE, BLUETOOTH_SNIFF, [this]() {
     display_obj.clearScreen();
     this->drawStatusBar();
     wifi_scan_obj.StartScan(BT_SCAN_AIRTAG_MON, TFT_WHITE);
@@ -3250,7 +3253,6 @@ void MenuFunctions::RunSetup()
 
   //#ifndef HAS_ILI9341
     #ifdef HAS_BT
-    // Select Airtag on Mini
       this->addNodes(&bluetoothAttackMenu, "Spoof Airtag", TFTWHITE, ATTACKS, [this](){
           wifiAPMenu.parentMenu = &bluetoothAttackMenu;
 
@@ -3293,6 +3295,61 @@ void MenuFunctions::RunSetup()
           });
         }
         this->changeMenu(&wifiAPMenu, true);
+      });
+
+      #ifdef HAS_NIMBLE_2
+      this->addNodes(&bluetoothAttackMenu, "FindMy Sound", TFTCYAN, ATTACKS, [this](){
+          wifiAPMenu.parentMenu = &bluetoothAttackMenu;
+
+          // Clear nodes and add back button
+          wifiAPMenu.list->clear();
+          this->addNodes(&wifiAPMenu, text09, TFTLIGHTGREY, 0, [this]() {
+          this->changeMenu(wifiAPMenu.parentMenu, true);
+        });
+
+        /*this->addNodes(&wifiAPMenu, "Live", TFTMAGENTA, 0, [this]() {
+          display_obj.clearScreen();
+          this->drawStatusBar();
+          wifi_scan_obj.StartScan(BT_ATTACK_FINDMY_LIVE, TFT_RED);
+        });*/
+
+        int menu_limit = airtags->size();
+
+        // Create the menu nodes for all of the list items
+        for (int i = 0; i < menu_limit; i++) {
+          uint8_t node_color = rssiToMenuColor(airtags->get(i).rssi);
+          String node_name = String(airtags->get(i).rssi) + " " + airtags->get(i).mac;
+          this->addNodes(&wifiAPMenu, node_name.c_str(), node_color, BLUETOOTH, [this, i](){
+            AirTag new_at = airtags->get(i);
+            new_at.selected = true;
+            new_at.connectable = true;
+
+            airtags->set(i, new_at);
+
+            // Set all other airtags to "Not Selected"
+            for (int x = 0; x < airtags->size(); x++) {
+              if (x != i) {
+                AirTag new_atx = airtags->get(x);
+                new_atx.selected = false;
+                airtags->set(x, new_atx);
+              }
+            }
+
+            // Start the spoof
+            display_obj.clearScreen();
+            this->drawStatusBar();
+            wifi_scan_obj.executeFindMySound(true);
+            delay(2000);
+            this->changeMenu(&wifiAPMenu, true);
+          });
+        }
+        this->changeMenu(&wifiAPMenu, true);
+      });
+      #endif
+
+      wifiAPMenu.parentMenu = &bluetoothAttackMenu;
+      this->addNodes(&wifiAPMenu, text09, TFTLIGHTGREY, 0, [this]() {
+        this->changeMenu(wifiAPMenu.parentMenu, true);
       });
 
       wifiAPMenu.parentMenu = &bluetoothAttackMenu;
