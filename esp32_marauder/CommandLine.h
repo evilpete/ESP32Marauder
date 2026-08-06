@@ -22,7 +22,6 @@
 
 #ifdef HAS_RTC
   #include "RTC.h"
-  extern RTC rtc_obj;
 #endif
 
 // If system time/date has been set
@@ -51,6 +50,13 @@ extern LinkedList<IPAddress>* ipList;
 extern LinkedList<ProbeReqSsid>* probe_req_ssids;
 extern const String PROGMEM version_number;
 extern const String PROGMEM board_target;
+
+bool sync_ntp(const char *ntpServer = nullptr);
+
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  extern void shutdown();
+  extern void DeepSleep(int8_t wakeup_but);
+#endif
 
 //// Commands
 
@@ -148,9 +154,12 @@ const char PROGMEM HELP_GPS_CMD[] = "gps [-t] [-g] <fix/sat/lon/lat/alt/date/acc
 const char PROGMEM HELP_GPS_POI_CMD[] = "gpspoi -s/-m/-e";
 const char PROGMEM HELP_GPS_TRACKER_CMD[] = "gpstracker -c <start/stop>";
 const char PROGMEM HELP_NMEA_CMD[] = "nmea";
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
+#endif
 const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
-const char PROGMEM HELP_DATE[] = "date";
 const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
+const char PROGMEM HELP_DATE[] = "print system time/date";
 
 // WiFi sniff/scan
 const char PROGMEM HELP_EVIL_PORTAL_CMD[] = "evilportal [-c start [-w html.html]/sethtml <html.html>]";

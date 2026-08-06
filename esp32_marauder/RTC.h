@@ -17,7 +17,7 @@
 
 // -- PCF85063 driver - RTClib-compatible interface -----------------------------
 #if defined(HAS_PCF85063)
-  #include "PCF85063.h"
+  #include "PCF85063.hpp"
 #endif
 
 #ifndef NTPSERVER
@@ -44,7 +44,10 @@ public:
   bool   supported = false;
   bool   rtc_synced = false;
 
-  void   RunSetup();
+  void RunSetup(TwoWire *wireInstance = &Wire);
+  void RunSetup(int sdaPin, int sclPin, uint32_t frequency = 10000);
+
+  // void   RunSetup();
   bool   setup();
 
   // -- Time string helpers -----------------------------------------------------
@@ -59,9 +62,10 @@ public:
 
   // -- Adjust overloads - all chips use DateTime now --------------------------
   void adjust_rtc(const char *time_str);   // ISO8601 string
-  void adjust_rtc(struct tm *timeInfo);
+  void adjust_rtc(struct tm timeInfo);
   void adjust_rtc(const DateTime &dt);
   void adjust_rtc(uint32_t t);             // Unix epoch
+  void adjust_rtc(time_t t) { rtclock.adjust((uint32_t) t); }             // Unix epoch
   void adjust(const DateTime &dt) { rtclock.adjust(dt); }
 
 private:

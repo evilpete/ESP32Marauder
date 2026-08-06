@@ -6,16 +6,31 @@ https://www.online-utility.org/image/convert/to/XBM
 */
 
 #include "configs.h"
+#include "Wire.h"
 
 #ifndef HAS_SCREEN
   #define MenuFunctions_h
   #define Display_h
 #endif
 
+
+#include "ESP32_PinDebug.h"
+
 #include <stdio.h>
 
-#ifdef HAS_GPS
+// #ifdef I2C_SDA
+//   Wire.setpins(I2C_SDA, I2C_SCL);
+// #endif
+
+#if defined(HAS_GPSI2C)
+  #include "GpsI2c.h"
+#elif defined(HAS_GPS)
   #include "GpsInterface.h"
+#endif
+
+#if defined(HAS_TEMP_SENSOR) && !defined(USE_CPU_TEMP)
+  // #include "TempSensor.h"
+  // TempSensor  TSensor_obj;
 #endif
 
 #include "Assets.h"
@@ -395,6 +410,16 @@ void setup()
         Serial.println(F("SD Card NOT Supported"));
 
     #endif
+  #endif
+
+  #ifdef HAS_RTC
+    rtc_obj.RunSetup(&Wire);
+  #else
+    Serial.println(F("RTC NOT Installed"));
+  #endif
+
+  #if defined(HAS_TEMP_SENSOR) && !defined(USE_CPU_TEMP)
+    // TSensor.begin(&Wire);
   #endif
 
   wifi_scan_obj.RunSetup();

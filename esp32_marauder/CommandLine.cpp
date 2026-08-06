@@ -1,9 +1,14 @@
 #include "CommandLine.h"
 
-// Brightness functions defined in esp32_marauder.ino
+#ifdef HAS_RTC
+  extern RTC rtc_obj;
+#endif
+
+// Brightness functions defined in BackLight.cpp
 #ifndef HAS_MINI_SCREEN
   extern void brightnessCycle();
   extern uint8_t getBrightnessLevel();
+  extern const uint8_t BL_NUM_LEVELS;
 #endif
 
 void CommandLine::RunSetup() {
@@ -1831,18 +1836,13 @@ void CommandLine::runCommand(String input) {
 
 
   else if (cmd_args.get(0) == NTP_SYNC_CMD) {
+    bool sync_ntp(const char *ntpServer = nullptr);
 
     if (!wifi_scan_obj.wifi_connected) {
       Serial.println(F("WIFI is not connected."));
       return;
     }
-  #ifdef HAS_RTC
-    log_d("rtc_obj.supported %d", rtc_obj.supported);
-    if(rtc_obj.supported) {
-      rtc_obj.sync_rtc_ntp();
-    } else
-  #endif //  HAS_RTC
-    configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, "pool.ntp.org", "time.nist.gov", "1.pool.ntp.org");
+    sync_ntp();
 
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
@@ -1856,16 +1856,50 @@ void CommandLine::runCommand(String input) {
     }
   }
 
+  else if (cmd_args.get(0) == DATE_CMD) {
+    struct tm timeinfo;
+    #ifdef HAS_RTC
+    if (!rtc_obj.supported) {
+      Serial.println("RTC: Not Supported");
+    } else if ( !rtc_obj.rtc_synced ) {
+      Serial.println("RTC: Not Synced / Time not set");
+    } else {
+      Serial.print("RTC: ");
+      Serial.println(rtc_obj.dt_string());
+    }
+    #endif
+    Serial.print(F("system_time_set: ")); Serial.println(system_time_set);
+    if (getLocalTime(&timeinfo)) {
+      Serial.println(&timeinfo, "%F %T");
+    } else {
+      log_w("getLocalTime Fail");
+    }
+  }
+
   else if (cmd_args.get(0) == SETDATE_CMD) {
     struct tm tm_info = {0}; 
-    extern bool set_system_time(struct tm *timeInfo);
+    extern bool set_system_time(struct tm timeInfo, bool setrtc = false);
+
+    /* 
+    if ( cmd_args.size() == 2 && cmd_args.get(1).length == 19 ) {
+      String arg_str = cmd_args.get(1);
+      if (arg_str[10] == ' ')
+        arg_str[10] = 'T';
+
+      Serial.println(F("Failed to parse time string."));
+      Serial.print("strlen arg_str: ");
+      Serial.println(arg_str.length());
+      Serial.printf("char 10 = %c", tmstr);
+    }
+    */
 
     log_d("SETDATE_CMD: %s %s", cmd_args.get(1).c_str(), cmd_args.get(2).c_str());
     if ( cmd_args.size() == 3 &&
          strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
          strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
 
-      set_system_time(&tm_info);
+
+      set_system_time(tm_info);
 
     } else {
       Serial.println(F("Failed to parse time string."));
