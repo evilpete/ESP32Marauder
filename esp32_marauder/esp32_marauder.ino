@@ -28,6 +28,15 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 #include "Buffer.h"
 
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+#endif // MSC_SHARE
+
+#ifdef HAS_BT
+#include "esp_bt.h"
+// #include "esp_bt_main.h"
+#endif
+
 #ifdef HAS_FLIPPER_LED
   #include "flipperLED.h"
 #elif defined(XIAO_ESP32_S3)
@@ -118,6 +127,13 @@ ReconMission recon_obj;
   TDongleDisplay t_dongle_display;
 #endif
 
+
+// #ifdef HAS_SCREEN
+  extern void brightnessInit();
+  extern void backlightOff();
+  extern void backlightOn();
+// #endif
+
 #ifdef HAS_GPS
   GpsInterface gps_obj;
 #endif
@@ -142,6 +158,10 @@ ReconMission recon_obj;
   #else
     SDInterface sd_obj;
   #endif
+#endif
+
+#ifdef MSC_SHARE
+    MSC_Share MSC_Share_obj;
 #endif
 
 #ifdef HAS_FLIPPER_LED
@@ -203,7 +223,6 @@ void print_reset_reason() {
   Serial.println(resetReasonName());
 }
 
-
 void setup()
 {
 
@@ -226,6 +245,18 @@ void setup()
     pinMode(PWR_EN_PIN, OUTPUT);
     digitalWrite(PWR_EN_PIN, HIGH);
     // perimanSetPinBusExtraType(PWR_EN_PIN, "PWR_EN_PIN");
+  #endif
+
+  randomSeed(esp_random());
+  
+  #ifdef POWER_HOLD_PIN  
+    pinMode(POWER_HOLD_PIN, OUTPUT);
+    digitalWrite(POWER_HOLD_PIN, HIGH);
+  #endif
+
+  #ifdef PWR_EN_PIN  // Enable power to peripherals
+    pinMode(PWR_EN_PIN, OUTPUT);
+    digitalWrite(PWR_EN_PIN, HIGH);
   #endif
 
   randomSeed(esp_random());
@@ -284,6 +315,10 @@ void setup()
     // perimanSetPinBusExtraType(TFT_BL, "TFT_BL");
   #endif
   
+  #ifdef DEVELOPER
+    print_reset_reason();
+  #endif
+
   #ifdef HAS_SCREEN
     backlightOff();
   #endif

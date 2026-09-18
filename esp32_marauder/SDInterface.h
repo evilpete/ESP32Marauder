@@ -19,6 +19,7 @@
 #endif
 
 #include "SPIFFS.h"
+
 #ifdef HAS_C5_SD
   #include "SPI.h"
 #endif
@@ -32,6 +33,34 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_err.h"
+
+#if defined(HAS_SDMMC) && defined(USE_MMC_WRITE_SECTORS)
+  // #include "diskio_sdmmc.h" 
+  // extern sdmmc_card_t* _mmc_card = nullptr;
+#endif
+
+#if defined(MSC_SHARE)
+  // #include "MSC_Share.h"
+
+  class MSC_Share;
+  extern MSC_Share MSC_Share_obj;
+#endif
+
+#if defined(HAS_SDMMC) && defined(USE_MMC_WRITE_SECTORS)
+  #include <SD_MMC.h>
+  #include "driver/sdmmc_types.h"
+
+  // Subclass purely to expose private _card — no data members added,
+  // layout identical to SDMMCFS, reinterpret_cast is safe here
+  class SDMMCFS_CardAccessor : public fs::SDMMCFS {
+  public:
+    sdmmc_card_t* getCard() { return _card; }
+  };
+
+  inline sdmmc_card_t* sdmmc_get_card_handle() {
+    return reinterpret_cast<SDMMCFS_CardAccessor*>(&SD_MMC)->getCard();
+  }
+#endif
 
 extern Buffer buffer_obj;
 extern Settings settings_obj;
@@ -66,6 +95,15 @@ class SDInterface {
       void setSPI(SPIClass* spi) { _spi = spi; }   // Fix SPI after Display_obj fuckers it
     #endif
 
+    void shutdownSD();     // NEW cleanly tears down whichever backend is active
+    void reinitSD();       // NEW brings it back up after MSC hands control back
+
+    // #if defined(MSC_SHARE) && defined(USE_MMC_WRITE_SECTORS)
+    //   sdmmc_card_t* sdmmc_card = nullptr;
+    // #endif
+
+
+
     uint8_t cardType;
     //uint64_t cardSizeBT;
     //uint64_t cardSizeKB;
@@ -74,9 +112,9 @@ class SDInterface {
     bool supported = false;
 
     String card_sz;
-    String selected_file_name = "";
-  
     bool initSD();
+
+    String selected_file_name = "";
 
     LinkedList<String>* sd_files;
 

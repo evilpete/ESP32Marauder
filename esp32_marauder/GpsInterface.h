@@ -81,8 +81,6 @@ class GpsInterface {
 
     String generateGXgga();
     String generateGXrmc();
-
-
     bool gps_enabled = false;
 
   private:
