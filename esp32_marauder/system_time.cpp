@@ -58,7 +58,7 @@ bool set_system_time(struct tm timeInfo, bool setrtc = false) {
     #ifdef HAS_RTC
     if (rtc_obj.supported) {
       if (setrtc || !rtc_obj.rtc_synced) {
-        log_d("set_system_time: calling rtc_obj.adjust_rtc");
+        // log_d("set_system_time: calling rtc_obj.adjust_rtc");
         rtc_obj.adjust_rtc(timeInfo);
       }
     }
@@ -69,7 +69,7 @@ bool set_system_time(struct tm timeInfo, bool setrtc = false) {
 
 // convers date String "YYYY-MM-DD hh:mm:ss" to struct tm
 bool set_system_time(const String& time_str, bool setrtc = false) {
-  log_d("set_system_time time_str"); delay(5);
+  // log_d("set_system_time time_str"); delay(5);
     struct tm tm_info = {0};
     // log_d("set_system_time: '%s'", time_str.c_str());
     if (strptime(time_str.c_str(), "%F %T", &tm_info) != NULL) {
@@ -107,7 +107,7 @@ bool sync_ntp(const char *ntpServer = nullptr) {
 
   #ifdef HAS_RTC
   if (rtc_obj.supported && !rtc_obj.rtc_synced) {
-      log_d("set_system_time: updating RTC");
+      // log_d("set_system_time: updating RTC");
       rtc_obj.adjust_rtc(timeinfo);
   }
   #endif

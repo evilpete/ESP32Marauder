@@ -29,7 +29,7 @@ extern bool set_system_time(struct tm, bool setrtc = false);
 uint32_t lastq;
 
 void GpsI2c::begin(int sdaPin, int sclPin, uint32_t frequency) {
-  Serial.print("GpsI2c::begin  ADDR="); Serial.print(GNSS_DEVICE_ADDR);
+  // Serial.print(F"GpsI2c::begin  ADDR="); Serial.print(GNSS_DEVICE_ADDR);
   log_d("GpsI2c");
 
   Wire.begin(sdaPin, sclPin);
@@ -43,8 +43,8 @@ void GpsI2c::begin(TwoWire *wireInstance) {
 
   delay(500);
   // describeAllPins();
-  Serial.print("GNSS_DEVICE_ADDR=0x"); Serial.println(GNSS_DEVICE_ADDR, HEX);
-  Serial.print("HAS_GPSI2C_ADDR=0x"); Serial.println(HAS_GPSI2C_ADDR, HEX);
+  // Serial.print(F"GNSS_DEVICE_ADDR=0x"); Serial.println(GNSS_DEVICE_ADDR, HEX);
+  // Serial.print(F"HAS_GPSI2C_ADDR=0x"); Serial.println(HAS_GPSI2C_ADDR, HEX);
 
   // (&Wire, HAS_GPSI2C_ADDR);
   DFRobot_GNSS_I2C gnssu = DFRobot_GNSS_I2C(_wire, GNSS_DEVICE_ADDR);
@@ -54,7 +54,7 @@ void GpsI2c::begin(TwoWire *wireInstance) {
   // retry GPS connection but give up after 5+ sec...
   while (!(this->gps_enabled = gnss.begin())) {
      log_d("GpsI2c::begin fail");
-     Serial.println("GpsI2c::begin Fail");
+     Serial.println(F"GpsI2c::begin Fail");
      // describeAllPins();
      if ( (millis() - lastq) > 4400)
        return;
@@ -64,7 +64,7 @@ void GpsI2c::begin(TwoWire *wireInstance) {
   this->gps_enabled = true;
   log_d("GpsI2c::begin gps_enabled=%d", this->gps_enabled);
 
-  Serial.print("GpsI2c::begin gps_enabled="); Serial.println(this->gps_enabled);
+  // Serial.print(F"GpsI2c::begin gps_enabled="); Serial.println(this->gps_enabled);
 
   gnss.enablePower();      // Enable gnss power
 
@@ -226,7 +226,7 @@ void GpsI2c::setGPSInfo() {
 
   // if GPS has a good_fix and system_time_set has not been set
   if (!system_time_set) {
-    Serial.print("datetime");  Serial.println(this->datetime);
+    // Serial.print(F"datetime");  Serial.println(this->datetime);
     log_d("set_system_time(GetTimeInfo())");
     struct tm timeInfo = GetTimeInfo();
     Serial.println(&timeInfo, "%F %T");
@@ -237,19 +237,19 @@ void GpsI2c::setGPSInfo() {
 }
 
 void GpsI2c::SHowGPSInfo() {
-  Serial.print("NumSatUsed    = "); Serial.println(this->num_sats);
-  Serial.print("good_fix      = "); Serial.println(this->good_fix);
-  Serial.print("nav_system    = "); Serial.println(this->nav_system);
+  Serial.print(F"NumSatUsed    = "); Serial.println(this->num_sats);
+  Serial.print(F"good_fix      = "); Serial.println(this->good_fix);
+  Serial.print(F"nav_system    = "); Serial.println(this->nav_system);
 
-  Serial.print("datetime      = "); Serial.println(this->datetime);
+  Serial.print(F"datetime      = "); Serial.println(this->datetime);
 
-  Serial.print("lat_int       = "); Serial.println(this->lat_int);
-  Serial.print("lon_int       = "); Serial.println(this->lon_int);
+  Serial.print(F"lat_int       = "); Serial.println(this->lat_int);
+  Serial.print(F"lon_int       = "); Serial.println(this->lon_int);
 
-  Serial.print("lat           = "); Serial.println(this->lat);
-  Serial.print("lon           = "); Serial.println(this->lon);
+  Serial.print(F"lat           = "); Serial.println(this->lat);
+  Serial.print(F"lon           = "); Serial.println(this->lon);
 
-  Serial.print("altf          = "); Serial.println(this->altf);
+  Serial.print(F"altf          = "); Serial.println(this->altf);
 }
 
 
