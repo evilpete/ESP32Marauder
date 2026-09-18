@@ -67,12 +67,6 @@ https://www.online-utility.org/image/convert/to/XBM
     CST3530 CST3530_obj;
 #endif
 
-#if defined(HAS_SHTC3) && defined(HAS_TEMP_SENSOR)
-    #include <SHTC3.hpp>
-    SHTC3 SHTC3_obj;
-#endif
-
-
 #ifdef HAS_BUTTONS
   #include "Switches.h"
   
@@ -106,6 +100,7 @@ Buffer buffer_obj;
 Settings settings_obj;
 CommandLine cli_obj;
 ReconMission recon_obj;
+extern void init_system_time();
 
 // Brightness functions defined in BackLight.cpp
 #ifdef HAS_SCREEN
@@ -122,10 +117,6 @@ ReconMission recon_obj;
   GpsInterface gps_obj;
 #endif
 
-#ifdef HAS_RTC
-  #include "RTC.h"
-  RTC rtc_obj;
-#endif
 
 #ifdef HAS_BATTERY
   BatteryInterface battery_obj;
@@ -268,7 +259,7 @@ void setup()
     #endif
   #else
     while(!Serial)
-	delay(10);
+        delay(10);
   #endif
 
   // #ifdef HAS_C5_SD
@@ -326,11 +317,6 @@ void setup()
       log_d("HAS_CST3530 False");
     #endif
 
-    #if defined(HAS_SHTC3) && defined(HAS_TEMP_SENSOR)
-      SHTC3_obj.begin(&Wire);
-      log_d("SHTC3_obj.begin done");
-    #endif
-
   #endif  // MARAUDER_WS_C5_28
 
   // Preset SPI CS pins to avoid bus conflicts
@@ -353,13 +339,8 @@ void setup()
   //while(!Serial)
   //  delay(10);
 
-  struct tm timeinfo;
-  if (getLocalTime(&timeinfo)) {
-    Serial.print("RTC::setup: ");
-    Serial.println(&timeinfo, "%F %T");
-  } else {
-    log_w("getLocalTime Fail");
-  }
+  init_system_time();
+
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
   #ifdef ESP_ARDUINO_VERSION_STR
@@ -367,7 +348,7 @@ void setup()
     Serial.println(ESP_ARDUINO_VERSION_STR);
   #elif defined(ESP_ARDUINO_VERSION)
     Serial.printf("Arduino Core Major: %d, Minor: %d, Patch: %d\n", 
-	    ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
+            ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
   #endif
 
   #ifdef HAS_PSRAM
@@ -396,9 +377,9 @@ void setup()
   // so reinit it and assert it to for the sd_obj.
     #if defined(HAS_C5_SD) 
       #ifndef SD_MISO
-	#define SD_MISO TFT_MISO
-	#define SD_MOSI TFT_MOSI
-	#define SD_SCK TFT_SCLK
+        #define SD_MISO TFT_MISO
+        #define SD_MOSI TFT_MOSI
+        #define SD_SCK TFT_SCLK
       #endif
       SPIClass& spi = display_obj.tft.getSPIinstance();
       spi.end();                                          // release TFT's MISO-less bus config
@@ -453,12 +434,6 @@ void setup()
 
   log_d("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
-
-  #ifdef HAS_RTC
-    rtc_obj.RunSetup();
-  #else
-    log_d("RTC NOT Installed");
-  #endif
 
   #ifdef HAS_T_DONGLE_DISPLAY
     t_dongle_display.begin();
@@ -559,8 +534,9 @@ void loop()
   buffer_obj.save();
 
   #ifdef HAS_BATTERY
-    battery_obj.main(currentTime);
+     battery_obj.main(currentTime);
   #endif
+
   // menu_function_obj.updateStatusBar();
   if ((wifi_scan_obj.currentScanMode != WIFI_PACKET_MONITOR) ||
       (mini)) {

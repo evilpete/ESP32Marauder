@@ -538,8 +538,12 @@
       #define HAS_CYD_TOUCH
       #define HAS_XPT2046
     #define HAS_PSRAM
-    #define HAS_GPS
-    // #define HAS_GPSI2C
+    /// #define HAS_GPS
+    /// #define HAS_GPSI2C
+    ///   #define I2C_SDA 17   // Grove 2
+    ///   #define I2C_SCL 18
+    ///   #define HAS_GPSI2C_ADDR 0x20
+
     #define HAS_CYD_PORTRAIT
     #define HAS_IDF_3
     #define HAS_PWR_MGMT
@@ -704,36 +708,37 @@
         #define HAS_CST3530 1      // distinguish from CST820
       #define HAS_BT
         #define HAS_NIMBLE_2
-      #define HAS_BT_REMOTE
+      
       #define HAS_BUTTONS
 
       #define HAS_SCREEN
         #define HAS_FULL_SCREEN
+        #define TFT_WIDTH         240
+        #define TFT_HEIGHT        320
+        #define PORTRAIT
+        #define HAS_ILI9341
 
       #define HAS_SD
-      #define USE_SD
-      #define HAS_C5_SD
+        #define USE_SD
+        #define HAS_C5_SD
 
       #define I2C_SDA           0
       #define I2C_SCL           1
-      #define HAS_ILI9341
       #define HAS_CH32V003         // CH32V003 IO expander
         #define CH32V003_I2C_ADDR 0x24
       #define HAS_TEMP_SENSOR
         #define HAS_SHTC3
       // Platform capabilities
       #define HAS_PSRAM
-      #define BOARD_HAS_PSRAM
+        #define BOARD_HAS_PSRAM
       #define HAS_DUAL_BAND     // C5 dual-band WiFi
       #define HAS_BATTERY    // ADC is through IO expander
-      // #define BATTERY_ADC_PIN 0x06    // CH32V003 Reg Id
+          #define BATTERY_ADC_PIN 0x06    // CH32V003 Reg Id
       #define HAS_RTC
         #define HAS_PCF85063         // i2c real-time clock (RTC)
-      #define TFT_WIDTH         240
-      #define TFT_HEIGHT        320
-      #define PORTRAIT
+
       // #define HAS_GPS
-      // #define HAS_GPSI2C
+      #define HAS_GPSI2C
       // #define HAS_CYD_PORTRAIT
       #define HAS_IDF_3
       // HAS_MIC
@@ -3552,16 +3557,14 @@
 
   // CONFIG LOGIC
 
+  //  I2C Touch Screens
   #if defined(HAS_CST820) || defined(HAS_AXS5106L) || defined(HAS_FT6336) || defined(HAS_CST3530)
     #define HAS_CAP_TOUCH 1
   #endif
 
+  //  define HAS_RTC if we have RTC hardware
   #if defined(HAS_PCF8523) || defined(HAS_DS1307) || defined(HAS_PCF85063)
     #define HAS_RTC 1
-  #endif
-
-  #if defined(HAS_SCREEN) && !defined(MENU_FONT)
-    #warning "SCREEN defined without MENU_FONT, check 'DISPLAY DEFINITIONS' section"
   #endif
 
   #if defined(HAS_NIMBLE_2) && !defined(HAS_BT)
@@ -3593,6 +3596,26 @@
     || defined(HAS_STICKC_LED) || defined(HAS_NEOPIXEL_LED)
       #define HAS_LED
   #endif
+
+  #ifdef HAS_TEMP_SENSOR
+
+    // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
+    #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
+          (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) \
+          || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) \
+          || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2) )
+      #define HAS_CPU_TEMP
+    #else
+      #undef HAS_CPU_TEMP
+    #endif
+
+    //do we have a SENSOR?
+    #if !( defined(USE_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
+      #warning "HAS_TEMP_SENSOR set without source device HAS_SHTC3 or USE_CPU_TEMP"
+      #undef HAS_TEMP_SENSOR
+    #endif
+
+  #endif   // HAS_TEMP_SENSOR
 
   // END CONFIG LOGIC
 

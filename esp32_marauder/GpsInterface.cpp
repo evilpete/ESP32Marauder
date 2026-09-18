@@ -1,6 +1,6 @@
 #include "GpsInterface.h"
 
-#ifdef HAS_GPS
+#if defined(HAS_GPS) && !defined(HAS_GPSI2)
 
 extern GpsInterface gps_obj;
 
@@ -795,4 +795,4 @@ void GpsInterface::main() {
     this->setGPSInfo();
   }
 }
-#endif
+#endif    // HAS_GPS && !HAS_GPSI2

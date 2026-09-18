@@ -1203,8 +1203,152 @@ void MenuFunctions::battery2(bool initial)
 }
 #endif
 
+void MenuFunctions::RamStuff(bool update)  {
+  // RAM Stuff
+ wifi_scan_obj.old_free_ram = wifi_scan_obj.free_ram;
+
+ if ((wifi_scan_obj.free_ram != wifi_scan_obj.old_free_ram) || (update)) {
+    wifi_scan_obj.old_free_ram = wifi_scan_obj.free_ram;
+    display_obj.tft.fillRect(100, 0, 60, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
+    #ifdef HAS_FULL_SCREEN
+      #ifndef HAS_PSRAM
+        display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 2);
+      #else
+        display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 1);
+        display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", SB_MEM_X, 8, 1);
+      #endif
+    #endif
+
+    #ifdef HAS_MINI_SCREEN
+      #ifndef HAS_PSRAM
+        display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
+      #else
+        if (this->initTime & (1 << 13))  // 13 -> 8.192 seconds
+          display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
+        else
+          display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
+      #endif
+    #endif
+  }
+}
+
 uint32_t clock_update = 1;
 uint32_t count_pass = 0;
+extern bool system_time_set;
+void MenuFunctions::update_time_temp_disp(bool update) {
+  static uint8_t update_disp = 7;
+
+  uint8_t ct = (this->initTime >> 12) & 0x01;
+
+  if(ct != update_disp or update) {  // we dont need to update the clock several hundred times a sec.
+      update_disp = ct;
+
+      Serial.print("ct ="); Serial.print(ct);
+
+      clock_update = ct;
+      char timeBuffer[16];
+      struct tm timeinfo;
+      // static uint32_t tic = 0;
+      uint16_t bg_color = STATUSBAR_COLOR;
+      uint16_t txt_color = TFT_YELLOW;
+
+      // tic = this->initTime;
+      if (clock_update && system_time_set) {
+
+        if(getLocalTime(&timeinfo))
+          strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+        else
+          timeBuffer[0] = '\0';
+
+      } else {
+          #if defined(HAS_TEMP_SENSOR)
+            if (TempSensor_obj.supported)
+                snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", TempSensor_obj.temperature());
+            else
+                snprintf(timeBuffer, sizeof(timeBuffer), "0.0C");
+          #else
+            return;
+          #endif
+      }
+
+        int tx, ty, tw, th;
+        tw = (5 * 8) - 4;
+
+        #ifdef HAS_BATTERY
+          if (battery_obj.supported) {
+            th = 15;
+            bg_color = TFT_BLACK;
+          } else
+        #endif
+          th = 0;
+
+      // log_d("getLocalTime: %s  th=%d", timeBuffer, th);
+
+      #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
+        tx = TFT_HEIGHT; 
+        // ty = TFT_WIDTH - th; // Bottom Right
+        ty = th;   // Near Top Right
+      #else
+        tx = TFT_WIDTH;
+        // ty = TFT_HEIGHT - th;    // Bottom Right
+        ty = th;   // Near Top Right
+      #endif
+
+      // Serial.print("time: ");
+      // Serial.println(timeBuffer);
+      // Serial.println((String) tx + " : " + (String) ty);
+
+        static int16_t  str_w = 32;
+
+        // display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
+        // Serial.printf("Str width = %d\n", str_w);
+        str_w +=2;
+        display_obj.tft.fillRect(TFT_WIDTH - str_w, ty, str_w, th, bg_color);
+        display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
+
+        str_w = display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
+
+        // restore Text color
+        display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
+    
+/*
+      if (update_disp && sys_temp_supported) {
+        float tp = -1.0;
+        #ifdef CPU_TEMP_SUPPORTED
+          tp = sys_temp_get();
+
+          if (tp > 60.0)
+            txt_color = TFT_RED;
+        #elif SOME_OTHER_DATA_SRC // fake example
+          tp = obj.get_temp();  
+        #endif
+        snprintf(timeBuffer, sizeof(timeBuffer), " %.1fC", tp);
+
+      } else if ( system_time_set) {
+
+        struct tm timeinfo;
+        if(getLocalTime(&timeinfo)){
+          strftime(timeBuffer, sizeof(timeBuffer), " %k:%M", &timeinfo);
+        } 
+
+      } else {
+        strncpy(timeBuffer, "--:--", 6);
+      }
+
+      // int16_t  str_w = 32;
+      // display_obj.tft.fillRect(tx -38, ty, 38, ty, bg_color);
+
+      display_obj.tft.setTextColor(txt_color, bg_color, true);
+     //  str_w = 
+      display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
+      // log_d("str_w = %d", str_w);
+
+    // reset color
+    display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
+    */
+  }
+}
+
 void MenuFunctions::updateStatusBar()
 {
   display_obj.tft.setTextSize(1);
@@ -1281,114 +1425,9 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
-  // #ifdef HAS_RTC
-    uint32_t ct = initTime & (1 << 12);
-    // Serial.print("count_pass   = "); Serial.println(count_pass++);
-    // Serial.print("initTime     = "); Serial.println(initTime);
-    // Serial.print("clock_update = "); Serial.println(clock_update);
-    // Serial.print("ct           = "); Serial.println(ct);
-    if(ct != clock_update) {  // we dont need to update the clock several time a sec.
-      count_pass = 0;
-      clock_update = ct;
-      char timeBuffer[16];
-      struct tm timeinfo;
-      // static uint32_t tic = 0;
-      uint16_t bg_color = STATUSBAR_COLOR;
+  update_time_temp_disp(status_changed);
 
-      // tic = this->initTime;
-      if (clock_update && system_time_set) {
-
-        if(getLocalTime(&timeinfo))
-          strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
-        else
-          timeBuffer[0] = '\0';
-
-      } else {
-          #if defined(HAS_TEMP_SENSOR)
-            #if defined(HAS_SHTC3)
-              SHTC3_obj.read();
-              snprintf(timeBuffer, sizeof(timeBuffer), "%.1fc", SHTC3_obj._temperature);
-            #elif defined(USE_CPU_TEMP)
-              snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", get_sys_temp());
-            #else
-              snprintf(timeBuffer, sizeof(timeBuffer), "0.0C");
-            #endif
-          #else
-            return;
-          #endif
-      }
-
-        //  "%H:%M"
-
-        int tx, ty, tw, th;
-        tw = (5 * 8) - 4;
-
-        #ifdef HAS_BATTERY
-          if (battery_obj.supported) {
-            th = 15;
-            bg_color = TFT_BLACK;
-          } else
-        #endif
-          th = 0;
-
-        // log_d("timeBuffer: %s  th=%d", timeBuffer, th);
-
-        // Serial.print("TimeBuffer =");
-        // Serial.println(timeBuffer);
-
-        #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
-          tx = TFT_HEIGHT; //  - tw;
-          // ty = TFT_WIDTH - th; // Bottom Right
-          ty = th;   // Near Top Right
-        #else
-          tx = TFT_WIDTH;  // - tw;
-          // ty = TFT_HEIGHT - th;    // Bottom Right
-          ty = th;   // Near Top Right
-        #endif
-
-        // Serial.print("time: ");
-        // Serial.println(timeBuffer);
-        // Serial.println((String) tx + " : " + (String) ty);
-
-        static int16_t  str_w = 32;
-
-        // display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
-        // Serial.printf("Str width = %d\n", str_w);
-        str_w +=2;
-        display_obj.tft.fillRect(TFT_WIDTH - str_w, ty, str_w, th, bg_color);
-        display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
-
-        str_w = display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
-
-        // restore Text color
-        display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
-  }  //  system_time_set && clock_update
-
-  // RAM Stuff
-  wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
-  if ((wifi_scan_obj.free_ram != wifi_scan_obj.old_free_ram) || (status_changed)) {
-    wifi_scan_obj.old_free_ram = wifi_scan_obj.free_ram;
-    //display_obj.tft.fillRect(SB_MEM_X, 0, 60, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
-    #ifdef HAS_FULL_SCREEN
-    #ifndef HAS_PSRAM
-      display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 2);
-    #else
-      display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 1);
-      display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", SB_MEM_X, 8, 1);
-    #endif
-  #endif
-
-  #ifdef HAS_MINI_SCREEN
-    #ifndef HAS_PSRAM
-      display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
-    #else
-      if (this->initTime & (1 << 13))  // 13 -> 8.192 seconds
-        display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
-      else
-        display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
-    #endif
-  #endif
-  }
+  RamStuff(status_changed);
 
   // Draw battery info
   MenuFunctions::battery(false);
@@ -1550,23 +1589,9 @@ void MenuFunctions::drawStatusBar()
     display_obj.tft.drawString("CH:" + (String)wifi_scan_obj.old_channel, TFT_WIDTH/4, 0, 1);
   #endif
 
-  // RAM Stuff
-  wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
-  wifi_scan_obj.old_free_ram = wifi_scan_obj.free_ram;
-  display_obj.tft.fillRect(100, 0, 60, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
-  #ifdef HAS_FULL_SCREEN
-    #ifndef HAS_PSRAM
-      display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 2);
-    #else
-      display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 1);
-      display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", SB_MEM_X, 8, 1);
-    #endif
-  #endif
+  update_time_temp_disp(true);
 
-  #ifdef HAS_MINI_SCREEN
-    display_obj.tft.drawString(String(getDRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
-  #endif
-
+  RamStuff(true);
 
   MenuFunctions::battery(true);
   display_obj.tft.fillRect(186, 0, 16, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
@@ -2095,15 +2120,8 @@ void MenuFunctions::RunSetup()
   this->disable_touch = false;
 
   #if defined(HAS_TEMP_SENSOR)
-    #if defined(HAS_SHTC3)
-      SHTC3_obj.read();
-    #elif defined(USE_CPU_TEMP)
-      init_sys_temp();
-    #else
-      #undef HAS_TEMP_SENSOR
-    #endif
+    TempSensor_obj.RunSetup();
   #endif
-
 
   #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
     M5CardputerKeyboard.begin();

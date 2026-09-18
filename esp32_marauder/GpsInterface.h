@@ -3,11 +3,13 @@
 #ifndef GpsInterface_h
 #define GpsInterface_h
 
+#include "configs.h"
+
+#if defined(HAS_GPS) && !defined(HAS_GPSI2)
+
 #include <MicroNMEA.h>
 #include <SoftwareSerial.h>
 #include <LinkedList.h>
-
-#include "configs.h"
 
 //#define GPS_TEXT_MAXLINES 5 //default:5 lines in the buffer maximum
 //#define GPS_TEXT_MAXCYCLES 1 //default:1
@@ -135,4 +137,5 @@ class GpsInterface {
     uint32_t initGpsBaudAndForce115200();
 };
 
-#endif
+#endif    // HAS_GPS && !HAS_GPSI2
+#endif  // GpsInterface_h

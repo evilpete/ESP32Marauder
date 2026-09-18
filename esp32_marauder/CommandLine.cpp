@@ -2172,21 +2172,12 @@ void CommandLine::runCommand(String input) {
 
   else if (cmd_args.get(0) == DATE_CMD) {
     struct tm timeinfo;
-    #ifdef HAS_RTC
-    if (!rtc_obj.supported) {
-      Serial.println("RTC: Not Supported");
-    } else if ( !rtc_obj.rtc_synced ) {
-      Serial.println("RTC: Not Synced / Time not set");
-    } else {
-      Serial.print("RTC: ");
-      Serial.println(rtc_obj.dt_string());
-    }
-    #endif
+
     Serial.print(F("system_time_set: ")); Serial.println(system_time_set);
     if (getLocalTime(&timeinfo)) {
       Serial.println(&timeinfo, "%F %T");
     } else {
-      log_w("getLocalTime Fail");
+      log_w("getLocalTime Fail: system time not set");
     }
   }
 
@@ -2194,37 +2185,10 @@ void CommandLine::runCommand(String input) {
     struct tm tm_info = {0}; 
     extern bool set_system_time(struct tm timeInfo, bool setrtc = false);
 
-    /* 
-    if ( cmd_args.size() == 2 && cmd_args.get(1).length == 19 ) {
-      String arg_str = cmd_args.get(1);
-      if (arg_str[10] == ' ')
-        arg_str[10] = 'T';
-
-      Serial.println(F("Failed to parse time string."));
-      Serial.print("strlen arg_str: ");
-      Serial.println(arg_str.length());
-      Serial.printf("char 10 = %c", tmstr);
-    }
-    */
-
     log_d("SETDATE_CMD: %s %s", cmd_args.get(1).c_str(), cmd_args.get(2).c_str());
     if ( cmd_args.size() == 3 &&
          strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
          strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
-
-
-      /*
-      // now done in set_system_time if 2nd arg true
-      #ifdef HAS_RTC
-        Serial.print("SETDATE_CMD tm_info: ");
-        Serial.println(tm_info.tm_year);
-        Serial.print("rtc_obj.dt_string: ");
-        Serial.println(rtc_obj.dt_string());
-          rtc_obj.adjust(&tm_info);
-        Serial.print("rtc_obj.dt_string: ");
-        Serial.println(rtc_obj.dt_string());
-      #endif
-      */
 
       set_system_time(tm_info, true);
 

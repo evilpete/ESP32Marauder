@@ -6,6 +6,7 @@
 #include "WiFiScan.h"
 extern WiFiScan wifi_scan_obj;
 
+/*
 #ifdef HAS_GPS
   #ifdef HAS_GPSI2C
     #include "GpsI2c.h"
@@ -15,6 +16,7 @@ extern WiFiScan wifi_scan_obj;
     extern GpsInterface gps_obj;
   #endif
 #endif
+*/
 
 
 #ifndef NTPSERVER
@@ -23,12 +25,31 @@ extern WiFiScan wifi_scan_obj;
 
 #ifdef HAS_RTC
   #include "RTC.h"
-  extern RTC rtc_obj;
+  RTC rtc_obj;
 #endif
-
 
 // has system time been set ?
 bool system_time_set = false;
+
+void init_system_time() {
+
+  #ifdef HAS_RTC
+    rtc_obj.RunSetup();
+  #else
+    log_d("RTC NOT Installed");
+  #endif
+
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    Serial.println(&timeinfo, "%F %T");
+    system_time_set = true;
+  // } else {
+  //   log_w("getLocalTime Fail");
+  }
+
+}
+
+
 
 // set host time
 // Set RTC if install and not in sync

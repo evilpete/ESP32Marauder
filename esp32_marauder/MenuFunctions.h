@@ -10,6 +10,7 @@
 #endif
 
 #ifdef HAS_TOUCH
+  #include "temp_sensor.hpp"
   #include "TouchKeyboard.h"
 #endif
 
@@ -30,17 +31,14 @@
 #endif
 
 
-#ifdef HAS_AHT20
-  #include "AHT20.hpp"
+#ifdef HAS_TEMP_SENSOR
+  #include "temp_sensor.hpp"
+  TempSensor TempSensor_obj;
 #endif
 
 #ifdef HAS_RTC
   #include "RTC.h"
   extern RTC rtc_obj;
-#endif
-
-#ifdef USE_CPU_TEMP
-#include "cpu_temp_sensor.hpp"
 #endif
 
 // If system time/date has been set
@@ -198,6 +196,9 @@ class MenuFunctions
     MenuInputRepeat menu_down_repeat;
     int8_t menu_touch_button = -1;
 
+
+    void RamStuff(bool update = false);
+    void update_time_temp_disp(bool update = false);
     void buildWiFiFoxHuntMenu();
     void buildBluetoothFoxHuntMenu();
     void buildFoxTargetList(FoxHuntListKind type, int context_ap = -1);
