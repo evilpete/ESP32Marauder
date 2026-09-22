@@ -29,7 +29,7 @@
 
 */
 
-#if defined(HAS_SCREEN) && ( !defined(TFT_BL) || !defined(HAS_CH32V003) )
+#if (defined(HAS_SCREEN) || defined(THAS_T_DONGLE_DISPLAY))  && ( !defined(TFT_BL) || !defined(HAS_CH32V003) )
   #warning "HAS_SCREEN is defined and TFT_BL is undefined"
 #endif
 

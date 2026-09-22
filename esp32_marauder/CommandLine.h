@@ -8,6 +8,7 @@
 #ifdef HAS_SCREEN
   #include "MenuFunctions.h"
   #include "Display.h"
+  #include "BackLight.hpp"
 #endif 
 
 #include "WiFiScan.h"

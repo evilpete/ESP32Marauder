@@ -1452,7 +1452,7 @@ void CommandLine::runCommand(String input) {
 
     // Brightness command
     else if (cmd_args.get(0) == BRIGHTNESS_CMD) {
-      #ifndef HAS_MINI_SCREEN
+      #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
         int c_arg = this->argSearch(&cmd_args, "-c");
         int s_arg = this->argSearch(&cmd_args, "-s");
         if (c_arg != -1) {
