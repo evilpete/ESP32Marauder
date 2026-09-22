@@ -51,11 +51,6 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "BatteryInterface.h"
 #endif
 
-#ifdef HAS_SCREEN
-  #include "Display.h"
-  #include "MenuFunctions.h"
-#endif
-
 #ifdef HAS_CH32V003
     #include <CH32V003_IOExpander.hpp>
     // CH32V003_IOExpander CH32V003_obj;
