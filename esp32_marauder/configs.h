@@ -2797,8 +2797,8 @@
       #define GPS_SDA 2
       #define GPS_SCL 1       // Wire2
 
-    #elif defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_2USB \
-        || defined(MARAUDER_CYD_GUITION) || defined(MARAUDER_CYD_3_5_INCH
+    #elif defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_2USB)  \
+        || defined(MARAUDER_CYD_GUITION) || defined(MARAUDER_CYD_3_5_INCH)
       #define GPS_SDA 22    // Wire1
       #define GPS_SCL 27
 
