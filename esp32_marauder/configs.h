@@ -2827,6 +2827,7 @@
       #define GPS_SCL 1
 
     #endif
+  #endif
 
   #if defined(HAS_GPS) && !defined(HAS_GPSI2C)
 
