@@ -169,5 +169,6 @@ private:
     // float _humidity = 0.0f;
 };
 
+inline SHTC3 SHTC3_obj;
 
 #endif  // SHTC3_hpp

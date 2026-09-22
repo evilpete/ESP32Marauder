@@ -304,6 +304,7 @@ private:
     }
 };
 
+inline CST820 CST820_touch;
 #endif   // HAS_CST820
 
 #endif   // CST820_hpp

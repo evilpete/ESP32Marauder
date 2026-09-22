@@ -34,7 +34,11 @@ bool system_time_set = false;
 void init_system_time() {
 
   #ifdef HAS_RTC
-    rtc_obj.RunSetup();
+    #ifdef RTC_SDA
+      rtc_obj.RunSetup(RTC_SDA, RTC_SCL);
+    #else
+      rtc_obj.RunSetup();
+    #endif
   #else
     log_d("RTC NOT Installed");
   #endif

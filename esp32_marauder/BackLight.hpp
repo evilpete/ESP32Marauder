@@ -43,14 +43,14 @@
 // CH32V003: IO Port Expander replaces TFT_BL Pin
 #ifdef HAS_CH32V003
     #include <CH32V003_IOExpander.hpp>
-    extern CH32V003_IOExpander CH32V003_obj;
+    // extern CH32V003_IOExpander CH32V003_obj;
 
     static const uint8_t BL_LEVELS[] = {0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255};
 
     static uint8_t BL_NUM_LEVELS = 16;
     // Dummy Functions, should never be called but are here just in case
 
-    static void brightnessInit() { }   // brightnessInit Fallthrough
+    static void brightnessInit() { }
 
     static void brightnessCycle() { }
 
@@ -295,7 +295,7 @@
 
   static uint8_t BL_NUM_LEVELS = 1;
   // dummyFunctions
-  static static void brightnessInit() {
+  static void brightnessInit() {
       log_d("brightnessInit(noDim): TFT_BL = %d", TFT_BL);
       Serial.print(F("[brightnessInit] HAS_MINI_SCREEN "));
       pinMode(TFT_BL, OUTPUT);

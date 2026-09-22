@@ -3,6 +3,7 @@
 #ifndef MenuFunctions_h
 #define MenuFunctions_h
 
+
 #include "configs.h"
 
 #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
@@ -10,11 +11,12 @@
 #endif
 
 #ifdef HAS_TOUCH
-  #include "temp_sensor.hpp"
   #include "TouchKeyboard.h"
 #endif
 
 #ifdef HAS_SCREEN
+
+#include "BackLight.hpp"
 
 #define BATTERY_ANALOG_ON 0
 
@@ -33,13 +35,11 @@
 
 #ifdef HAS_TEMP_SENSOR
   #include "temp_sensor.hpp"
-  TempSensor TempSensor_obj;
+  #define USE_TEMP TempSensor_obj.supported
+#else
+  #define USE_TEMP false
 #endif
 
-#ifdef HAS_RTC
-  #include "RTC.h"
-  extern RTC rtc_obj;
-#endif
 
 // If system time/date has been set
 extern bool system_time_set;
@@ -71,18 +71,17 @@ extern int8_t wifi_power;
 extern WiFiScan wifi_scan_obj;
 extern ReconMission recon_obj;
 extern SDInterface sd_obj;
-// #ifdef HAS_BATTERY
-extern BatteryInterface battery_obj;
-// #endif
+#ifdef HAS_BATTERY
+  extern BatteryInterface battery_obj;
+  #define USE_BATT battery_obj.supported
+#else
+  #define USE_BATT false
+#endif
 extern Settings settings_obj;
 
 // extern void shutdown();
 // extern void DeepSleep(int8_t);
 
-#ifdef HAS_SHTC3
-  #include "SHTC3.hpp"
-  extern SHTC3 SHTC3_obj;
-#endif
 
 #define FLASH_BUTTON 0
 
@@ -198,7 +197,7 @@ class MenuFunctions
 
 
     void RamStuff(bool update = false);
-    void update_time_temp_disp(bool update = false);
+    void update_time_temp_batt(bool update = false);
     void buildWiFiFoxHuntMenu();
     void buildBluetoothFoxHuntMenu();
     void buildFoxTargetList(FoxHuntListKind type, int context_ap = -1);

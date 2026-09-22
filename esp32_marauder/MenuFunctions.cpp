@@ -4,10 +4,6 @@
 #include "OwnedListLifecycle.h"
 #include "lang_var.h"
 
-#if defined(HAS_TEMP_SENSOR) && defined(USE_CPU_TEMP)
-  #include "cpu_temp_sensor.hpp"
-#endif
-
 #ifdef HAS_SCREEN
 
 extern const unsigned char menu_icons[][66];
@@ -1091,6 +1087,7 @@ void MenuFunctions::main(uint32_t currentTime)
   #endif
 }
 
+/*
 #if BATTERY_ANALOG_ON == 1
 byte battery_analog_array[10];
 byte battery_count = 0;
@@ -1179,19 +1176,19 @@ void MenuFunctions::battery(bool initial)
       }
 
       display_obj.tft.setCursor(0, 1);
-      /*if (!this->disable_touch) {
-        display_obj.tft.drawXBitmap(SB_TOUCH_X,
-                                    0,
-                                    menu_icons[STATUS_BAT],
-                                    16,
-                                    16,
-                                    STATUSBAR_COLOR,
-                                    the_color);
-      }*/
+      //if (!this->disable_touch) {
+      //display_obj.tft.drawXBitmap(SB_TOUCH_X,
+      //                            0,
+      //                            menu_icons[STATUS_BAT],
+      //                            16,
+      //                            16,
+      //                            STATUSBAR_COLOR,
+      //                            the_color);
+      //}
         // display_obj.tft.drawString((String)battery_obj.battery_level + "%", SB_BAT_X, 0, 1);
       #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
         display_obj.tft.drawRightString((String)battery_obj.battery_level + "%",  TFT_WIDTH, 0, 1);
-      #else
+1     #else
         display_obj.tft.drawRightString((String)battery_obj.battery_level + "%",  TFT_WIDTH, 0, 2);
       #endif
     }
@@ -1202,6 +1199,7 @@ void MenuFunctions::battery2(bool initial)
   MenuFunctions::battery(initial);
 }
 #endif
+*/
 
 void MenuFunctions::RamStuff(bool update)  {
   // RAM Stuff
@@ -1232,57 +1230,75 @@ void MenuFunctions::RamStuff(bool update)  {
   }
 }
 
-uint32_t clock_update = 1;
-uint32_t count_pass = 0;
+// uint32_t clock_update = 1;
+// uint32_t count_pass = 0;
 extern bool system_time_set;
-void MenuFunctions::update_time_temp_disp(bool update) {
+// Loop through values for time, temp & Batt level on top right banner
+void MenuFunctions::update_time_temp_batt(bool update) {
   static uint8_t update_disp = 7;
 
-  uint8_t ct = (this->initTime >> 12) & 0x01;
+  uint8_t ct = (this->initTime >> 12) & 0x02;
 
   if(ct != update_disp or update) {  // we dont need to update the clock several hundred times a sec.
       update_disp = ct;
 
       Serial.print("ct ="); Serial.print(ct);
 
-      clock_update = ct;
       char timeBuffer[16];
-      struct tm timeinfo;
       // static uint32_t tic = 0;
       uint16_t bg_color = STATUSBAR_COLOR;
-      uint16_t txt_color = TFT_YELLOW;
+      uint16_t txt_color = TFT_WHITE;
 
-      // tic = this->initTime;
-      if (clock_update && system_time_set) {
+      // Use "(time >> 12) & 0x02" to cycle through different values
+      // With a biased for time
+      switch(ct) {
 
-        if(getLocalTime(&timeinfo))
-          strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
-        else
-          timeBuffer[0] = '\0';
+        case 0x00:
+            #ifdef HAS_TEMP_SENSOR
+              if (TempSensor_obj.supported) {
+                  float t_lev = TempSensor_obj.temperature();
+                  if (t_lev >= 60) {
+                      txt_color = TFT_RED;
+                  } else if (t_lev >= 55) {
+                      txt_color = TFT_ORANGE;
+                  }
+                  snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", t_lev);
+                  break;
+              }
+            #endif
+            // Else Fall through
 
-      } else {
-          #if defined(HAS_TEMP_SENSOR)
-            if (TempSensor_obj.supported)
-                snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", TempSensor_obj.temperature());
-            else
-                snprintf(timeBuffer, sizeof(timeBuffer), "0.0C");
-          #else
-            return;
+        case 0x01:
+          #ifdef HAS_BATTERY
+            if (battery_obj.supported) {
+                uint8_t b_lev = battery_obj.getBatteryLevel();
+                if (b_lev <= 25) {
+                    txt_color = TFT_RED;
+                  } else if (b_lev <= 33) {
+                    txt_color = TFT_ORANGE;
+                  }
+                snprintf(timeBuffer, sizeof(timeBuffer), "%dC", b_lev);
+                break;
+            }
           #endif
-      }
+            // Else Fall through
 
+          case 0x02: // Fall through
+          case 0x03: // Fall through
+          default:
+              if (system_time_set) {
+                  struct tm timeinfo;
+                  if(getLocalTime(&timeinfo)) {
+                      strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+                  }
+              }
+
+        }   // case
+
+        /*
         int tx, ty, tw, th;
         tw = (5 * 8) - 4;
 
-        #ifdef HAS_BATTERY
-          if (battery_obj.supported) {
-            th = 15;
-            bg_color = TFT_BLACK;
-          } else
-        #endif
-          th = 0;
-
-      // log_d("getLocalTime: %s  th=%d", timeBuffer, th);
 
       #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
         tx = TFT_HEIGHT; 
@@ -1293,60 +1309,21 @@ void MenuFunctions::update_time_temp_disp(bool update) {
         // ty = TFT_HEIGHT - th;    // Bottom Right
         ty = th;   // Near Top Right
       #endif
+      */
 
-      // Serial.print("time: ");
-      // Serial.println(timeBuffer);
-      // Serial.println((String) tx + " : " + (String) ty);
+      static int16_t str_w = 32;
+      if (txt_color != TFT_WHITE)
+        display_obj.tft.setTextColor(txt_color, STATUSBAR_COLOR, true);
 
-        static int16_t  str_w = 32;
+      display_obj.tft.fillRect(TFT_WIDTH - str_w, 0, str_w, STATUS_BAR_WIDTH,  bg_color);
+      str_w = display_obj.tft.drawRightString(timeBuffer, SCREEN_WIDTH , 0 , 2);
+      str_w +=2;
 
-        // display_obj.tft.fillRect(tx, ty, tw, th, bg_color);
-        // Serial.printf("Str width = %d\n", str_w);
-        str_w +=2;
-        display_obj.tft.fillRect(TFT_WIDTH - str_w, ty, str_w, th, bg_color);
-        display_obj.tft.setTextColor(TFT_YELLOW, bg_color, true);
-
-        str_w = display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
-
-        // restore Text color
+      // restore Text color
+      if (txt_color != TFT_WHITE)
         display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
     
-/*
-      if (update_disp && sys_temp_supported) {
-        float tp = -1.0;
-        #ifdef CPU_TEMP_SUPPORTED
-          tp = sys_temp_get();
-
-          if (tp > 60.0)
-            txt_color = TFT_RED;
-        #elif SOME_OTHER_DATA_SRC // fake example
-          tp = obj.get_temp();  
-        #endif
-        snprintf(timeBuffer, sizeof(timeBuffer), " %.1fC", tp);
-
-      } else if ( system_time_set) {
-
-        struct tm timeinfo;
-        if(getLocalTime(&timeinfo)){
-          strftime(timeBuffer, sizeof(timeBuffer), " %k:%M", &timeinfo);
-        } 
-
-      } else {
-        strncpy(timeBuffer, "--:--", 6);
-      }
-
-      // int16_t  str_w = 32;
-      // display_obj.tft.fillRect(tx -38, ty, 38, ty, bg_color);
-
-      display_obj.tft.setTextColor(txt_color, bg_color, true);
-     //  str_w = 
-      display_obj.tft.drawRightString(timeBuffer, tx , ty , 2);
-      // log_d("str_w = %d", str_w);
-
-    // reset color
-    display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
-    */
-  }
+  }   // updatek
 }
 
 void MenuFunctions::updateStatusBar()
@@ -1425,12 +1402,15 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
-  update_time_temp_disp(status_changed);
+  if (USE_TEMP || USE_BATT || system_time_set)
+      update_time_temp_batt(status_changed);
 
+  // RAM / PRAM info
   RamStuff(status_changed);
 
   // Draw battery info
-  MenuFunctions::battery(false);
+  // MenuFunctions::battery(false);
+
   display_obj.tft.fillRect(186, 0, 16, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
 
   // Disable touch stuff
@@ -1589,11 +1569,12 @@ void MenuFunctions::drawStatusBar()
     display_obj.tft.drawString("CH:" + (String)wifi_scan_obj.old_channel, TFT_WIDTH/4, 0, 1);
   #endif
 
-  update_time_temp_disp(true);
+  if (USE_TEMP || USE_BATT || system_time_set)
+      update_time_temp_batt(true);
 
   RamStuff(true);
 
-  MenuFunctions::battery(true);
+  // MenuFunctions::battery(true);
   display_obj.tft.fillRect(186, 0, 16, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
 
 
@@ -5397,7 +5378,7 @@ void MenuFunctions::displayCurrentMenu(int start_index)
     extern void brightnessSave(uint8_t level);
     extern void brightnessSet(uint8_t level);
     extern uint8_t getBrightnessLevel();
-    extern const uint8_t BL_NUM_LEVELS;
+    // extern const uint8_t BL_NUM_LEVELS;
 
     uint8_t level = getBrightnessLevel();
 

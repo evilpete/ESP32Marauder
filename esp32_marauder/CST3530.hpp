@@ -82,31 +82,29 @@ using CST3530Callback = void (*)(const CST3530Point &);
 // -- Main class ----------------------------------------------------------------
 class CST3530 {
 public:
-    inline CST3530(TwoWire &wire           = Wire,
-                    uint8_t  addr           = CST3530_I2C_ADDR,
-                    int8_t   rstPin         = TP_RST,
-                    int8_t   intPin         = TP_INT,
-                    uint8_t  rstActiveLevel = LOW)
-        : _wire(wire), _addr(addr), _rstPin(rstPin), _intPin(intPin)
-        , _rstActiveLevel(rstActiveLevel), _interruptEnabled(false)
-        , _pointCount(0), _callback(nullptr)
-    {
-        memset(_points,    0, sizeof(_points));
-        memset(_prev,      0, sizeof(_prev));
-        memset(_prevValid, 0, sizeof(_prevValid));
-    }
 
-    inline bool begin(TwoWire &wire = Wire) {
+    inline void begin(int8_t _sda, int8_t _scl, int8_t _int = -1,
+                       int8_t _rst = -1, uint32_t freq = 0) {
+        Wire.begin(_sda, _scl, freq);
+        if (freq) {
+            Wire.setClock(freq);
+        }
+
+        begin(&Wire, _int, _rst);
+      }
+
+    inline bool begin(TwoWire *wire = &Wire, int8_t _intPin = -1, int8_t  _rstPin = -1) {
+        _wire = wire;
         log_d("_intPin=%d  _rstPin=%d", _intPin, _rstPin);
-        if (_intPin >= 0) ::pinMode(_intPin, INPUT);
         if (_rstPin >= 0) {
             ::pinMode(_rstPin, OUTPUT);
             ::digitalWrite(_rstPin, !_rstActiveLevel);
         }
         if (_intPin >= 0)
             enableInterrupt();
-        _wire.beginTransmission(_addr);
-        if (_wire.endTransmission() != 0) return false;
+
+        _wire->beginTransmission(_addr);
+        if (_wire->endTransmission() != 0) return false;
         if (_rstPin >= 0) reset();
         log_d("CST3530::begin: True");
         return true;
@@ -136,6 +134,7 @@ public:
     inline void disableInterrupt() {
         if (_intPin < 0) return;
         detachInterrupt(digitalPinToInterrupt(_intPin));
+        log_d("CST3530::disableInterrupt : %d", _intPin);
         _interruptEnabled = false;
     }
 
@@ -292,19 +291,19 @@ public:
         tx[0] = (reg >> 24) & 0xFF;  tx[1] = (reg >> 16) & 0xFF;
         tx[2] = (reg >>  8) & 0xFF;  tx[3] =  reg        & 0xFF;
         if (data && len > 0) memcpy(&tx[4], data, len);
-        _wire.beginTransmission(_addr);
-        _wire.write(tx, 4 + len);
-        return (_wire.endTransmission() == 0);
+        _wire->beginTransmission(_addr);
+        _wire->write(tx, 4 + len);
+        return (_wire->endTransmission() == 0);
     }
 
     inline bool readReg(uint32_t reg, uint8_t *buf, uint8_t len) {
         uint8_t ab[4] = { (uint8_t)(reg>>24), (uint8_t)(reg>>16),
                           (uint8_t)(reg>> 8), (uint8_t)(reg    ) };
-        _wire.beginTransmission(_addr);
-        _wire.write(ab, 4);
-        if (_wire.endTransmission(false) != 0) return false;
-        if (_wire.requestFrom((uint8_t)_addr, len) < len) return false;
-        for (uint8_t i = 0; i < len; i++) buf[i] = _wire.read();
+        _wire->beginTransmission(_addr);
+        _wire->write(ab, 4);
+        if (_wire->endTransmission(false) != 0) return false;
+        if (_wire->requestFrom((uint8_t)_addr, len) < len) return false;
+        for (uint8_t i = 0; i < len; i++) buf[i] = _wire->read();
         return true;
     }
 
@@ -315,8 +314,8 @@ public:
     int8_t   _intPin;
 
 private:
-    TwoWire &_wire;
-    uint8_t  _rstActiveLevel;
+    TwoWire *_wire;
+    uint8_t  _rstActiveLevel = LOW;
     bool     _interruptEnabled;
 
     uint8_t      _pointCount;
@@ -326,13 +325,15 @@ private:
     CST3530Point _prev[CST3530_MAX_POINTS];
     bool         _prevValid[CST3530_MAX_POINTS];
 
-    CST3530Callback _callback;
+    CST3530Callback _callback = nullptr;;
 
     // `inline` static data member (C++17) avoids a separate .cpp definition.
     static inline volatile bool _isrFlag = false;
 
     static void IRAM_ATTR _isrHandler() { _isrFlag = true; }
 };
+
+inline CST3530 CST3530_obj;
 
 #endif   //  CST3530_hpp
 

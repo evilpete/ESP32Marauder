@@ -161,8 +161,8 @@
     #define HAS_SD
     #define USE_SD
     #define HAS_TEMP_SENSOR
-    // #define HAS_RTC
-    //  #define HAS_RTC8563
+    #define HAS_RTC
+      #define HAS_PCF8563
     #define HAS_GPS
     #define HAS_DIRECT_UPLOAD
   #endif
@@ -3287,9 +3287,9 @@
       #define I2C_SCL 10
       #define HAS_MAX1704X
       // FT6336 cap touch - shares I2C bus with MAX17048
-      #define CTP_RST 8
-      #define CTP_SDA I2C_SDA
-      #define CTP_SCL I2C_SCL
+      #define TP_RST 8
+      #define TP_SDA I2C_SDA
+      #define TP_SCL I2C_SCL
 
     #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
       #define I2C_SDA 0
@@ -3563,7 +3563,7 @@
   #endif
 
   //  define HAS_RTC if we have RTC hardware
-  #if defined(HAS_PCF8523) || defined(HAS_DS1307) || defined(HAS_PCF85063)
+  #if defined(HAS_PCF8523) || defined(HAS_DS1307) || defined(HAS_PCF85063) || defined(HAS_PCF8563)
     #define HAS_RTC 1
   #endif
 

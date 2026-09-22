@@ -11,6 +11,9 @@ BatteryInterface::BatteryInterface() {
 
 }
 
+void BatteryInterface::main(uint32_t currentTime) {}
+
+/*
 void BatteryInterface::main(uint32_t currentTime) {
   if (currentTime != 0) {
       // Serial.println("Checking Battery Level");
@@ -31,6 +34,7 @@ void BatteryInterface::main(uint32_t currentTime) {
     }
   }
 }
+*/
 
 void BatteryInterface::RunSetup() {
   byte error;

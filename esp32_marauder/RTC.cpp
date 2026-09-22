@@ -1,6 +1,6 @@
 #include "configs.h"
 
-#if defined(HAS_RTC) && (defined(HAS_DS1307) || defined(HAS_PCF8523) || defined(HAS_PCF85063))
+#if defined(HAS_RTC) && (defined(HAS_DS1307) || defined(HAS_PCF8523) || defined(HAS_PCF8563))
 
 #include "RTC.h"
 
@@ -41,6 +41,9 @@ void RTC::RunSetup(TwoWire *wireInstance) {
     supported = rtclock.begin(_wire);
   #elif defined(HAS_PCF8523) || defined(HAS_DS1307)
     log_d("Looking for RTClib device");
+    supported = rtclock.begin(_wire);
+  #elif defined(HAS_PCF8563)
+    log_d("Looking for PCF8563");
     supported = rtclock.begin(_wire);
   #endif
 
@@ -114,6 +117,22 @@ bool RTC::setup() {
  //  }
 
   if (!rtclock.isrunning()) {
+    Serial.println(F("RTC NOT initialized"));
+    log_w("RTC is NOT initialized");
+    rtc_synced = false;
+  } else {
+    rtc_synced = true;
+  }
+
+  log_d("dt_string(): %s", dt_string().c_str());
+  log_i("RTC::DS1307_setup Done");
+  return supported;
+}
+
+
+#elif defined(HAS_PCF8563)
+bool RTC::setup() {
+  if (!rtclock.initialized()) {
     Serial.println(F("RTC NOT initialized"));
     log_w("RTC is NOT initialized");
     rtc_synced = false;

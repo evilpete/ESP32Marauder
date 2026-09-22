@@ -2128,6 +2128,7 @@ bool WiFiScan::checkMem() {
     return true;
 }
 
+// cppcheck-suppress  missingReturn
 int WiFiScan::clearList(uint8_t list_type) {
   int num_cleared = 0;
 
@@ -2188,6 +2189,8 @@ int WiFiScan::clearList(uint8_t list_type) {
     ssids->clear();
     return num_cleared;
   }
+
+// cppcheck-suppress missingReturn
 }
 
 bool WiFiScan::addSSID(String essid) {
@@ -9655,7 +9658,7 @@ void WiFiScan::sendEapolBagMsg1(uint8_t bssid[6], int channel, uint8_t mac[6], u
   }
   /* Update replay counter */
   for (uint8_t i = 0; i < 8; i++) {
-    eapol_packet_bad_msg1[41 + i] = (packets_sent >> (56 - i * 8)) & 0xFF;
+    eapol_packet_bad_msg1[41 + i] = (packets_sent >> (56 - i * 8)) & 0xFF;  // cppcheck-suppress shiftTooManyBits
   }
 
   if(sec == WIFI_SECURITY_WPA3 || sec == WIFI_SECURITY_WPA3_ENTERPRISE || sec == WIFI_SECURITY_WAPI) {

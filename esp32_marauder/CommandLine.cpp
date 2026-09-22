@@ -50,11 +50,13 @@ namespace {
 // GCOVR_EXCL_STOP
 
 // Brightness functions defined in esp32_marauder.ino
+/*
 #ifndef HAS_MINI_SCREEN
   extern void brightnessCycle();
   extern uint8_t getBrightnessLevel();
   extern const uint8_t BL_NUM_LEVELS;
 #endif
+*/
 
 void CommandLine::RunSetup() {
   #ifndef MARAUDER_V8
@@ -1464,7 +1466,7 @@ void CommandLine::runCommand(String input) {
             lvl = 0;
           Serial.print("lvl = "); Serial.println(lvl);
           if (lvl < BL_NUM_LEVELS) {
-            extern void brightnessSave(uint8_t level);
+            // extern void brightnessSave(uint8_t level);
             brightnessSave(lvl);
             Serial.print(F("[Brightness] Set to level "));
             Serial.println(lvl);

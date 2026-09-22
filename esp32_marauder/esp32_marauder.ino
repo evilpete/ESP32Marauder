@@ -58,14 +58,9 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #ifdef HAS_CH32V003
     #include <CH32V003_IOExpander.hpp>
-    CH32V003_IOExpander CH32V003_obj;
+    // CH32V003_IOExpander CH32V003_obj;
 #endif
 
-// Yet another Cap Touch
-#ifdef HAS_CST3530
-    #include <CST3530.hpp>
-    CST3530 CST3530_obj;
-#endif
 
 #ifdef HAS_BUTTONS
   #include "Switches.h"
@@ -306,16 +301,7 @@ void setup()
     log_d("CH32V003_obj.touchReset");
     CH32V003_obj.touchReset();    // pulses Touch_RST via EXIO0
 
-    #ifdef HAS_CST3530
-      CST3530_obj.begin(Wire);
-      // #if defined(TP_INT) && TP_INT >= 0
-      //   CST3530_obj.enableInterrupt(TP_INT);
-      // #endif
-      // CST3530_obj.begin(&Wire, TP_RST, TP_INT, TP_FREQ);
-      log_d("CST3530_obj.begin done");
-    #else
-      log_d("HAS_CST3530 False");
-    #endif
+    // CST3530 is init'ed in Display.cpp
 
   #endif  // MARAUDER_WS_C5_28
 
@@ -533,9 +519,9 @@ void loop()
   // Save buffer to SD and/or serial
   buffer_obj.save();
 
-  #ifdef HAS_BATTERY
-     battery_obj.main(currentTime);
-  #endif
+  //#ifdef HAS_BATTERY
+  //   battery_obj.main(currentTime);
+  //#endif
 
   // menu_function_obj.updateStatusBar();
   if ((wifi_scan_obj.currentScanMode != WIFI_PACKET_MONITOR) ||

@@ -41,12 +41,12 @@
 
 #ifdef HAS_CST3530
   #include <CST3530.hpp>
-  extern CST3530 CST3530_obj;
+  // extern CST3530 CST3530_obj;
 #endif
 
 #ifdef HAS_CST820
   #include <CST820.hpp>
-  extern CST820 CST820_touch;
+  // extern CST820 CST820_touch;
 #endif
 
 // WiFi stuff

@@ -226,3 +226,5 @@ private:
     uint8_t  _outReg;
     bool     _invertPWM;
 };
+
+inline CH32V003_IOExpander CH32V003_obj;

@@ -5,19 +5,15 @@
 #ifndef temp_sensor_hpp
 #define temp_sensor_hpp
 
+#pragma GCC diagnostic warning "-Wcpp"
 
-//do we have a SENSOR?
-#if defined(HAS_TEMP_SENSOR) && \
-    !( defined(HAS_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
-  #warning "HAS_TEMP_SENSOR set without source device HAS_SHTC3 or HAS_CPU_TEMP"
-  #undef HAS_TEMP_SENSOR
+#ifdef HAS_CPU_TEMP
+#warning "HAS_CPU_TEMP SET"
 #endif
 
-
-#if defined(HAS_TEMP_SENSOR)
-
-#include <Arduino.h>
-#include <Wire.h>
+#ifdef HAS_TEMP_SENSOR
+#warning "HAS_TEMP_SENSOR SET"
+#endif
 
   // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
   #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
@@ -27,14 +23,27 @@
       #define HAS_CPU_TEMP
   #else
     #undef HAS_CPU_TEMP
+  #error "undef HAS_CPU_TEMP"
   #endif
 
-  #if defined(HAS_SHTC3)
-      #include <SHTC3.hpp>
-      SHTC3 SHTC3_obj;
-  #elif defined (HAS_CPU_TEMP)
-      #include "cpu_temp_sensor.hpp"
-  #endif
+//do we have a SENSOR?
+#if defined(HAS_TEMP_SENSOR) && \
+    !( defined(HAS_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
+  #undef HAS_TEMP_SENSOR
+#endif
+
+
+#if defined(HAS_TEMP_SENSOR)
+
+#include <Arduino.h>
+#include <Wire.h>
+
+
+#if defined(HAS_SHTC3)
+    #include <SHTC3.hpp>
+#elif defined (HAS_CPU_TEMP)
+    #include "cpu_temp_sensor.hpp"
+#endif
 
 
   class TempSensor {
@@ -93,6 +102,8 @@
         return 0.0;
       #endif
   }
+
+inline TempSensor TempSensor_obj;
 
 #endif  //  !HAS_SHTC3  !HAS_CPU_TEMP
 

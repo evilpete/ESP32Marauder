@@ -304,6 +304,31 @@ void Display::RunSetup() {
     this->touchscreen.setRotation(0);
   #endif
 
+  #ifdef HAS_CST820
+    #ifndef TP_INT
+      #define TP_INT -1
+    #endif
+
+    #ifndef TP_RST
+      #define TP_RST -1
+    #endif
+
+    CST820_touch.begin(&Wire, TP_INT, TP_RST);
+  #endif
+
+  #ifdef HAS_CST3530
+
+      CST3530_obj.begin(&Wire, TP_INT);
+      // #if defined(TP_INT) && TP_INT >= 0
+      //   CST3530_obj.enableInterrupt(TP_INT);
+      // #endif
+      // CST3530_obj.begin(&Wire, TP_INT, TP_RST, TP_FREQ);
+      // CST3530_obj.begin(TP_SDA, TO_SCL, TP_INT, TP_RST,f TP_FREQ)
+      log_d("CST3530_obj.begin done");
+    #else
+      log_d("HAS_CST3530 False");
+    #endif
+
   #ifdef HAS_FT6336
     ft6336_init();
   #endif

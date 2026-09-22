@@ -1,6 +1,6 @@
 #include "configs.h"
 
-#if defined(HAS_RTC) && (defined(HAS_DS1307) || defined(HAS_PCF8523) || defined(HAS_PCF85063))
+#if defined(HAS_RTC) && (defined(HAS_DS1307) || defined(HAS_PCF8523) || defined(HAS_PCF85063) || defined(HAS_PCF8563))
 
 #ifndef rtc_h
 #define rtc_h
@@ -18,6 +18,11 @@
 // -- PCF85063 driver - RTClib-compatible interface -----------------------------
 #if defined(HAS_PCF85063)
   #include "PCF85063.hpp"
+#endif
+
+// -- PCF8563 driver -  RTClib-compatible interface
+#if defined(HAS_PCF8563)
+  #include "PCF8563_RTC.hpp"
 #endif
 
 #ifndef NTPSERVER
@@ -39,6 +44,8 @@ public:
     RTC_DS1307   rtclock;
   #elif defined(HAS_PCF85063)
     PCF85063     rtclock;
+  #elif defined(HAS_PCF8563)
+    RTC_PCF8563  rtclock;
   #endif
 
   bool   supported = false;

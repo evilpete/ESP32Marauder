@@ -360,5 +360,7 @@ private:
     }
 };
 
+// inline PCF85063 PCF85063_obj;
+
 #endif  //  HAS_PCF85063
 #endif  //  PCF85063_HPP
