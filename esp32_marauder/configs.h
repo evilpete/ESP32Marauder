@@ -2783,6 +2783,51 @@
     #define mac_history_len_half (mac_history_len / 2)
   #endif
 
+  #if defined(HAS_GPSI2C)
+
+    #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+      #define GPS_SDA 32
+      #define GPS_SCL 33       // Wire2
+
+    #elif defined(MARAUDER_REV_FEATHER) || defined(MARAUDER_REV_FEATHER_S3)
+      #define GPS_SDA 3
+      #define GPS_SCL 4       // Wire
+
+    #elif defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
+      #define GPS_SDA 2
+      #define GPS_SCL 1       // Wire2
+
+    #elif defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_2USB \
+        || defined(MARAUDER_CYD_GUITION) || defined(MARAUDER_CYD_3_5_INCH
+      #define GPS_SDA 22    // Wire1
+      #define GPS_SCL 27
+
+    #elif defined(MARAUDER_M5_NANO_C6)
+      #define GPS_SDA 2
+      #define GPS_SCL 1       // Wire1
+
+    #elif defined(MARAUDER_CYD_24)
+      #define GPS_SDA 27
+      #define GPS_SCL 22     // Wire1
+
+    #elif defined(MARAUDER_REV_FEATHER)
+      #define GPS_SCL 4
+      #define GPS_SDA 3     // Wire1
+
+    #elif defined(MARAUDER_CYD_HMI) // Grove 1 : 16 & 15
+      #define GPS_SDA 17   // Grove 2
+      #define GPS_SCL 18
+
+    #elif defined(MARAUDER_JC2432W328C)
+      #define GP2_SDA 21    // Wire2
+      #define GPS_SCL 22
+
+    #elif defined(MARAUDER_CYD_HMI)
+      #define GP2_SDA 0     // Wire 1
+      #define GPS_SCL 1
+
+    #endif
+
   #if defined(HAS_GPS) && !defined(HAS_GPSI2C)
 
     #if defined(MARAUDER_V6) || defined(MARAUDER_V6_1)
