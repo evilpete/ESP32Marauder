@@ -74,6 +74,8 @@ public:
         if (r != 0) {
             log_d("Fail Ret Code: %d", r);
             return false;
+        } else {
+          log_d("CH32V003 found at %d", _addr);
         }
         return reset();
     }

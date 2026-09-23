@@ -93,7 +93,7 @@ class TimeSpan;
  * @brief A date and time, API compatible with RTClib's DateTime.
  */
 class DateTime {
-public:
+ public:
   DateTime(uint32_t t = SECONDS_FROM_1970_TO_2000);
   DateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour = 0,
            uint8_t min = 0, uint8_t sec = 0);
@@ -621,7 +621,7 @@ inline uint32_t DateTime::unixtime() const {
 inline struct tm DateTime::toTm() const {
   struct tm t;
   memset(&t, 0, sizeof(t));
-  t.tm_year = (int)year() - 1900;
+  t.tm_year = static_cast<int>(year() - 1900);
   t.tm_mon = m - 1;
   t.tm_mday = d;
   t.tm_hour = hh;
@@ -642,13 +642,13 @@ inline String DateTime::timestamp(timestampOpt opt) const {
   char buffer[25];
   switch (opt) {
   case TIMESTAMP_TIME:
-    sprintf(buffer, "%02d:%02d:%02d", hh, mm, ss);
+    snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hh, mm, ss);
     break;
   case TIMESTAMP_DATE:
-    sprintf(buffer, "%u-%02d-%02d", 2000U + yOff, m, d);
+    snprintf(buffer, sizeof(buffer), "%u-%02d-%02d", 2000U + yOff, m, d);
     break;
   default:
-    sprintf(buffer, "%u-%02d-%02dT%02d:%02d:%02d", 2000U + yOff, m, d, hh, mm,
+    snprintf(buffer, sizeof(buffer), "%u-%02d-%02dT%02d:%02d:%02d", 2000U + yOff, m, d, hh, mm,
             ss);
   }
   return String(buffer);
@@ -696,7 +696,7 @@ inline bool DateTime::operator<(const DateTime &right) const {
                (hh < right.hour() ||
                 (hh == right.hour() &&
                  (mm < right.minute() ||
-                  (mm == right.minute() && ss < right.second())))))))))); 
+                  (mm == right.minute() && ss < right.second()))))))))));
 }
 
 /*!
@@ -725,8 +725,8 @@ inline TimeSpan::TimeSpan(int32_t seconds) : _seconds(seconds) {}
 */
 inline TimeSpan::TimeSpan(int16_t days, int8_t hours, int8_t minutes,
                           int8_t seconds)
-    : _seconds((int32_t)days * 86400L + (int32_t)hours * 3600 +
-               (int32_t)minutes * 60 + seconds) {}
+    : _seconds(static_cast<int32_t>(days) * 86400L + static_cast<int32_t>(hours) * 3600 +
+               static_cast<int32_t>(minutes) * 60 + seconds) {}
 
 /*!
     @brief  Copy constructor.
@@ -953,4 +953,4 @@ inline void RTC_PCF8563::disableCLK() {
   writeRegister(PCF8563_SQW_REG, 0x00);
 }
 
-#endif // _PCF8563_RTC_HPP_
+#endif    // _PCF8563_RTC_HPP_

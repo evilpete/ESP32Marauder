@@ -19,7 +19,7 @@
   #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
         (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) \
         || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) \
-        || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2) )
+        || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2))
       #define HAS_CPU_TEMP
   #else
     #undef HAS_CPU_TEMP
@@ -28,7 +28,7 @@
 
 //do we have a SENSOR?
 #if defined(HAS_TEMP_SENSOR) && \
-    !( defined(HAS_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
+    !(defined(HAS_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20))
   #undef HAS_TEMP_SENSOR
 #endif
 
@@ -70,10 +70,12 @@
 
     #if defined(HAS_SHTC3)
         this->supported = SHTC3_obj.begin(_wire);
+        log_d("HAS_SHTC3 supported = %d", this->supported);
     #elif defined(HAS_HAS_AHT20)
       // noop
     #elif defined (HAS_CPU_TEMP)
         this->supported = init_sys_temp();
+        log_d("HAS_CPU_TEMP supported = %d", this->supported);
     #else
         this->supported = false;
     #endif
@@ -94,7 +96,7 @@
         return 0.0;
       #elif defined (HAS_CPU_TEMP)
         if (now - lastRead < 60000)
-          return get_sys_temperature();
+          return read_sys_temp();
 
         lastRead = now;
         return read_sys_temp();

@@ -61,6 +61,7 @@
   }
 
   static void shutdown() {
+
     #ifdef POWER_HOLD_PIN
         // T-HMI
         //  if on battery, can be turn off with the PWR_ON_PIN/POWER_HOLD_PIN if on battery

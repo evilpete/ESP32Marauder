@@ -317,8 +317,7 @@ void Display::RunSetup() {
   #endif
 
   #ifdef HAS_CST3530
-
-      CST3530_obj.begin(&Wire, TP_INT);
+      CST3530_obj.begin(Wire);
       // #if defined(TP_INT) && TP_INT >= 0
       //   CST3530_obj.enableInterrupt(TP_INT);
       // #endif

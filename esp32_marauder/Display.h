@@ -41,7 +41,7 @@
 
 #ifdef HAS_CST3530
   #include <CST3530.hpp>
-  // extern CST3530 CST3530_obj;
+  CST3530 CST3530_obj;
 #endif
 
 #ifdef HAS_CST820

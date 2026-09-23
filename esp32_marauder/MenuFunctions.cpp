@@ -214,28 +214,28 @@ void MenuFunctions::displayMenuButtons() {
     for (int i = 0; i < 3; i++) {
 
       // Draw horizontal line on left
-      display_obj.tft.drawLine(0, 
+      display_obj.tft.drawLine(0,
                               TFT_HEIGHT / 3 * (i),
                               (TFT_WIDTH / 12) / 2,
                               TFT_HEIGHT / 3 * (i),
                               TFT_FARTGRAY);
 
       // Draw horizontal line on right
-      display_obj.tft.drawLine(TFT_WIDTH - 1 - ((TFT_WIDTH / 12) / 2), 
+      display_obj.tft.drawLine(TFT_WIDTH - 1 - ((TFT_WIDTH / 12) / 2),
                               TFT_HEIGHT / 3 * (i),
                               TFT_WIDTH,
                               TFT_HEIGHT / 3 * (i),
                               TFT_FARTGRAY);
 
       // Draw vertical line on left
-      display_obj.tft.drawLine(0, 
+      display_obj.tft.drawLine(0,
                               (TFT_HEIGHT / 3 * (i)) - ((TFT_WIDTH / 12) / 2),
                               0,
                               (TFT_HEIGHT / 3 * (i)) + ((TFT_WIDTH / 12) / 2),
                               TFT_FARTGRAY);
 
       // Draw vertical line on right
-      display_obj.tft.drawLine(TFT_WIDTH - 1, 
+      display_obj.tft.drawLine(TFT_WIDTH - 1,
                               (TFT_HEIGHT / 3 * (i)) - ((TFT_WIDTH / 12) / 2),
                               TFT_WIDTH - 1,
                               (TFT_HEIGHT / 3 * (i)) + ((TFT_WIDTH / 12) / 2),
@@ -294,7 +294,7 @@ void MenuFunctions::main(uint32_t currentTime)
       if ((wifi_scan_obj.currentScanMode != LV_JOIN_WIFI) &&
           (wifi_scan_obj.currentScanMode != LV_ADD_SSID) && (wifi_scan_obj.currentScanMode != WIFI_PACKET_MONITOR)) // GCOVR_EXCL_LINE -- Packet Monitor owns its full hardware display.
         this->updateStatusBar();
-      
+
       // Do channel analyzer stuff
       if ((wifi_scan_obj.currentScanMode == WIFI_SCAN_CHAN_ANALYZER) ||
           (wifi_scan_obj.currentScanMode == BT_SCAN_ANALYZER)){
@@ -339,7 +339,7 @@ void MenuFunctions::main(uint32_t currentTime)
       (wifi_scan_obj.currentScanMode != WIFI_ATTACK_SLEEP) &&
       (wifi_scan_obj.currentScanMode != WIFI_ATTACK_SLEEP_TARGETED) &&
       (wifi_scan_obj.currentScanMode != WIFI_ATTACK_MIMIC) &&
-	  (wifi_scan_obj.currentScanMode != WIFI_ATTACK_FUNNY_BEACON) &&
+          (wifi_scan_obj.currentScanMode != WIFI_ATTACK_FUNNY_BEACON) &&
       (wifi_scan_obj.currentScanMode != WIFI_ATTACK_RICK_ROLL))
     display_obj.displayBuffer();
 
@@ -468,7 +468,7 @@ void MenuFunctions::main(uint32_t currentTime)
           (wifi_scan_obj.currentScanMode == WIFI_ATTACK_SLEEP_TARGETED) ||
           (wifi_scan_obj.currentScanMode == WIFI_ATTACK_SAE_COMMIT) ||
           (wifi_scan_obj.currentScanMode == WIFI_ATTACK_MIMIC) ||
-		      (wifi_scan_obj.currentScanMode == WIFI_ATTACK_FUNNY_BEACON) ||
+                      (wifi_scan_obj.currentScanMode == WIFI_ATTACK_FUNNY_BEACON) ||
           (wifi_scan_obj.currentScanMode == WIFI_ATTACK_RICK_ROLL) ||
           (wifi_scan_obj.currentScanMode == WIFI_ATTACK_BEACON_LIST) ||
           (wifi_scan_obj.currentScanMode == BT_SCAN_ALL) ||
@@ -495,17 +495,17 @@ void MenuFunctions::main(uint32_t currentTime)
           (wifi_scan_obj.currentScanMode == BT_SCAN_ANALYZER))
       {
         wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
-  
+
         // If we don't do this, the text and button coordinates will be off
         display_obj.init();
-  
+
         // Take us back to the menu
         changeMenu(current_menu, true);
       }
-  
+
       x = -1;
       y = -1;
-  
+
       return;
     }
   #endif
@@ -519,7 +519,7 @@ void MenuFunctions::main(uint32_t currentTime)
     #endif
 
     #ifndef HAS_ILI9341
-    
+
       if ((c_btn_press) &&
           (wifi_scan_obj.currentScanMode != WIFI_SCAN_OFF) &&
           (wifi_scan_obj.currentScanMode != WIFI_CONNECTED) &&
@@ -575,7 +575,7 @@ void MenuFunctions::main(uint32_t currentTime)
             (wifi_scan_obj.currentScanMode == WIFI_ATTACK_SLEEP_TARGETED) ||
             (wifi_scan_obj.currentScanMode == WIFI_ATTACK_SAE_COMMIT) ||
             (wifi_scan_obj.currentScanMode == WIFI_ATTACK_MIMIC) ||
-			      (wifi_scan_obj.currentScanMode == WIFI_ATTACK_FUNNY_BEACON) ||
+                              (wifi_scan_obj.currentScanMode == WIFI_ATTACK_FUNNY_BEACON) ||
             (wifi_scan_obj.currentScanMode == WIFI_ATTACK_RICK_ROLL) ||
             (wifi_scan_obj.currentScanMode == WIFI_ATTACK_BEACON_LIST) ||
             (wifi_scan_obj.currentScanMode == BT_SCAN_ALL) ||
@@ -620,10 +620,10 @@ void MenuFunctions::main(uint32_t currentTime)
           // Take us back to the menu
           changeMenu(current_menu, true);
         }
-    
+
         x = -1;
         y = -1;
-    
+
         return;
       }
     #endif
@@ -659,7 +659,7 @@ void MenuFunctions::main(uint32_t currentTime)
         (wifi_scan_obj.currentScanMode != BT_SCAN_FLOCK) &&
         (wifi_scan_obj.currentScanMode != WIFI_SCAN_PROBE) &&
         (wifi_scan_obj.currentScanMode != WIFI_SCAN_DEAUTH) &&
-		    (wifi_scan_obj.currentScanMode != WIFI_ATTACK_FUNNY_BEACON) &&
+                    (wifi_scan_obj.currentScanMode != WIFI_ATTACK_FUNNY_BEACON) &&
         (wifi_scan_obj.currentScanMode != WIFI_SCAN_EAPOL) &&
         (wifi_scan_obj.currentScanMode != WIFI_ATTACK_RICK_ROLL))
     {
@@ -1237,12 +1237,14 @@ extern bool system_time_set;
 void MenuFunctions::update_time_temp_batt(bool update) {
   static uint8_t update_disp = 7;
 
-  uint8_t ct = (this->initTime >> 12) & 0x02;
+  uint8_t ct = (this->initTime >> 12) & 0x03;
 
   if(ct != update_disp or update) {  // we dont need to update the clock several hundred times a sec.
       update_disp = ct;
 
-      Serial.print("ct ="); Serial.print(ct);
+      Serial.print("ct ="); Serial.println(ct);
+      if (update)
+        Serial.println("Update");
 
       char timeBuffer[16];
       // static uint32_t tic = 0;
@@ -1263,8 +1265,12 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                       txt_color = TFT_ORANGE;
                   }
                   snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", t_lev);
+                  Serial.print("Temp: "); Serial.println(timeBuffer);
                   break;
-              }
+              } else
+              Serial.println("Temp: Not available");
+            #else
+              Serial.println("Temp: Not supported");
             #endif
             // Else Fall through
 
@@ -1277,9 +1283,13 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                   } else if (b_lev <= 33) {
                     txt_color = TFT_ORANGE;
                   }
-                snprintf(timeBuffer, sizeof(timeBuffer), "%dC", b_lev);
+                snprintf(timeBuffer, sizeof(timeBuffer), "%d%%", b_lev);
+                Serial.print("Batt: "); Serial.println(timeBuffer);
                 break;
-            }
+            } else
+                Serial.println("Batt: Not available");
+          #else
+                Serial.println("Batt: Not supported");
           #endif
             // Else Fall through
 
@@ -1290,7 +1300,11 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                   struct tm timeinfo;
                   if(getLocalTime(&timeinfo)) {
                       strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+                      Serial.print("Time: "); Serial.println(timeBuffer);
                   }
+              } else {
+                Serial.println("Time: Not available");
+                return;
               }
 
         }   // case
@@ -1301,7 +1315,7 @@ void MenuFunctions::update_time_temp_batt(bool update) {
 
 
       #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
-        tx = TFT_HEIGHT; 
+        tx = TFT_HEIGHT;
         // ty = TFT_WIDTH - th; // Bottom Right
         ty = th;   // Near Top Right
       #else
@@ -1322,7 +1336,7 @@ void MenuFunctions::update_time_temp_batt(bool update) {
       // restore Text color
       if (txt_color != TFT_WHITE)
         display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
-    
+
   }   // updatek
 }
 
@@ -1331,12 +1345,12 @@ void MenuFunctions::updateStatusBar()
   display_obj.tft.setTextSize(1);
 
   bool status_changed = false;
-  
+
   #if defined(MARAUDER_MINI) || defined(MARAUDER_M5STICKC) || defined(MARAUDER_REV_FEATHER) || defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV) || defined(MARAUDER_MINI_V3)
     display_obj.tft.setFreeFont(NULL);
   #endif
 
-  uint16_t the_color; 
+  uint16_t the_color;
 
   #ifdef HAS_GPS
     if (this->old_gps_sat_count != gps_obj.getNumSats()) {
@@ -1353,7 +1367,7 @@ void MenuFunctions::updateStatusBar()
         the_color = TFT_GREEN;
       else
         the_color = TFT_RED;
-        
+
       #ifdef HAS_FULL_SCREEN
         display_obj.tft.drawXBitmap(4,
                                     0,
@@ -1403,7 +1417,7 @@ void MenuFunctions::updateStatusBar()
   }
 
   if (USE_TEMP || USE_BATT || system_time_set)
-      update_time_temp_batt(status_changed);
+     update_time_temp_batt(status_changed);
 
   // RAM / PRAM info
   RamStuff(status_changed);
@@ -1527,7 +1541,7 @@ void MenuFunctions::drawStatusBar()
         the_color = TFT_GREEN;
       else
         the_color = TFT_RED;
-        
+
       #ifdef HAS_FULL_SCREEN
         display_obj.tft.drawXBitmap(4,
                                     0,
@@ -1570,9 +1584,9 @@ void MenuFunctions::drawStatusBar()
   #endif
 
   if (USE_TEMP || USE_BATT || system_time_set)
-      update_time_temp_batt(true);
+     update_time_temp_batt(true);
 
-  RamStuff(true);
+  RamStuff(true);  // Print Memory use info
 
   // MenuFunctions::battery(true);
   display_obj.tft.fillRect(186, 0, 16, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
@@ -1610,7 +1624,7 @@ void MenuFunctions::drawStatusBar()
       the_color = TFT_GREEN;
     else
       the_color = TFT_RED;
-  
+
 
     #ifdef HAS_FULL_SCREEN
       display_obj.tft.drawXBitmap(SB_SD_X,
@@ -1732,7 +1746,7 @@ const char* MenuFunctions::callSetting(const char* key) {
 
   // Put local copy back into menu
   menu->list->set(index, node);
-    
+
 }*/
 
 void MenuFunctions::displaySetting(const char* key, Menu* menu, int index) {
@@ -1803,7 +1817,7 @@ bool MenuFunctions::isKeyPressed(char c)
 
       this->addNodes(&uploadLogsMenu, "Upload All", TFTGREEN, 0, [this]() {
         this->changeMenu(&uploadAllMenu, true);
-        
+
       });
 
       for (int i = 0; i < sd_obj.sd_files->size(); i++) {
@@ -2087,6 +2101,30 @@ void MenuFunctions::buildBluetoothFoxHuntMenu() {
   this->changeMenu(&foxHuntMenu, true);
 }
 
+
+
+
+void do_menu_sync_ntp() {
+    display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
+    bool sync_ntp(const char *ntpServer = nullptr);    // system_time.cpp
+
+   if (!wifi_scan_obj.wifi_connected) {
+     display_obj.tft.println("WIFI is not connected.");
+     return;
+   }
+
+   sync_ntp();
+   struct tm timeinfo;
+   if (getLocalTime(&timeinfo)) {
+     Serial.println(&timeinfo, "%F %T");
+     //display_obj.tft.setCursor(0, 110);
+     //display_obj.tft.println(&timeinfo, "%F %T");
+   } else {
+     log_d("Failed to obtain time from NTP");
+   }
+   return;
+}
+
 // Function to build the menus
 void MenuFunctions::RunSetup()
 {
@@ -2107,7 +2145,7 @@ void MenuFunctions::RunSetup()
   #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
     M5CardputerKeyboard.begin();
   #endif
-   
+
   // root menu stuff
   mainMenu.list = new LinkedList<MenuNode>(); // Get list in first menu ready
 
@@ -2247,10 +2285,10 @@ void MenuFunctions::RunSetup()
   #endif
 
   #ifdef HAS_GPS
-    gpsMenu.name = "GPS"; 
+    gpsMenu.name = "GPS";
     gpsInfoMenu.name = "GPS Data";
     //wardrivingMenu.name = "Wardriving";
-  #endif  
+  #endif
   htmlMenu.name = "EP HTML List";
   miniKbMenu.name = "Mini Keyboard";
 
@@ -2301,11 +2339,11 @@ void MenuFunctions::RunSetup()
     });
   #endif
   #ifdef HAS_GPS
-	if (gps_obj.getGpsModuleStatus()) {
-    	this->addNodes(&mainMenu, text1_66, TFTRED, GPS_MENU, [this]() {
-      	this->changeMenu(&gpsMenu, true);
-    	});
-	}
+        if (gps_obj.getGpsModuleStatus()) {
+        this->addNodes(&mainMenu, text1_66, TFTRED, GPS_MENU, [this]() {
+        this->changeMenu(&gpsMenu, true);
+        });
+        }
   #endif
   this->addNodes(&mainMenu, text_table1[9], TFTBLUE, DEVICE, [this]() {
     this->changeMenu(&deviceMenu, true);
@@ -2490,7 +2528,7 @@ void MenuFunctions::RunSetup()
     this->drawStatusBar();
     wifi_scan_obj.StartScan(WIFI_SCAN_PWN, TFT_RED);
   });
-  
+
   this->addNodes(&wifiSnifferMenu, text_table1[63], TFTYELLOW, PINESCAN_SNIFF, [this]() {
     display_obj.clearScreen();
     this->drawStatusBar();
@@ -2738,7 +2776,7 @@ void MenuFunctions::RunSetup()
     wifi_scan_obj.RunGenerateSSIDs();
   });
 
-	//Add Select probe ssid
+        //Add Select probe ssid
   this->addNodes(&wifiGeneralMenu, text_table1[65], TFTCYAN, KEYBOARD_ICO, [this]() {
     selectProbeSSIDsMenu.list->clear();
 
@@ -2805,7 +2843,7 @@ void MenuFunctions::RunSetup()
       char ssidBuf[64] = {0};
       bool keep_going = true;
       while (keep_going) {
-        display_obj.clearScreen(); 
+        display_obj.clearScreen();
         if (keyboardInput(ssidBuf, sizeof(ssidBuf), "Enter SSID")) {
           if (ssidBuf[0] != 0)
             wifi_scan_obj.addSSID(String(ssidBuf));
@@ -2921,7 +2959,7 @@ void MenuFunctions::RunSetup()
 
     this->addNodes(&wifiGeneralMenu, "View AP Info", TFTCYAN, KEYBOARD_ICO, [this](){
       wifiAPMenu.parentMenu = &wifiGeneralMenu;
-      
+
       // Add the back button
       wifiAPMenu.list->clear();
         this->addNodes(&wifiAPMenu, text09, TFTLIGHTGREY, 0, [this]() {
@@ -3018,7 +3056,7 @@ void MenuFunctions::RunSetup()
 
           // Final change menu to the menu of Stations
           this->changeMenu(&wifiStationMenu, true);
-          
+
         }, false);
       }
       this->changeMenu(&wifiAPMenu, true);
@@ -3045,7 +3083,7 @@ void MenuFunctions::RunSetup()
             if (password != "") {
               Serial.println("Using SSID: " + (String)access_points->get(i).essid);
               wifi_scan_obj.currentScanMode = LV_JOIN_WIFI;
-              wifi_scan_obj.StartScan(LV_JOIN_WIFI, TFT_YELLOW); 
+              wifi_scan_obj.StartScan(LV_JOIN_WIFI, TFT_YELLOW);
               wifi_scan_obj.joinWiFi(access_points->get(i).essid, password);
               if (wifi_scan_obj.hasPendingWifiCredential()) {
                 this->buildSavedWifiMenu(true);
@@ -3106,7 +3144,7 @@ void MenuFunctions::RunSetup()
             if (password != "") {
               Serial.println("Using SSID: " + (String)ssids->get(i).essid);
               wifi_scan_obj.currentScanMode = LV_JOIN_WIFI;
-              wifi_scan_obj.StartScan(LV_JOIN_WIFI, TFT_YELLOW); 
+              wifi_scan_obj.StartScan(LV_JOIN_WIFI, TFT_YELLOW);
               wifi_scan_obj.startWiFi(ssids->get(i).essid, password);
               this->changeMenu(current_menu, true);
             }
@@ -3147,14 +3185,19 @@ void MenuFunctions::RunSetup()
     this->changeMenu(current_menu, true);
   });
 
+  this->addNodes(&wifiGeneralMenu, "Sync Clock with WiFi", TFTPINK, SETTINGS, [this]() {
+    this->changeMenu(&wifiGeneralMenu, true);
+    do_menu_sync_ntp();
+    return;
+  });
   this->addNodes(&wifiGeneralMenu, "Shutdown WiFi", TFTRED, 0, [this]() {
     WiFi.softAPdisconnect(true); // Also shut down the SoftAP if it is running
-	WiFi.disconnect(true);
+        WiFi.disconnect(true);
     delay(100);
     wifi_scan_obj.StartScan(WIFI_SCAN_OFF, TFT_RED);
     this->changeMenu(current_menu, true);
   });
-  
+
   #ifdef HAS_DIRECT_UPLOAD
     this->addNodes(&wifiGeneralMenu, "Upload Wardrive Logs", TFTGREEN, 0, [this]() {
       display_obj.clearScreen();
@@ -3550,7 +3593,7 @@ void MenuFunctions::RunSetup()
   });
 
   // Build clear ssids menu
-  
+
   this->addNodes(&clearSSIDsMenu, text09, TFTLIGHTGREY, 0, [this]() {
     this->changeMenu(clearSSIDsMenu.parentMenu, true);
   });
@@ -3957,7 +4000,7 @@ void MenuFunctions::RunSetup()
   this->addNodes(&adminMenu, "WifiTx 21dBm (Max)", TFTGREEN, WIFI, [this]() {
       // WIFI_POWER_21dBm = 84,
       wifi_power = 84;
-      // WiFi.status() 
+      // WiFi.status()
       esp_wifi_set_max_tx_power(wifi_power);
      this->changeMenu(&adminMenu, true);
   });
@@ -3993,23 +4036,7 @@ void MenuFunctions::RunSetup()
 
   this->addNodes(&adminMenu, "Sync Clock with WiFi", TFTPINK, SETTINGS, [this]() {
     this->changeMenu(&adminSubMenu, true);
-    display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
-    bool sync_ntp(const char *ntpServer = nullptr);    // system_time.cpp
-
-   if (!wifi_scan_obj.wifi_connected) {
-     display_obj.tft.println("WIFI is not connected.");
-     return;
-   }
-
-   sync_ntp();
-   struct tm timeinfo;
-   if (getLocalTime(&timeinfo)) {
-     Serial.println(&timeinfo, "%F %T");
-   } else {
-     log_d("Failed to obtain time from NTP");
-   }
-
-   return;
+    do_menu_sync_ntp();
   });
 
   // Show reason for last reboot...
@@ -4082,7 +4109,7 @@ void MenuFunctions::RunSetup()
           wifi_scan_obj.currentScanMode = WIFI_SCAN_OFF;
         wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
         this->changeMenu(gpsInfoMenu.parentMenu, true);
-      }); 
+      });
     }
   #endif
 
@@ -4134,8 +4161,6 @@ void MenuFunctions::RunSetup()
     wifi_scan_obj.currentScanMode = WIFI_SCAN_OFF;
     this->changeMenu(infoMenu.parentMenu, true);
   });
-
-  Serial.println("Changing to main menu...");
 
   // Set the current menu to the mainMenu
   this->changeMenu(&mainMenu, true);
@@ -4347,7 +4372,7 @@ void MenuFunctions::buildGeofenceActionMenu(uint8_t slot) {
       }
     #endif
 
-    int str_len = wifi_scan_obj.alfa.length() + 1; 
+    int str_len = wifi_scan_obj.alfa.length() + 1;
 
     char char_array[str_len];
 
@@ -4397,7 +4422,7 @@ void MenuFunctions::buildGeofenceActionMenu(uint8_t slot) {
 
                 targetMenu->list->set(0, MenuNode{String(char_array[this->mini_kb_index]).c_str(), false, TFTCYAN, 0, true, NULL});
                 this->buildButtons(targetMenu, 0, &char_array[this->mini_kb_index]);
-                
+
                 while (!r_btn.justReleased()) {
                   r_btn.justPressed();
                   if (!r_btn.isHeld())
@@ -4554,7 +4579,7 @@ void MenuFunctions::buildGeofenceActionMenu(uint8_t slot) {
                 return "";
               }
             }
-            
+
           #endif
 
           // Keyboard functions for touch hardware
@@ -5200,7 +5225,7 @@ void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
 
     #ifdef HAS_ILI9341
       extern void backlightOn();
-	  backlightOn();
+          backlightOn();
     #endif
   }
   current_menu = menu;
@@ -5356,7 +5381,7 @@ void MenuFunctions::displayCurrentMenu(int start_index)
       #ifdef HAS_MINI_SCREEN
         if ((current_menu->selected == i) || ((current_menu->list->get(i).icon != SETTINGS || current_menu->list->get(i).color != TFTLIGHTGREY) && current_menu->list->get(i).selected))
           this->drawMiniMenuButton(i - start_index, i, true);
-        else 
+        else
           this->drawMiniMenuButton(i - start_index, i, false);
       #endif
     }

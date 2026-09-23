@@ -6047,7 +6047,7 @@ void WiFiScan::setBaseMacAddress(uint8_t macAddr[6]) {
           do_save = gps_obj.getFixStatus();
           uint8_t *this_bssid_raw = WiFi.BSSID(i);
           char this_bssid[18] = {0};
-          sprintf(this_bssid, "%02X:%02X:%02X:%02X:%02X:%02X", this_bssid_raw[0], this_bssid_raw[1], this_bssid_raw[2], this_bssid_raw[3], this_bssid_raw[4], this_bssid_raw[5]);
+          snprintf(this_bssid, sizeof(this_bssid), "%02X:%02X:%02X:%02X:%02X:%02X", this_bssid_raw[0], this_bssid_raw[1], this_bssid_raw[2], this_bssid_raw[3], this_bssid_raw[4], this_bssid_raw[5]);
 
           if (this->seen_mac(this_bssid_raw))
             continue;
@@ -6196,8 +6196,9 @@ void WiFiScan::executeWarDrive() {
           uint8_t *this_bssid_raw = WiFi.BSSID(i);
           char this_bssid[18] = {0};
 
-          sprintf(
+          snprintf(
             this_bssid,
+            sizeof(this_bssid),
             "%02X:%02X:%02X:%02X:%02X:%02X",
             this_bssid_raw[0],
             this_bssid_raw[1],
@@ -7400,7 +7401,7 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
 
           for (int i = 0; i < 2; i++) {
             char hexCar[4];
-            sprintf(hexCar, "%02X", ap.beacon[i]);
+            snprintf(hexCar, sizeof(hexCar), "%02X", ap.beacon[i]);
             Serial.print(hexCar);
             if ((i + 1) % 16 == 0)
               Serial.print(F("\n"));

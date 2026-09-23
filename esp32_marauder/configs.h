@@ -3557,6 +3557,10 @@
 
   // CONFIG LOGIC
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wcpp"
+
+
   //  I2C Touch Screens
   #if defined(HAS_CST820) || defined(HAS_AXS5106L) || defined(HAS_FT6336) || defined(HAS_CST3530)
     #define HAS_CAP_TOUCH 1
@@ -3616,6 +3620,9 @@
     #endif
 
   #endif   // HAS_TEMP_SENSOR
+
+#pragma GCC diagnostic pop
+
 
   // END CONFIG LOGIC
 

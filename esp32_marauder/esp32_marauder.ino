@@ -56,10 +56,9 @@ https://www.online-utility.org/image/convert/to/XBM
     // CH32V003_IOExpander CH32V003_obj;
 #endif
 
-
 #ifdef HAS_BUTTONS
   #include "Switches.h"
-  
+
   #if (U_BTN >= 0 && U_BTN != -1)
     Switches u_btn = Switches(U_BTN, 1000, U_PULL);
     // perimanSetPinBusExtraType(U_BTN, "U_BTN");
@@ -184,16 +183,38 @@ void print_reset_reason() {
   Serial.println(resetReasonName());
 }
 
+#if defined(CORE_DEBUG_LEVEL)
+
+  void i2c_probe() {
+    byte count = 0;
+    for (byte address = 1; address < 127; address++) {
+      Wire.beginTransmission(address); // Start transmission to address
+      byte error = Wire.endTransmission(); // End and get status
+      if (error == 0) {
+        Serial.print("I2C device found at address 0x");
+        if (address < 16) Serial.print("0");
+        Serial.println(address, HEX);
+        count++;
+      } else if (error == 4) {
+        Serial.print("Unknown error at address 0x");
+        if (address < 16) Serial.print("0");
+        Serial.println(address, HEX);
+      }
+    }
+    Serial.print("Done. Found ");
+    Serial.print(count);
+    Serial.println(" devices.");
+  }
+#endif // CORE_DEBUG_LEVEL)
 
 void setup()
 {
 
-  log_d("Main setup");
 
   // https://github.com/Xinyuan-LilyGO/T-HMI/issues/34
   // LILYGO T-HMI : latch power on if on battery
   // Prevent StickCP2 from turning off when disconnect USB cable
-  #ifdef POWER_HOLD_PIN  
+  #ifdef POWER_HOLD_PIN
     log_d("Enable POWER_HOLD_PIN");
     pinMode(POWER_HOLD_PIN, OUTPUT);
     digitalWrite(POWER_HOLD_PIN, HIGH);
@@ -210,7 +231,7 @@ void setup()
   #endif
 
   randomSeed(esp_random());
-  
+
   #ifndef DEVELOPER
     esp_log_level_set("*", ESP_LOG_NONE);
   #endif
@@ -221,9 +242,13 @@ void setup()
 
   Serial.begin(115200);
 
+
   #ifdef I2C_SDA
-    log_d("I2C Begin: Wire: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
+    log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
     Wire.begin(I2C_SDA, I2C_SCL);
+    #if defined(CORE_DEBUG_LEVEL)
+      i2c_probe();
+    #endif
   #endif
 
   #ifdef HAS_CH32V003
@@ -243,7 +268,7 @@ void setup()
     while(!Serial && millis() < 2000) {
       delay(500);
     }
-    #if ESP_ARDUINO_VERSION_MAJOR >= 3 
+    #if ESP_ARDUINO_VERSION_MAJOR >= 3
       log_d("setting setTxTimeoutMs()");
       Serial.setTxTimeoutMs(0);
     #endif
@@ -259,12 +284,12 @@ void setup()
 
   // TFT_BL >= 0 does not if TFT_BL is -1
   // due to cpp's "unsigned promotion rules" where -1 == maxint
-  #ifdef HAS_SCREEN && defined(TFT_BL) && TFT_BL != -1
+  #if defined(HAS_SCREEN) && defined(TFT_BL) && TFT_BL != -1
     log_d("pinMode %d OUTPUT", TFT_BL);
     pinMode(TFT_BL, OUTPUT);
     // perimanSetPinBusExtraType(TFT_BL, "TFT_BL");
   #endif
-  
+
   #ifdef HAS_SCREEN
     backlightOff();
   #endif
@@ -275,7 +300,7 @@ void setup()
     // perimanSetPinBusExtraType(BATTERY_PIN, "BATTERY_PIN");
     // perimanSetPinBusExtraType(CHARGING_PIN, "CHARGING_PIN");
   #endif
-  
+
   #if defined(TFT_CS) && TFT_CS != -1
     log_d("TFT_CS=%d", TFT_CS);
     pinMode(TFT_CS, OUTPUT);
@@ -287,13 +312,10 @@ void setup()
     // Must happen before display init CH32V003 controls LCD_RST and backlight
     log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
 
-    log_d("CH32V003_obj.lcdReset");
     CH32V003_obj.lcdReset();      // pulses LCD_RST via EXIO1
 
-    log_d("CH32V003_obj.setPWM");
     CH32V003_obj.setPWM(80); // 80% brightness
 
-    log_d("CH32V003_obj.touchReset");
     CH32V003_obj.touchReset();    // pulses Touch_RST via EXIO0
 
     // CST3530 is init'ed in Display.cpp
@@ -310,7 +332,7 @@ void setup()
     log_d("SD_CS=%d", SD_CS);
     pinMode(SD_CS, OUTPUT);
     delay(10);
-  
+
     digitalWrite(SD_CS, HIGH);
     delay(10);
   #endif
@@ -328,12 +350,11 @@ void setup()
     Serial.print("Arduino ESP32 Core Version: ");
     Serial.println(ESP_ARDUINO_VERSION_STR);
   #elif defined(ESP_ARDUINO_VERSION)
-    Serial.printf("Arduino Core Major: %d, Minor: %d, Patch: %d\n", 
+    Serial.printf("Arduino Core Major: %d, Minor: %d, Patch: %d\n",
             ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
   #endif
 
   #ifdef HAS_PSRAM
-    log_d("psramInit");
     if (!psramInit()) {
       Serial.println(F("PSRAM not available"));
       log_d("PSRAM not available");
@@ -349,14 +370,13 @@ void setup()
   #endif
 
   #ifdef HAS_SCREEN
-    log_d("display_obj.RunSetup");
     display_obj.RunSetup();
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
   // this removes the need for "sharedSPI"
   // the TFT init fucks up the SPI bus by closing SD_MISO
   // so reinit it and assert it to for the sd_obj.
-    #if defined(HAS_C5_SD) 
+    #if defined(HAS_C5_SD)
       #ifndef SD_MISO
         #define SD_MISO TFT_MISO
         #define SD_MOSI TFT_MOSI
@@ -413,7 +433,6 @@ void setup()
     #endif
   #endif
 
-  log_d("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
 
   #ifdef HAS_T_DONGLE_DISPLAY
@@ -444,7 +463,7 @@ void setup()
     }
   #endif
 
-  #ifdef HAS_SCREEN  
+  #ifdef HAS_SCREEN
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
   #endif
 
@@ -466,7 +485,9 @@ void setup()
   menu_function_obj.changeMenu(menu_function_obj.current_menu);*/
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
-
+  #if defined(CORE_DEBUG_LEVEL)
+    i2c_probe();
+  #endif
   cli_obj.RunSetup();
 }
 

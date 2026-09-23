@@ -23,39 +23,53 @@ inline temperature_sensor_handle_t temp_handle = NULL;
 inline float _celsius = 0.0;
 
 inline bool init_sys_temp() {
-  // Configure sensor range (e.g., -10°C to 80°C)
-  temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+esp_err_t x = 0;
 
-  // Install and enable the internal sensor
-  ESP_ERROR_CHECK(temperature_sensor_install(&temp_sensor_config, &temp_handle));
-  ESP_ERROR_CHECK(temperature_sensor_enable(temp_handle));
-}
+    log_d("init_sys_temp");
 
-inline float get_sys_temperature() { return _celsius; }
+    // Configure sensor range (e.g., -10°C to 80°C)
+    temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
 
-inline float read_sys_temp() {
-  // Read the temperature in Celsius
-  if (temperature_sensor_get_celsius(temp_handle, &_celsius) == ESP_OK) {
-    // log_d("Chip Temperature: %f", celsius);
-    return _celsius;
-  } else {
-    log_d("Error reading temperature");
+    // Install and enable the internal sensor
+    x = temperature_sensor_install(&temp_sensor_config, &temp_handle);
+    ESP_ERROR_CHECK(x);
 
-    return 0.0;
+    log_d("temperature_sensor_install: x = %d", x);
+    if (x != ESP_OK) return false;
+
+    x = temperature_sensor_enable(temp_handle);
+    ESP_ERROR_CHECK(x);
+
+    log_d("temperature_sensor_enable: x = %d", x);
+    log_d("x = %d", x);
+    return x == ESP_OK;
   }
 
-  return _celsius;
-}
+  inline float get_sys_temperature() { return _celsius; }
 
-inline void disable_sys_temp() {
-  temperature_sensor_disable(temp_handle);
-}
+  inline float read_sys_temp() {
+    // Read the temperature in Celsius
+    if (temperature_sensor_get_celsius(temp_handle, &_celsius) == ESP_OK) {
+      log_d("Chip Temperature: %f", _celsius);
+      return _celsius;
+    } else {
+      log_d("Error reading temperature");
+
+      return 0.0;
+    }
+
+    return _celsius;
+  }
+
+  inline void disable_sys_temp() {
+    temperature_sensor_disable(temp_handle);
+  }
 
 
-#else   // HAS_CPU_TEMP
+  #else   // HAS_CPU_TEMP
 
-  // this should not happen
-  inline bool init_sys_temp() { return false }
+    // this should not happen
+    inline bool init_sys_temp() { return false }
   inline float get_sys_temp() { return 0.0 }
   inline float temperature() { return 0.0 }
 

@@ -2,8 +2,8 @@
 
 #include "configs.h"
 
-#ifndef BACKlIGHT_HPP
-#define BACKlIGHT_HPP
+#ifndef __BACKlIGHT_HPP__
+#define __BACKlIGHT_HPP__
 
 //  #include "Display.h"
 /*
@@ -350,4 +350,4 @@
 
 #endif // HAS_SCREEN
 
-#endif   //  BACKlIGHT_HPP
+#endif   //  __BACKlIGHT_HPP__
