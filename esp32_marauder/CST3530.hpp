@@ -94,10 +94,12 @@ public:
         memset(_points,    0, sizeof(_points));
         memset(_prev,      0, sizeof(_prev));
         memset(_prevValid, 0, sizeof(_prevValid));
+        log_d("addr=%x _intPin=%d  _rstPin=%d", _addr, _intPin, _rstPin);
     }
 
     inline bool begin(TwoWire &wire = Wire) {
-        log_d("_intPin=%d  _rstPin=%d, _intPin, _rstPin");
+        log_d("_intPin=%d  _rstPin=%d", _intPin, _rstPin);
+        log_d("CST3530 I2C Cap Touch addr=%d", _addr);
         if (_intPin >= 0) ::pinMode(_intPin, INPUT);
         if (_rstPin >= 0) {
             ::pinMode(_rstPin, OUTPUT);

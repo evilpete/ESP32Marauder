@@ -58,8 +58,8 @@ struct data_struct {
     byte    gestureID;   // Gesture ID
     byte    points;      // Number of touch points
     byte    event;       // Event (0 = Down, 1 = Up, 2 = Contact)
-    short   x;
-    short   y;
+    int16_t   x;
+    int16_t   y;
     uint8_t version;
     uint8_t versionInfo[3]; // Chip, proj, firmware ver
 };
@@ -76,16 +76,12 @@ public:
         TwoWire *mywire;
 
         log_d("CST820::begin");
-#ifdef I2C_SDA
         if (_sda != -1 && _sda != I2C_SDA) {
             mywire = &Wire1;
             log_d("CST820::begin using Wire1");
         } else {
             mywire = &Wire;
         }
-#else
-        mywire = &Wire;
-#endif
 
         sda = _sda;
         scl = _scl;
@@ -304,7 +300,7 @@ private:
     }
 };
 
+inline CST820 CST820_touch;
+
 #endif   // HAS_CST820
-
 #endif   // CST820_hpp
-

@@ -3,6 +3,7 @@
 #ifndef MenuFunctions_h
 #define MenuFunctions_h
 
+
 #include "configs.h"
 
 #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
@@ -14,6 +15,8 @@
 #endif
 
 #ifdef HAS_SCREEN
+
+#include "BackLight.hpp"
 
 #define BATTERY_ANALOG_ON 0
 
@@ -32,6 +35,27 @@
   #include "Sound_CYD.h"
   extern Sound_CYD sound_obj;
 #endif
+
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  #include "shutdown.hpp"
+#endif
+
+
+#ifdef HAS_TEMP_SENSOR
+  #include "temp_sensor.hpp"
+  #define USE_TEMP TempSensor_obj.supported
+#else
+  #define USE_TEMP false
+#endif
+
+
+// If system time/date has been set
+extern bool system_time_set;
+
+extern void print_reset_reason();
+extern const char *resetReasonName();
+
+extern int8_t wifi_power;
 
 #ifdef HAS_BUTTONS
   #include "Switches.h"
@@ -57,12 +81,15 @@ extern ReconMission recon_obj;
 extern SDInterface sd_obj;
 #ifdef HAS_BATTERY
   extern BatteryInterface battery_obj;
-  #define USE_BATT battery_obj.i2c_supported
+  #define USE_BATT battery_obj.supported
 #else
   #define USE_BATT false
 #endif
-#define USE_TEMP false
 extern Settings settings_obj;
+
+// extern void shutdown();
+// extern void DeepSleep(int8_t);
+
 
 #define FLASH_BUTTON 0
 
@@ -176,6 +203,8 @@ class MenuFunctions
     MenuInputRepeat menu_down_repeat;
     int8_t menu_touch_button = -1;
 
+
+    void RamStuff(bool update = false);
     void update_time_temp_batt(bool update = false);
     void buildWiFiFoxHuntMenu();
     void buildBluetoothFoxHuntMenu();
@@ -195,6 +224,7 @@ class MenuFunctions
     // Main menu stuff
     Menu mainMenu;
     Menu reconMenu;
+
 
     Menu wifiMenu;
     Menu bluetoothMenu;
@@ -266,6 +296,10 @@ class MenuFunctions
     Menu generateSSIDsMenu;
 
     Menu evilPortalMenu;
+
+    // Admin
+    Menu adminMenu;
+    Menu adminSubMenu;
 
     Menu foxHuntMenu;
     Menu foxSortMenu;

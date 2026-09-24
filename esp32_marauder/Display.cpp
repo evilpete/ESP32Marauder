@@ -49,7 +49,7 @@ bool cleanLogoPixel(int16_t x, int16_t y, int16_t width, int16_t height,
 }  // namespace
 
 Display::Display()
-#if defined( HAS_CYD_TOUCH) 
+#if defined( HAS_CYD_TOUCH) || defined(MARAUDER_CYD_HMI)
   : touchscreenSPI(VSPI),
     touchscreen(XPT2046_CS, XPT2046_IRQ)
 #endif
@@ -96,8 +96,10 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
 
   #ifdef HAS_CST3530
      if (CST3530_obj.available()) {
-       // if (CST3530_obj.data.event == 0) {  // Down event
-         CST3530_obj.readData();
+       CST3530_obj.readData();
+       // Serial.print("Event ");
+       // Serial.println((int)CST3530_obj.data->event);
+       if (CST3530_obj.data->event == CST3530Event::DOWN) {  // Down event
          *x = CST3530_obj.data->x;
          *y = CST3530_obj.data->y;
 
@@ -106,12 +108,9 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
          // *y = p.y;
 
          // CST3530_obj.getTouch(x, y);
-
          // if ( *x || *y ) { log_d("x=%d y=%d", *x, *y); }
          return 1;
-     //   }
-     } else {
-       // log_d("CST3530_obj.available : FALSE");
+       }
      }
      return 0;
 
@@ -177,6 +176,10 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
 
           uint8_t rot = this->tft.getRotation();
 
+          // Is this the right place and way to fix inverted X?
+          #if defined(MARAUDER_CYD_HMI)
+            p.x = 4095 - p.x;   //  Temp Hack
+          #endif
 
           //#ifdef HAS_CYD_PORTRAIT
           //  rot = 0;
@@ -296,7 +299,31 @@ void Display::RunSetup() {
     this->touchscreen.begin(touchscreenSPI);
     this->touchscreen.setRotation(0);
 
-  #elif defined(HAS_FT6336)
+  #ifdef HAS_CST820
+    #ifndef TP_INT
+      #define TP_INT -1
+    #endif
+
+    #ifndef TP_RST
+      #define TP_RST -1
+    #endif
+
+    CST820_touch.begin(&Wire, TP_INT, TP_RST);
+  #endif
+
+  #ifdef HAS_CST3530
+      CST3530_obj.begin(Wire);
+      // #if defined(TP_INT) && TP_INT >= 0
+      //   CST3530_obj.enableInterrupt(TP_INT);
+      // #endif
+      // CST3530_obj.begin(&Wire, TP_INT, TP_RST, TP_FREQ);
+      // CST3530_obj.begin(TP_SDA, TO_SCL, TP_INT, TP_RST,f TP_FREQ)
+      log_d("CST3530_obj.begin done");
+    #else
+      log_d("HAS_CST3530 False");
+    #endif
+
+  #ifdef HAS_FT6336
     ft6336_init();
   #endif
   

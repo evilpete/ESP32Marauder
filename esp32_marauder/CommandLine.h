@@ -8,6 +8,7 @@
 #ifdef HAS_SCREEN
   #include "MenuFunctions.h"
   #include "Display.h"
+  #include "BackLight.hpp"
 #endif 
 
 #include "WiFiScan.h"
@@ -19,6 +20,10 @@
 #include "ReconMission.h"
 #if defined(HAS_NEOPIXEL_LED)
   #include "LedInterface.h"
+#endif
+
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  #include "shutdown.hpp"
 #endif
 
 // If system time/date has been set
@@ -71,6 +76,12 @@ const char PROGMEM GPS_CMD[] = "gps";
 const char PROGMEM NMEA_CMD[] = "nmea";
 const char PROGMEM GPS_POI_CMD[] = "gpspoi";
 const char PROGMEM GPS_TRACKER_CMD[] = "gpstracker";
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
+#endif
+const char PROGMEM NTP_SYNC_CMD[] = "ntp_sync";
+const char PROGMEM DATE_CMD[] = "date";
+const char PROGMEM SETDATE_CMD[] = "setdate";
 const char PROGMEM RECON_CMD[] = "recon";
 
 const char PROGMEM NTP_SYNC_CMD[] = "ntp_sync";
@@ -159,6 +170,9 @@ const char PROGMEM HELP_GPS_POI_CMD[] = "gpspoi -s/-m/-e";
 const char PROGMEM HELP_GPS_TRACKER_CMD[] = "gpstracker -c <start/stop>";
 const char PROGMEM HELP_RECON_CMD[] = "recon wifi|ble|status|stop";
 const char PROGMEM HELP_NMEA_CMD[] = "nmea";
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  const char PROGMEM HELP_SHUTDOWN_CMD[] = "shutdown";
+#endif
 const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
 const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
 const char PROGMEM HELP_DATE[] = "print system time/date";

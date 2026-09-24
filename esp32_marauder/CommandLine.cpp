@@ -1,5 +1,6 @@
 #include "CommandLine.h"
 
+// Brightness functions defined in BackLight.cpp
 // GCOVR_EXCL_START -- serial protocol output depends on Arduino Serial.
 namespace {
   bool parseFiniteNumber(const String& value, double& parsed) {
@@ -49,14 +50,17 @@ namespace {
 // GCOVR_EXCL_STOP
 
 // Brightness functions defined in esp32_marauder.ino
+/*
 #ifndef HAS_MINI_SCREEN
   extern void brightnessCycle();
   extern uint8_t getBrightnessLevel();
+  extern const uint8_t BL_NUM_LEVELS;
 #endif
+*/
 
 void CommandLine::RunSetup() {
   #ifndef MARAUDER_V8
-    Serial.println(this->ascii_art);
+  Serial.println(this->ascii_art);
   #endif
 
   Serial.println(F("\n\n--------------------------------\n"));
@@ -254,7 +258,9 @@ void CommandLine::startScanFromCLI(int scan_mode, uint16_t color, const char* sc
   Serial.print(F(". Stop with "));
   Serial.println(STOPSCAN_CMD);
   #ifdef HAS_SCREEN
+  Serial.println("display_obj.clearScreen");
     display_obj.clearScreen();
+  Serial.println("menu_function_obj.drawStatusBar");
     menu_function_obj.drawStatusBar();
   #endif
   wifi_scan_obj.StartScan(scan_mode, color);
@@ -296,6 +302,9 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_NMEA_CMD);
     Serial.println(HELP_GPS_POI_CMD);
     Serial.println(HELP_GPS_TRACKER_CMD);
+    #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+      Serial.println(HELP_SHUTDOWN_CMD);
+    #endif
     Serial.println(HELP_NTP_SYNC);
     Serial.println(HELP_DATE);
     Serial.println(HELP_SETDATE);
@@ -392,7 +401,9 @@ void CommandLine::runCommand(String input) {
 
     // If we don't do this, the text and button coordinates will be off
     #ifdef HAS_SCREEN
+    Serial.println("STOPSCAN_CMD display_obj.init");
       display_obj.init();
+    Serial.println("STOPSCAN_CMD menu_function_obj.changeMenu");
       menu_function_obj.changeMenu(menu_function_obj.current_menu);
     #endif
   }
@@ -753,6 +764,10 @@ void CommandLine::runCommand(String input) {
 
   else if (cmd_args.get(0) == REBOOT_CMD)
     ESP.restart();
+  #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  else if (cmd_args.get(0) == SHUTDOWN_CMD)
+    shutdown();
+  #endif
 
   //// WiFi/Bluetooth Scan/Attack commands
   if (!wifi_scan_obj.scanning()) {
@@ -1437,20 +1452,27 @@ void CommandLine::runCommand(String input) {
 
     // Brightness command
     else if (cmd_args.get(0) == BRIGHTNESS_CMD) {
-      #ifndef HAS_MINI_SCREEN
+      #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
         int c_arg = this->argSearch(&cmd_args, "-c");
         int s_arg = this->argSearch(&cmd_args, "-s");
         if (c_arg != -1) {
           brightnessCycle();
         } else if (s_arg != -1) {
           uint8_t lvl = cmd_args.get(s_arg + 1).toInt();
-          if (lvl < 10) {
-            extern void brightnessSave(uint8_t level);
+          Serial.print("lvl = "); Serial.println(lvl);
+          if (lvl >= BL_NUM_LEVELS)
+            lvl = BL_NUM_LEVELS - 1;
+          else if (lvl < 0)
+            lvl = 0;
+          Serial.print("lvl = "); Serial.println(lvl);
+          if (lvl < BL_NUM_LEVELS) {
+            // extern void brightnessSave(uint8_t level);
             brightnessSave(lvl);
             Serial.print(F("[Brightness] Set to level "));
             Serial.println(lvl);
           } else {
-            Serial.println(F("Level must be 0-9"));
+            Serial.print(F("Level must be 0-"));
+            Serial.println(BL_NUM_LEVELS);
           }
         } else {
           Serial.print(F("[Brightness] Current level: "));
@@ -1504,9 +1526,9 @@ void CommandLine::runCommand(String input) {
 
     // ARP discovery uses the active station netif on both legacy and C5
     // dual-band hardware.
-    if (cmd_args.get(0) == ARP_SCAN_CMD) {
-      this->startScanFromCLI(WIFI_ARP_SCAN, TFT_CYAN, "ARP Scan");
-    }
+      if (cmd_args.get(0) == ARP_SCAN_CMD) {
+        this->startScanFromCLI(WIFI_ARP_SCAN, TFT_CYAN, "ARP Scan");
+      }
 
     // GPS POI
     if (cmd_args.get(0) == GPS_POI_CMD) {
@@ -1770,6 +1792,7 @@ void CommandLine::runCommand(String input) {
       return;
     }
   }
+
   // Select access points or stations
   else if (cmd_args.get(0) == SEL_CMD) {
     // Get switches
@@ -2127,6 +2150,7 @@ void CommandLine::runCommand(String input) {
     }
   }
 
+
   else if (cmd_args.get(0) == NTP_SYNC_CMD) {
     bool sync_ntp(const char *ntpServer = nullptr);
 
@@ -2151,6 +2175,7 @@ void CommandLine::runCommand(String input) {
 
   else if (cmd_args.get(0) == DATE_CMD) {
     struct tm timeinfo;
+
     Serial.print(F("system_time_set: ")); Serial.println(system_time_set);
     if (getLocalTime(&timeinfo)) {
       Serial.println(&timeinfo, "%F %T");
@@ -2177,7 +2202,6 @@ void CommandLine::runCommand(String input) {
   }
 
 
-  // SSID stuff
   else if (cmd_args.get(0) == SSID_CMD) {
     int add_sw = this->argSearch(&cmd_args, "-a");
     int gen_sw = this->argSearch(&cmd_args, "-g");

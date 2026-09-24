@@ -618,6 +618,13 @@ void GpsInterface::setGPSInfo() {
     set_system_time(timeInfo, true);
   }
 
+  // if GPS has a good_fix and system_time_set has not been set
+  if (this->good_fix && !system_time_set) {
+    struct tm timeInfo;
+    GetTimeInfo(&timeInfo);
+    set_system_time(timeInfo, true);
+  }
+
   //nmea.clear();
 }
 
@@ -785,11 +792,12 @@ void GpsInterface::main() {
 
   uint8_t num_sat = nmea.getNumSatellites();
 
-  if ((nmea.isValid()) && (num_sat > 0))
+  if ((nmea.isValid()) && (num_sat > 0)) {
+    log_d("nmea.isValid num_sat=%d", num_sat);
     this->setGPSInfo();
 
-  else if ((!nmea.isValid()) && (num_sat <= 0)) {
+  } else if ((!nmea.isValid()) && (num_sat <= 0)) {
     this->setGPSInfo();
   }
 }
-#endif
+#endif    // HAS_GPS && !HAS_GPSI2
