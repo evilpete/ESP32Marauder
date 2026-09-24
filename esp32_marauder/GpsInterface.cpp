@@ -1,6 +1,6 @@
 #include "GpsInterface.h"
 
-#ifdef HAS_GPS
+#if defined(HAS_GPS) && !defined(HAS_GPSI2)
 
 extern GpsInterface gps_obj;
 
@@ -526,6 +526,18 @@ String GpsInterface::generateType(){
   return msg_type;
 }
 
+void GpsInterface::GetTimeInfo(struct tm *timeInfo) {
+  if (nmea.isValid() && nmea.getYear() > 0){
+    timeInfo->tm_year = nmea.getYear(); - 1900;
+    timeInfo->tm_mon = nmea.getMonth() - 1;
+    timeInfo->tm_mday = nmea.getDay();
+    timeInfo->tm_hour = nmea.getHour();
+    timeInfo->tm_min = nmea.getMinute();
+    timeInfo->tm_sec = nmea.getSecond();
+    // timeInfo.tm_gmtoff = 0;   //  "UTC"
+  }
+}
+
 // Thanks JosephHewitt
 String GpsInterface::dt_string_from_gps(){
   //Return a datetime String using GPS data only.
@@ -579,7 +591,12 @@ void GpsInterface::setGPSInfo() {
   this->nav_system = nmea.getNavSystem();
   this->num_sats = nmea.getNumSatellites();
 
+  if (!good_fix && num_sats == 0)
+    return;
+
   this->datetime = this->dt_string_from_gps();
+  // if (!system_time_set && !this->datetime.isEmpty())
+  //   set_system_time(this->datetime, true);
 
   this->lat_int = nmea.getLatitude();
   this->lon_int = nmea.getLongitude();
@@ -593,6 +610,13 @@ void GpsInterface::setGPSInfo() {
   this->altf = (float)alt / 1000;
 
   this->accuracy = 2.5 * ((float)nmea.getHDOP()/10);
+  // if GPS has a good_fix and system_time_set has not been set
+  if (this->good_fix && !system_time_set) {
+    struct tm timeInfo;
+
+    GetTimeInfo(&timeInfo);
+    set_system_time(timeInfo, true);
+  }
 
   //nmea.clear();
 }

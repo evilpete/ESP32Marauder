@@ -241,8 +241,11 @@
 
   #ifdef MARAUDER_REV_FEATHER
     //#define FLIPPER_ZERO_HAT
-    //#define HAS_BATTERY
+    #define HAS_BATTERY
+       #define HAS_MAX1704X
     //#define HAS_BT
+    #define HAS_RTC
+      #define HAS_PCF8523
     #define HAS_MINI_KB
     #define HAS_BUTTONS
     #define HAS_NEOPIXEL_LED
@@ -251,7 +254,7 @@
     #define HAS_MINI_SCREEN
     #define HAS_SD
     #define USE_SD
-    #define HAS_TEMP_SENSOR
+    // #define HAS_TEMP_SENSOR
     #define HAS_GPS
     #define HAS_DIRECT_UPLOAD
   #endif
@@ -2048,7 +2051,10 @@
       #define TFT_RST 41
       #define TFT_BL 45
       //#define TOUCH_CS 21
-      #define SD_CS 4
+      #define SD_CS 10
+
+      #define RTC_SCL 4
+      #define RTC_SDA 3
 
       #define SCREEN_BUFFER
 
@@ -2556,7 +2562,7 @@
     #endif
 
     #ifdef MARAUDER_REV_FEATHER
-      #define SD_CS 5
+      #define SD_CS 10
     #endif
 
     #ifdef MARAUDER_M5STICKC
@@ -3192,5 +3198,13 @@
     #endif
 
   #endif
+
+  // CONFIG LOGIC
+
+  //  define HAS_RTC if we have RTC hardware
+  #if defined(HAS_PCF8523) || defined(HAS_DS1307) || defined(HAS_PCF85063) || defined(HAS_PCF8563)
+    #define HAS_RTC 1
+  #endif
+
 
 #endif

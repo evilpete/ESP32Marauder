@@ -80,6 +80,7 @@ Buffer buffer_obj;
 Settings settings_obj;
 CommandLine cli_obj;
 ReconMission recon_obj;
+extern void init_system_time();
 
 #ifdef HAS_T_DONGLE_DISPLAY
   TDongleDisplay t_dongle_display;
@@ -252,6 +253,8 @@ void setup()
 
   while(!Serial)
     delay(10);
+
+  init_system_time();
 
   #ifdef HAS_C5_SD
     sharedSPI.begin(SD_SCK, SD_MISO, SD_MOSI);
