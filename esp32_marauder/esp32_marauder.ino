@@ -34,6 +34,15 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 #include "Buffer.h"
 
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+#endif // MSC_SHARE
+
+#ifdef HAS_BT
+#include "esp_bt.h"
+// #include "esp_bt_main.h"
+#endif
+
 #ifdef HAS_FLIPPER_LED
   #include "flipperLED.h"
 #elif defined(XIAO_ESP32_S3)
@@ -88,10 +97,6 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #endif
 
-#ifdef HAS_CH32V003
-    #include <CH32V003_IOExpander.hpp>
-    CH32V003_IOExpander CH32V003_obj;
-#endif
 
 /*
 // Yet another Cap Touch
@@ -153,6 +158,10 @@ extern void init_system_time();
   #else
     SDInterface sd_obj;
   #endif
+#endif
+
+#ifdef MSC_SHARE
+    MSC_Share MSC_Share_obj;
 #endif
 
 #ifdef HAS_FLIPPER_LED
@@ -217,6 +226,7 @@ void print_reset_reason() {
 #if defined(CORE_DEBUG_LEVEL)
 
   void i2c_probe() {
+    Serial.println("I2c Probe");
     byte count = 0;
     for (byte address = 1; address < 127; address++) {
       Wire.beginTransmission(address); // Start transmission to address
@@ -301,21 +311,21 @@ void setup()
 
   init_system_time();
 
-  #if defined(MARAUDER_M5STICKCP2) // Prevent StickCP2 from turning off when disconnect USB cable
-    pinMode(POWER_HOLD_PIN, OUTPUT);
-    digitalWrite(POWER_HOLD_PIN, HIGH);
-  #endif
-
   // TFT_BL >= 0 does not if TFT_BL is -1
   // due to cpp's "unsigned promotion rules" where -1 == maxint
   #if defined(HAS_SCREEN) && defined(TFT_BL) && TFT_BL != -1
     log_d("pinMode %d OUTPUT", TFT_BL);
     pinMode(TFT_BL, OUTPUT);
+    // digitalWrite(TFT_BL, HIGH);
     // perimanSetPinBusExtraType(TFT_BL, "TFT_BL");
+  #endif
+  
+  #ifdef DEVELOPER
+    print_reset_reason();
   #endif
 
   #ifdef HAS_SCREEN
-    backlightOff();
+    //backlightOff();
   #endif
 
   #if BATTERY_ANALOG_ON == 1
@@ -336,7 +346,7 @@ void setup()
     // Must happen before display init CH32V003 controls LCD_RST and backlight
     log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
 
-    CH32V003_obj.setPWM(0);	 // Turn off LCD
+    CH32V003_obj.setPWM(0);      // Turn off LCD
     CH32V003_obj.lcdReset();      // pulses LCD_RST via EXIO1
 
     // CH32V003_obj.setPWM(80); // 80% brightness
@@ -429,7 +439,7 @@ void setup()
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
   #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
     brightnessInit();
-    backlightOff();
+    backlightOn(); // Need this
   #endif
 
   #ifdef HAS_SCREEN
@@ -497,10 +507,10 @@ void setup()
 
   #if defined(HAS_GPSI2C) 
       #if defined(GPS_SDA) &&  defined(I2C_SDA) && GPS_SDA != I2C_SDA
-	Wire1.begin(GPS_SDA, GPS_SCL, 10000);
-	gps_obj.begin(&Wire1);
+        Wire1.begin(GPS_SDA, GPS_SCL, 10000);
+        gps_obj.begin(&Wire1);
       #else
-	gps_obj.begin(&Wire);
+        gps_obj.begin(&Wire);
       #endif
   #elif defined(HAS_GPS)
     if (settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
@@ -530,7 +540,7 @@ void setup()
   menu_function_obj.changeMenu(menu_function_obj.current_menu);*/
 
   #ifdef I2C_FREQ
-    Wire.setClock(I2C_FREQ);		// reset I2C_FREQ incase it was chamged
+    Wire.setClock(I2C_FREQ);            // reset I2C_FREQ incase it was chamged
   #endif
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);

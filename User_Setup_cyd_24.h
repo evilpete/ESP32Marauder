@@ -9,7 +9,8 @@
 #define TFT_CS   15
 #define TFT_DC   2
 #define TFT_RST   -1
-#define TFT_BL   21
+// #define TFT_BL   21
+#define TFT_BL   27
 #define TOUCH_CS   33
 #define LOAD_GLCD
 #define LOAD_FONT2

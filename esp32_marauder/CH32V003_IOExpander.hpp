@@ -19,6 +19,9 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#ifndef __CH32V003_IOEXPANDER_HPP__
+#define __CH32V003_IOEXPANDER_HPP__
+
 // Default I2C address
 #define CH32V003_DEFAULT_ADDR   (0x24)
 
@@ -230,3 +233,5 @@ private:
 };
 
 inline CH32V003_IOExpander CH32V003_obj;
+
+#endif   //  __CH32V003_IOEXPANDER_HPP__

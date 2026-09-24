@@ -57,6 +57,11 @@ extern const char *resetReasonName();
 
 extern int8_t wifi_power;
 
+#ifdef MSC_SHARE
+  #include "MSC_Share.h"
+  extern MSC_Share MSC_Share_obj;
+#endif
+
 #ifdef HAS_BUTTONS
   #include "Switches.h"
   #if (U_BTN >= 0)
@@ -86,6 +91,8 @@ extern SDInterface sd_obj;
   #define USE_BATT false
 #endif
 extern Settings settings_obj;
+extern void shutdown();
+extern void DeepSleep(int8_t);
 
 // extern void shutdown();
 // extern void DeepSleep(int8_t);
