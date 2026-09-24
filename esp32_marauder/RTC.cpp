@@ -171,7 +171,7 @@ void RTC::syncFromRTC() {
   struct timeval tv = { .tv_sec = t, .tv_usec = 0 };
   settimeofday(&tv, NULL);
   system_time_set = true;
-  Serial.println(F("System time synced with RTC"));
+  log_d("System time synced with RTC");
 }
 
 // -----------------------------------------------------------------------------

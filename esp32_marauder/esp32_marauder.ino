@@ -312,9 +312,10 @@ void setup()
     // Must happen before display init CH32V003 controls LCD_RST and backlight
     log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
 
+    CH32V003_obj.setPWM(0);	 // Turn off LCD
     CH32V003_obj.lcdReset();      // pulses LCD_RST via EXIO1
 
-    CH32V003_obj.setPWM(80); // 80% brightness
+    // CH32V003_obj.setPWM(80); // 80% brightness
 
     CH32V003_obj.touchReset();    // pulses Touch_RST via EXIO0
 

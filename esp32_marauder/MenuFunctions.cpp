@@ -1242,10 +1242,6 @@ void MenuFunctions::update_time_temp_batt(bool update) {
   if(ct != update_disp or update) {  // we dont need to update the clock several hundred times a sec.
       update_disp = ct;
 
-      Serial.print("ct ="); Serial.println(ct);
-      if (update)
-        Serial.println("Update");
-
       char timeBuffer[16];
       // static uint32_t tic = 0;
       uint16_t bg_color = STATUSBAR_COLOR;
@@ -1265,12 +1261,8 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                       txt_color = TFT_ORANGE;
                   }
                   snprintf(timeBuffer, sizeof(timeBuffer), "%.1fC", t_lev);
-                  Serial.print("Temp: "); Serial.println(timeBuffer);
                   break;
-              } else
-              Serial.println("Temp: Not available");
-            #else
-              Serial.println("Temp: Not supported");
+              } 
             #endif
             // Else Fall through
 
@@ -1284,12 +1276,8 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                     txt_color = TFT_ORANGE;
                   }
                 snprintf(timeBuffer, sizeof(timeBuffer), "%d%%", b_lev);
-                Serial.print("Batt: "); Serial.println(timeBuffer);
                 break;
-            } else
-                Serial.println("Batt: Not available");
-          #else
-                Serial.println("Batt: Not supported");
+            }
           #endif
             // Else Fall through
 
@@ -1300,30 +1288,12 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                   struct tm timeinfo;
                   if(getLocalTime(&timeinfo)) {
                       strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
-                      Serial.print("Time: "); Serial.println(timeBuffer);
                   }
               } else {
-                Serial.println("Time: Not available");
                 return;
               }
 
         }   // case
-
-        /*
-        int tx, ty, tw, th;
-        tw = (5 * 8) - 4;
-
-
-      #ifdef HAS_MINI_SCREEN // SCREEN_ORIENTATION == 1
-        tx = TFT_HEIGHT;
-        // ty = TFT_WIDTH - th; // Bottom Right
-        ty = th;   // Near Top Right
-      #else
-        tx = TFT_WIDTH;
-        // ty = TFT_HEIGHT - th;    // Bottom Right
-        ty = th;   // Near Top Right
-      #endif
-      */
 
       static int16_t str_w = 32;
       if (txt_color != TFT_WHITE)
