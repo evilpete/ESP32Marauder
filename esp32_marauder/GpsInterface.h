@@ -5,11 +5,12 @@
 
 #include "configs.h"
 
-#if defined(HAS_GPS) && !defined(HAS_GPSI2)
+#if defined(HAS_GPS) && !defined(HAS_GPSI2C)
 
 #include <MicroNMEA.h>
 #include <SoftwareSerial.h>
 #include <LinkedList.h>
+#include <time.h>
 
 //#define GPS_TEXT_MAXLINES 5 //default:5 lines in the buffer maximum
 //#define GPS_TEXT_MAXCYCLES 1 //default:1
@@ -44,7 +45,7 @@ void gps_nmea_notimp(MicroNMEA& nmea);
 class GpsInterface {
   public:
     void begin();
-    void main();
+    void main(uint32_t curr_time = 0);
 
     int getNumSats();
     String getNumSatsString();
@@ -78,12 +79,13 @@ class GpsInterface {
     void disable_queue();
     bool queue_enabled();
 
+    struct tm GetTimeInfo();
+
     void sendSentence(const char* sentence);
     void sendSentence(Stream &s, const char* sentence);
 
     String generateGXgga();
     String generateGXrmc();
-
 
     bool gps_enabled = false;
 

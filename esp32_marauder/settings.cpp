@@ -331,12 +331,13 @@ template <> uint8_t Settings::loadSetting<uint8_t>(const char* key) {
   if (strcmp(key, "ChanHop") == 0)
     return (uint8_t)_cache.ChanHop;
 
+  if (strcmp(key, "Probe GPS at Boot") == 0)
+    return (uint8_t)_cache.ProbeGPS;
+
 #ifdef CYD_SOUND
   if (strcmp(key, "EnableSND") == 0)
     return (uint8_t)_cache.EnableSND;
 #endif
-  if (strcmp(key, "Probe GPS at Boot") == 0)
-    return (uint8_t)_cache.ProbeGPS;
 
   DynamicJsonDocument json(JSON_SETTING_SIZE);
   deserializeJson(json, this->json_settings_string);
@@ -401,12 +402,13 @@ template <> bool Settings::saveSetting<bool>(const char* key, bool value) {
         _cache.EPDeauth = value;
       else if (strcmp(key, "ChanHop") == 0)
         _cache.ChanHop = value;
+      else if (strcmp(key, "Probe GPS at Boot") == 0)
+        _cache.ProbeGPS = value;
 #ifdef CYD_SOUND
       else if (strcmp(key, "EnableSND") == 0)
         _cache.EnableSND = value;
 #endif
-      else if (strcmp(key, "Probe GPS at Boot") == 0)
-        _cache.ProbeGPS = value;
+
       this->printJsonSettings(settings_string);
 
       return true;

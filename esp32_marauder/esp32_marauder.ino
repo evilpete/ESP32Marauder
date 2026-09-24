@@ -21,7 +21,9 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #include <stdio.h>
 
-#ifdef HAS_GPS
+#if defined(HAS_GPSI2C)
+  #include "GpsI2c.h"
+#elif defined(HAS_GPS)
   #include "GpsInterface.h"
 #endif
 
@@ -91,6 +93,7 @@ https://www.online-utility.org/image/convert/to/XBM
     CH32V003_IOExpander CH32V003_obj;
 #endif
 
+/*
 // Yet another Cap Touch
 #ifdef HAS_CST3530
     #include <CST3530.hpp>
@@ -102,6 +105,7 @@ https://www.online-utility.org/image/convert/to/XBM
   #include <CST820.hpp>
   CST820 CST820_touch;
 #endif
+*/
 
 WiFiScan wifi_scan_obj;
 EvilPortal evil_portal_obj;
@@ -122,7 +126,9 @@ extern void init_system_time();
   TDongleDisplay t_dongle_display;
 #endif
 
-#ifdef HAS_GPS
+#if defined(HAS_GPSI2C)
+  GpsI2c gps_obj;
+#elif defined(HAS_GPS)
   GpsInterface gps_obj;
 #endif
 
@@ -347,7 +353,7 @@ void setup()
     digitalWrite(TFT_CS, HIGH);
   #endif
 
-  #if defined(HAS_SD) && !defined(HAS_C5_SD)
+  #if defined(HAS_SD) && !defined(HAS_C5_SD) && !defined(HAS_SDMMC)
   // #if defined(HAS_SD) && defined(SD_CS) && !defined(HAS_C5_SD)
     log_d("SD_CS=%d", SD_CS);
     pinMode(SD_CS, OUTPUT);
@@ -392,11 +398,13 @@ void setup()
     #endif
   #endif
 
+  /*
   #if defined(HAS_CST820)
     CST820_touch.begin(&Wire);
   #elif defined(HAS_CST3530)
     CST3530_obj.begin(Wire);
   #endif
+  */
 
   #ifdef HAS_SCREEN
     display_obj.RunSetup();
@@ -487,7 +495,14 @@ void setup()
     led_obj.RunSetup();
   #endif
 
-  #ifdef HAS_GPS
+  #if defined(HAS_GPSI2C) 
+      #if defined(GPS_SDA) &&  defined(I2C_SDA) && GPS_SDA != I2C_SDA
+	Wire1.begin(GPS_SDA, GPS_SCL, 10000);
+	gps_obj.begin(&Wire1);
+      #else
+	gps_obj.begin(&Wire);
+      #endif
+  #elif defined(HAS_GPS)
     if (settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
       gps_obj.begin();
     }
@@ -564,8 +579,10 @@ void loop()
     t_dongle_display.update(currentTime, wifi_scan_obj);
   #endif
 
-  #ifdef HAS_GPS
-    gps_obj.main();
+  #if defined(HAS_GPS) || defined(HAS_GPSI2C)
+    if (gps_obj.gps_enabled) {
+      gps_obj.main(currentTime);
+    }
   #endif
 
   // Save buffer to SD and/or serial

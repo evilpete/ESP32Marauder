@@ -203,9 +203,9 @@ class MenuFunctions
     MenuInputRepeat menu_down_repeat;
     int8_t menu_touch_button = -1;
 
-
     void RamStuff(bool update = false);
     void update_time_temp_batt(bool update = false);
+
     void buildWiFiFoxHuntMenu();
     void buildBluetoothFoxHuntMenu();
     void buildFoxTargetList(FoxHuntListKind type, int context_ap = -1);

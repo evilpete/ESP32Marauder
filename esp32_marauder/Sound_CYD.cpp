@@ -7,7 +7,7 @@
 #endif
 
 void Sound_CYD::RunSetup() {
-  log_i("Sound_CYD::RunSetup: SOUND_PIN=%d CHANNEL=%d", SOUND_PIN, LEDC_RESOLUTION, SND_CHANNEL);
+  log_i("Sound_CYD::RunSetup: SOUND_PIN=%d CHANNEL=%d", SOUND_PIN, SND_CHANNEL);
   // duty_cycle = DUTY;
 
 

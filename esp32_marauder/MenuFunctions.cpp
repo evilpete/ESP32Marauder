@@ -1212,9 +1212,10 @@ void MenuFunctions::battery2(bool initial)
   MenuFunctions::battery(initial);
 }
 #endif   // BATTERY_ANALOG_ON 
-#endif   // NOT_USED
 
 */
+
+#endif   // NOT_USED
 
 void MenuFunctions::RamStuff(bool update)  {
   // RAM Stuff
@@ -1284,7 +1285,7 @@ void MenuFunctions::update_time_temp_batt(bool update) {
         case 0x01:
         case 0x02: // Fall through
           #ifdef HAS_BATTERY
-            if (battery_obj.i2c_supported) {
+            if (battery_obj.supported) {
                 uint8_t b_lev = battery_obj.getBatteryLevel();
                 if (b_lev <= 25) {
                     txt_color = TFT_RED;
@@ -1324,6 +1325,8 @@ void MenuFunctions::update_time_temp_batt(bool update) {
 
   }   // updatek
 }
+
+
 
 void MenuFunctions::updateStatusBar()
 {
@@ -1403,6 +1406,8 @@ void MenuFunctions::updateStatusBar()
 
   if (USE_TEMP || USE_BATT || system_time_set)
      update_time_temp_batt(status_changed);
+
+  RamStuff(status_changed);
 
   // RAM / PRAM info
   RamStuff(status_changed);
@@ -2165,7 +2170,7 @@ void MenuFunctions::RunSetup()
   wifiAttackMenu.list = new LinkedList<MenuNode>();
   /*#ifdef HAS_GPS
     wardrivingMenu.list = new LinkedList<MenuNode>();
-  #endif*/
+  endif*/
   wifiGeneralMenu.list = new LinkedList<MenuNode>();
   wifiAPMenu.list = new LinkedList<MenuNode>();
   savedWifiMenu.list = nullptr;
@@ -2361,7 +2366,7 @@ void MenuFunctions::RunSetup()
     this->addNodes(&wifiMenu, "Wardriving", TFTGREEN, NULL, BEACON_SNIFF, [this]() {
       this->changeMenu(&wardrivingMenu, true);
     });
-  #endif*/
+  endif*/
   this->addNodes(&wifiMenu, text_table1[32], TFTRED, ATTACKS, [this]() {
     this->changeMenu(&wifiAttackMenu, true);
   });
@@ -2571,7 +2576,7 @@ void MenuFunctions::RunSetup()
         wifi_scan_obj.StartScan(WIFI_SCAN_STATION_WAR_DRIVE, TFT_ORANGE);
       });
     }
-  #endif*/
+  endif*/
 
   // Build WiFi attack menu
   wifiAttackMenu.parentMenu = &wifiMenu; // Main Menu is second menu parent

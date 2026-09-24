@@ -1,8 +1,12 @@
 #include "GpsInterface.h"
 
-#if defined(HAS_GPS) && !defined(HAS_GPSI2)
+#if defined(HAS_GPS) && !defined(HAS_GPSI2C)
 
 extern GpsInterface gps_obj;
+
+extern bool system_time_set;   // flag if system's time/date have been set yet..
+extern bool set_system_time(struct tm, bool setrtc = false);
+extern bool set_system_time(const String& time_str, bool setrtc = false);
 
 char nmeaBuffer[100];
 
@@ -536,6 +540,7 @@ void GpsInterface::GetTimeInfo(struct tm *timeInfo) {
     timeInfo->tm_sec = nmea.getSecond();
     // timeInfo.tm_gmtoff = 0;   //  "UTC"
   }
+  return;
 }
 
 // Thanks JosephHewitt
@@ -781,7 +786,7 @@ String GpsInterface::getNmeaNotparsed() {
   return this->notparsed_nmea_sentence;
 }
 
-void GpsInterface::main() {
+void GpsInterface::main(uint32_t curr_time) {
   while (Serial2.available()) {
     //Fetch the character one by one
     char c = Serial2.read();
@@ -800,4 +805,4 @@ void GpsInterface::main() {
     this->setGPSInfo();
   }
 }
-#endif    // HAS_GPS && !HAS_GPSI2
+#endif   //  HAS_GPS && !HAS_GPSI2C

@@ -84,10 +84,6 @@ const char PROGMEM DATE_CMD[] = "date";
 const char PROGMEM SETDATE_CMD[] = "setdate";
 const char PROGMEM RECON_CMD[] = "recon";
 
-const char PROGMEM NTP_SYNC_CMD[] = "ntp_sync";
-const char PROGMEM DATE_CMD[] = "date";
-const char PROGMEM SETDATE_CMD[] = "setdate";
-
 // WiFi sniff/scan
 const char PROGMEM EVIL_PORTAL_CMD[] = "evilportal";
 const char PROGMEM KARMA_CMD[] = "karma";

@@ -298,6 +298,7 @@ void Display::RunSetup() {
     this->touchscreenSPI.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
     this->touchscreen.begin(touchscreenSPI);
     this->touchscreen.setRotation(0);
+  #endif
 
   #ifdef HAS_CST820
     #ifndef TP_INT
@@ -308,7 +309,8 @@ void Display::RunSetup() {
       #define TP_RST -1
     #endif
 
-    CST820_touch.begin(&Wire, TP_INT, TP_RST);
+    // CST820_touch.begin(&Wire, TP_INT, TP_RST);
+    CST820_touch.begin(&Wire);
   #endif
 
   #ifdef HAS_CST3530
@@ -854,4 +856,4 @@ void Display::buildBanner(String msg, int xpos)
   this->showCenterText(msg.c_str(), banner_y);
 }
 
-#endif
+#endif  //  HAS_SCREEN
