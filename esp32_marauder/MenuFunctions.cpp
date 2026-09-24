@@ -1087,6 +1087,9 @@ void MenuFunctions::main(uint32_t currentTime)
   #endif
 }
 
+
+#ifdef NOT_USED
+
 #if BATTERY_ANALOG_ON == 1
 byte battery_analog_array[10];
 byte battery_count = 0;
@@ -1154,7 +1157,7 @@ void MenuFunctions::battery2(bool initial)
                               the_color);
   display_obj.tft.drawString((String) battery_analog + "%", SB_BAT_X, 0, 2);
 }
-#else
+#else    // BATTERY_ANALOG_ON 
 void MenuFunctions::battery(bool initial)
 {
   #ifdef HAS_BATTERY
@@ -1194,7 +1197,78 @@ void MenuFunctions::battery2(bool initial)
 {
   MenuFunctions::battery(initial);
 }
-#endif
+#endif   // BATTERY_ANALOG_ON 
+#endif   // NOT_USED
+
+
+// uint32_t clock_update = 1;
+// uint32_t count_pass = 0;
+extern bool system_time_set;
+// Loop through values for time, temp & Batt level on top right banner
+void MenuFunctions::update_time_temp_batt(bool update) {
+  static uint8_t update_disp = 7;
+
+  uint8_t ct = (this->initTime >> 12) & 0x03;
+
+  if(ct != update_disp or update) {  // we dont need to update the clock several hundred times a sec.
+      update_disp = ct;
+
+      Serial.print("ct ="); Serial.println(ct);
+      if (update)
+        Serial.println("Update");
+
+      char timeBuffer[16];
+      // static uint32_t tic = 0;
+      uint16_t bg_color = STATUSBAR_COLOR;
+      uint16_t txt_color = TFT_WHITE;
+
+      // Use "(time >> 12) & 0x02" to cycle through different values
+      // With a biased for time
+      switch(ct) {
+
+        case 0x01:
+        case 0x02: // Fall through
+          #ifdef HAS_BATTERY
+            if (battery_obj.i2c_supported) {
+                uint8_t b_lev = battery_obj.getBatteryLevel();
+                if (b_lev <= 25) {
+                    txt_color = TFT_RED;
+                  } else if (b_lev <= 33) {
+                    txt_color = TFT_ORANGE;
+                  }
+                snprintf(timeBuffer, sizeof(timeBuffer), "%dC", b_lev);
+                Serial.print("Batt: "); Serial.println(timeBuffer);
+                break;
+            } 
+          #endif
+            // Else Fall through
+
+        case 0x00:
+        case 0x03: 
+            if (system_time_set) {
+                struct tm timeinfo;
+                if(getLocalTime(&timeinfo)) {
+                    strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
+                    Serial.print("Time: "); Serial.println(timeBuffer);
+                }
+            }
+
+        }   // case
+
+      static int16_t str_w = 32;
+      if (txt_color != TFT_WHITE)
+        display_obj.tft.setTextColor(txt_color, STATUSBAR_COLOR, true);
+
+      display_obj.tft.fillRect(TFT_WIDTH - str_w, 0, str_w, STATUS_BAR_WIDTH,  bg_color);
+      str_w = display_obj.tft.drawRightString(timeBuffer, SCREEN_WIDTH , 0 , 2);
+      str_w +=2;
+
+      // restore Text color
+      if (txt_color != TFT_WHITE)
+        display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR, true);
+
+  }   // updatek
+}
 
 void MenuFunctions::updateStatusBar()
 {
@@ -1272,6 +1346,9 @@ void MenuFunctions::updateStatusBar()
     #endif
   }
 
+  if (USE_TEMP || USE_BATT || system_time_set)
+     update_time_temp_batt(status_changed);
+
   // RAM Stuff
   wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
   if ((wifi_scan_obj.free_ram != wifi_scan_obj.old_free_ram) || (status_changed)) {
@@ -1292,7 +1369,7 @@ void MenuFunctions::updateStatusBar()
   }
 
   // Draw battery info
-  MenuFunctions::battery(false);
+  // MenuFunctions::battery(false);
   display_obj.tft.fillRect(186, 0, 16, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
 
   // Disable touch stuff
@@ -1451,6 +1528,9 @@ void MenuFunctions::drawStatusBar()
     display_obj.tft.drawString("CH:" + (String)wifi_scan_obj.old_channel, TFT_WIDTH/4, 0, 1);
   #endif
 
+  if (USE_TEMP || USE_BATT || system_time_set)
+     update_time_temp_batt(true);
+
   // RAM Stuff
   wifi_scan_obj.free_ram = String(esp_get_free_heap_size());
   wifi_scan_obj.old_free_ram = wifi_scan_obj.free_ram;
@@ -1469,7 +1549,7 @@ void MenuFunctions::drawStatusBar()
   #endif
 
 
-  MenuFunctions::battery(true);
+  // MenuFunctions::battery(true);
   display_obj.tft.fillRect(186, 0, 16, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
 
 
@@ -3038,6 +3118,27 @@ void MenuFunctions::RunSetup()
 
       this->changeMenu(&uploadLogsMenu, true);
     });
+
+  this->addNodes(&wifiGeneralMenu, "Sync Clock with WiFi", TFTSKYBLUE, 0, [this]() {
+    this->changeMenu(&wifiGeneralMenu, true);
+    display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
+    bool sync_ntp(const char *ntpServer = nullptr);    // system_time.cpp
+
+     if (!wifi_scan_obj.wifi_connected) {
+       display_obj.tft.println("WIFI is not connected.");
+       return;
+     }
+
+     sync_ntp();
+     struct tm timeinfo;
+     if (getLocalTime(&timeinfo)) {
+       Serial.println(&timeinfo, "%F %T");
+     } else {
+       log_d("Failed to obtain time from NTP");
+     }
+
+     return;
+  });
 
     uploadAllMenu.parentMenu = &uploadLogsMenu;
     this->addNodes(&uploadAllMenu, text09, TFTLIGHTGREY, 0, [this]() {

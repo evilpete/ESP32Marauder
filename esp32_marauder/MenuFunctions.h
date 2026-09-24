@@ -25,6 +25,9 @@
 #include "settings.h"
 #include "MenuInputRepeat.h"
 
+// future use
+#define USE_TEMP false
+
 #ifdef HAS_BUTTONS
   #include "Switches.h"
   #if (U_BTN >= 0)
@@ -47,9 +50,13 @@
 extern WiFiScan wifi_scan_obj;
 extern ReconMission recon_obj;
 extern SDInterface sd_obj;
-// #ifdef HAS_BATTERY
-extern BatteryInterface battery_obj;
-// #endif
+#ifdef HAS_BATTERY
+  extern BatteryInterface battery_obj;
+  #define USE_BATT battery_obj.i2c_supported
+#else
+  #define USE_BATT false
+#endif
+#define USE_TEMP false
 extern Settings settings_obj;
 
 #define FLASH_BUTTON 0
@@ -164,6 +171,7 @@ class MenuFunctions
     MenuInputRepeat menu_down_repeat;
     int8_t menu_touch_button = -1;
 
+    void update_time_temp_batt(bool update = false);
     void buildWiFiFoxHuntMenu();
     void buildBluetoothFoxHuntMenu();
     void buildFoxTargetList(FoxHuntListKind type, int context_ap = -1);

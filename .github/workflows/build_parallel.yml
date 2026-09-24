@@ -166,6 +166,13 @@ jobs:
           ref: 3.0.0
           path: CustomAPA102
 
+      - name: Install Adafruit RTClib
+        uses: actions/checkout@v2
+        with:
+          repository: adafruit/RTClib
+          ref: 2.1.4
+          path: CustomAdafruit_RTClib
+
       - name: Install ArduinoJson
         uses: actions/checkout@v2
         with:
