@@ -44,7 +44,6 @@
   //#define MARAUDER_CYD_2USB // Another 2432S028 but it has tWo UsBs OoOoOoO
   //#define MARAUDER_CYD_GUITION // ESP32-2432S024 GUITION
   //#define MARAUDER_CYD_3_5_INCH
-  //#define MARAUDER_CYD_HMI  // LILYGO T-HMI ESP32-S3 Touch Display 2.8 inch
   //#define MARAUDER_C5
   //#define MARAUDER_T_DONGLE_C5
   //#define MARAUDER_CARDPUTER
@@ -297,7 +296,6 @@
     #define HAS_LED
       #define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
-    #define HAS_PCF8523
     #define HAS_SCREEN
       #define HAS_MINI_SCREEN
     #define HAS_SD
@@ -306,7 +304,7 @@
     #define HAS_GPS
       #define HAS_GPSI2C
     #define HAS_DIRECT_UPLOAD
-  #endif
+  #endif  // MARAUDER_REV_FEATHER
 
   #ifdef MARAUDER_V4
     #define HAS_TOUCH
@@ -581,8 +579,7 @@
     ///   #define I2C_SDA 17   // Grove 2
     ///   #define I2C_SCL 18
     ///   #define HAS_GPSI2C_ADDR 0x20
-
-    #define HAS_CYD_PORTRAIT
+    // #define HAS_CYD_PORTRAIT
     #define HAS_IDF_3
     #define MSC_SHARE
       #define USE_MMC_WRITE_SECTORS
@@ -592,7 +589,7 @@
     #define HAS_PWR_MGMT
       #define PWR_EN_PIN  10
       #define PWR_ON_PIN  14
-  #endif
+  #endif  // MARAUDER_CYD_HMI
 
     /*
     #ifdef ESP_ARDUINO_VERSION
@@ -760,7 +757,7 @@
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
-  #ifdef MARAUDER_CYD_24
+  #if defined(MARAUDER_CYD_24)
     #define HAS_TOUCH
     #define HAS_LED
       #define HAS_FLIPPER_LED
@@ -774,6 +771,7 @@
     #define HAS_SD
       #define USE_SD
     #define HAS_GPS
+      #define HAS_GPSI2C
     // #define HAS_IDF_3
     #define CYD_SOUND
       #define SOUND_PIN 26
@@ -874,7 +872,7 @@
 
   #endif
 
-  #ifdef MARAUDER_CYD_HMI
+  #if defined(MARAUDER_CYD_HMI)
     #define PWR_EN_PIN  10    // power to peripherals
     #define PWR_ON_PIN  14    // Batt power to board
     #define POWER_HOLD_PIN PWR_ON_PIN
@@ -1180,7 +1178,7 @@
       #define D_PULL true
     #endif
 
-   #ifdef MARAUDER_WS_C5_28
+   #if defined(MARAUDER_WS_C5_28)
       #define L_BTN -1
       #define R_BTN -1
       #define C_BTN 28
@@ -2774,9 +2772,6 @@
       #define YMAX 320 // Bottom of screen area
       #define minimum(a,b)     (((a) < (b)) ? (a) : (b))
       #define MENU_FONT &FreeMono9pt7b // Winner
-      //#define MENU_FONT &FreeMonoBold9pt7b
-      //#define MENU_FONT &FreeSans9pt7b
-      //#define MENU_FONT &FreeSansBold9pt7b
       #define BUTTON_SCREEN_LIMIT 12
       #define BUTTON_ARRAY_LEN BUTTON_SCREEN_LIMIT
       #define STATUS_BAR_WIDTH 16
@@ -3280,6 +3275,7 @@
     // #define BUTTON_ARRAY_LEN 5
   #endif  // MARAUDER_CYD_HMI
  
+  // A
   #if defined(MARAUDER_CYD_24)
     #define BANNER_TIME 100
     
@@ -3587,13 +3583,19 @@
 
   #if defined(HAS_GPSI2C)
 
-    #if defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+    #if defined(MARAUDER_M5STICKCP2)
+      #define GPS_SDA 21
+      #define GPS_SCL 22      // Wire1
+
+    #elif defined(MARAUDER_M5STICKC)
       #define GPS_SDA 32
       #define GPS_SCL 33       // Wire2
 
     #elif defined(MARAUDER_REV_FEATHER) || defined(MARAUDER_REV_FEATHER_S3)
-      #define GPS_SDA 3
-      #define GPS_SCL 4       // Wire
+      #define I2C_SDA 3
+      #define I2C_SCL 4
+      #define GPS_SDA I2C_SDA
+      #define GPS_SCL I2C_SCL       // Wire
 
     #elif defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
       #define GPS_SDA 2
@@ -3601,19 +3603,19 @@
 
     #elif defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_2USB)  \
         || defined(MARAUDER_CYD_GUITION) || defined(MARAUDER_CYD_3_5_INCH)
-      #define GPS_SDA 22    // Wire1
-      #define GPS_SCL 27
+      #define GPS_SDA 21    // Wire1
+      #define GPS_SCL 22
 
     #elif defined(MARAUDER_M5_NANO_C6)
       #define GPS_SDA 2
       #define GPS_SCL 1       // Wire1
 
     #elif defined(MARAUDER_CYD_24)
-      #define GPS_SDA 27
+      #define GPS_SDA 21
       #define GPS_SCL 22     // Wire1
 
     #elif defined(MARAUDER_CYD_HMI) // Grove 1 : 16 & 15
-      #define GPS_SDA 17   // Grove 2
+      #define GPS_SDA 17   // Grove 2  Wire 2
       #define GPS_SCL 18
 
     #elif defined(MARAUDER_JC2432W328C)
@@ -4094,18 +4096,115 @@
   #endif
   //// END FUNNY FLIPPER LED STUFF
 
-  #if defined(HAS_FLIPPER_LED) && (!defined(B_PIN) || !defined(G_PIN) || !defined(R_PIN) )
-    #warning "HAS_FLIPPER_LED has no LED PINS defined"
-    #undef HAS_FLIPPER_LED
+
+  #ifdef HAS_RTC
+
+    #if defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
+      #define HAS_PCF85063         // i2c real-time clock (RTC)
+      #define I2C_SDA 0
+      #define I2C_SCL 1
+      #define RTC_SDA           I2C_SDA
+      #define RTC_SCL           I2C_SCL
+      #define I2C_ADDR_PCF85063  0x51 // NOT 0x1A : CST3530 differs from CST820
+
+    #elif defined(MARAUDER_REV_FEATHER)
+      #define HAS_PCF8523         // i2c real-time clock (RTC) in Adalogger
+      #define I2C_SCL 4
+      #define I2C_SDA 3
+      #define RTC_SDA           I2C_SDA
+      #define RTC_SCL           I2C_SCL
+
+    #elif defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
+      #define HAS_PCF8563       // SAMWE AS BM8563
+      #define I2C_SDA 21
+      #define I2C_SCL 22
+      #define RTC_SDA           I2C_SDA
+      #define RTC_SCL           I2C_SCL
+      #define I2C_ADDR_PCF8563 0x51
+    #endif
+
+  #endif   // HAS_RTC
+
+  #ifdef HAS_TEMP_SENSOR
+
+    #if defined(MARAUDER_WS_C5_28)
+      #define HAS_SHTC3
+      #define I2C_SDA 0
+      #define I2C_SCL 1
+      #define I2C_ADDR_SHTC3  0x70 // NOT 0x1A : CST3530 differs from CST820
+    #endif
+
+    // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
+    #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
+          (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) \
+          || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) \
+          || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2) )
+      #define HAS_CPU_TEMP
+    #else
+      #undef HAS_CPU_TEMP
+    #endif
+
+  #endif  // HAS_TEMP_SENSOR
+
+  //do we have a SENSOR?
+  #if !( defined(USE_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
+    #warning "HAS_TEMP_SENSOR set without source device HAS_SHTC3 or USE_CPU_TEMP"
+    #undef HAS_TEMP_SENSOR
   #endif
 
-  #if defined(HAS_NEOPIXEL_LED) || defined(HAS_FLIPPER_LED)
-    #define HAS_LED
-  #endif
 
-  #if defined(HAS_CST820) || defined(HAS_FT6336)
-    #define HAS_CAP_TOUCH
-  #endif
+  #ifdef HAS_CAP_TOUCH
+
+    #if defined(MARAUDER_JC2432W328C)
+      #define HAS_CST820
+      #define I2C_SDA 33
+      #define I2C_SCL 32
+      #define I2C_FREQ 10000    // 10K instead of 100K
+      #define TP_SDA I2C_SDA
+      #define TP_SCL I2C_SCL
+      #define TP_FREQ 10000    // 10K instead of 100K
+      #define TP_RST 25
+      #define TP_INT -1  // ?22? / 21 ?
+      #define I2C_ADDR_CST820 0x15
+
+    #elif defined(MARAUDER_PANCAKE)
+      #define HAS_FT6336
+      #define I2C_SDA 9
+      #define I2C_SCL 10
+      #define TP_SDA I2C_SDA
+      #define TP_SCL I2C_SCL
+      #define TP_RST 8
+      #define I2C_FT6336_ADDR      0x38
+
+    #elif defined(MARAUDER_LCDWIKI_28)
+      #define HAS_FT6336
+      #define TP_SDA 16
+      #define TP_SCL 15
+      #define TP_RST 18
+      #define I2C_FT6336_ADDR      0x38
+
+    #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
+      #define HAS_CST3530 1      // distinguish from CST820
+      #define I2C_SDA 0
+      #define I2C_SCL 1
+      #define TP_SDA           I2C_SDA
+      #define TP_SCL           I2C_SCL
+      #define TP_INT           5
+      #define TP_RST           -1   // CH32V003 EXIO0
+      #define TP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
+      #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
+
+    #elif defined(MARAUDER_CYD_3_5_INCH_CAP) 
+      #define HAS_GT911 1 
+      #define TP_SDA 33
+      #define TP_SCL 32
+      #define TP_INT 21
+      #define TP_RST 25
+      #define I2C_ADDR_GT911 0x38
+    #endif
+
+  #endif  // HAS_CAP_TOUCH
+
 
   //// WIFI STUFF
 
@@ -4130,15 +4229,6 @@
 // #pragma GCC diagnostic warning "-Wcpp"
 
 
-  //  I2C Touch Screens
-  #if defined(HAS_CST820) || defined(HAS_AXS5106L) || defined(HAS_FT6336) || defined(HAS_CST3530)
-    #define HAS_CAP_TOUCH 1
-  #endif
-
-  //  define HAS_RTC if we have RTC hardware
-  #if defined(HAS_PCF8523) || defined(HAS_DS1307) || defined(HAS_PCF85063) || defined(HAS_PCF8563)
-    #define HAS_RTC 1
-  #endif
 
   #if defined(HAS_NIMBLE_2) && !defined(HAS_BT)
     #warning "HAS_NIMBLE_2 defined without HAS_BT, check 'BOARD FEATURES' section"
@@ -4205,7 +4295,6 @@
   #endif   // HAS_TEMP_SENSOR
 
 // #pragma GCC diagnostic pop
-
 
   // END CONFIGS LOGIC
 

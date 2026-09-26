@@ -62,6 +62,8 @@ void CommandLine::RunSetup() {
   #ifndef MARAUDER_V8
   Serial.println(this->ascii_art);
   #endif
+  log_d("RunSetup");
+
 
   Serial.println(F("\n\n--------------------------------\n"));
   Serial.println(F("         ESP32 Marauder      \n"));

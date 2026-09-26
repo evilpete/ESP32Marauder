@@ -41,7 +41,9 @@ void GpsI2c::begin(int sdaPin, int sclPin, uint32_t frequency) {
 }
 
 void GpsI2c::begin(TwoWire *wireInstance) {
-  _wire = wireInstance;
+  if (_wire == nullptr)
+    _wire = wireInstance ? wireInstance : &Wire;
+
 
   delay(500);
   // describeAllPins();

@@ -2141,6 +2141,7 @@ void MenuFunctions::RunSetup()
   extern LinkedList<ProbeReqSsid>* probe_req_ssids;
   extern LinkedList<ssid>* ssids;
   extern LinkedList<BleDevice>* ble_devices;
+  log_d("RunSetup");
 
   this->disable_touch = false;
 
@@ -4101,10 +4102,9 @@ void MenuFunctions::RunSetup()
 
   #endif // MSC_SHARE
 
-  #ifdef HAS_GPS
+  #if defined(HAS_GPS) || defined(HAS_GPSI2C)
     if ( !gps_obj.gps_enabled)
-      this->addNodes(&saveFileMenu, "Probe GPS", TFTSKYBLUE, SD_UPDATE, [this]() {
-
+      this->addNodes(&adminMenu, "Probe GPS", TFTSKYBLUE, SD_UPDATE, [this]() {
       gps_obj.begin();
     });
   #endif //  HAS_GPS
@@ -4329,6 +4329,7 @@ void MenuFunctions::RunSetup()
   this->changeMenu(&mainMenu, true);
 
   this->initTime = millis();
+  log_d("RunSetup complete");
 }
 
 String MenuFunctions::geofenceTextInput(const char* title) {

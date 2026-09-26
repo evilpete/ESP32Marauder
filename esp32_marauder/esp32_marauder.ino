@@ -132,7 +132,13 @@ extern void init_system_time();
 #endif
 
 #if defined(HAS_GPSI2C)
-  GpsI2c gps_obj;
+
+  #if defined(GPS_SDA) && defined(I2C_SDA) && (GPS_SDA != I2C_SDA)
+    GpsI2c gps_obj(&Wire1);
+  #else
+    GpsI2c gps_obj(&Wire);
+  #endif
+
 #elif defined(HAS_GPS)
   GpsInterface gps_obj;
 #endif
@@ -281,16 +287,13 @@ void setup()
     esp_spiram_init();
   #endif
 
-  Serial.begin(460800);  // 115200);
+  Serial.begin(115200);  // 115200);
 
 
 
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
     Wire.begin(I2C_SDA, I2C_SCL);
-    #if defined(CORE_DEBUG_LEVEL)
-      i2c_probe();
-    #endif
   #endif
 
   #ifdef HAS_CH32V003
@@ -505,18 +508,13 @@ void setup()
     led_obj.RunSetup();
   #endif
 
-  #if defined(HAS_GPSI2C) 
-      #if defined(GPS_SDA) &&  defined(I2C_SDA) && GPS_SDA != I2C_SDA
-        Wire1.begin(GPS_SDA, GPS_SCL, 10000);
-        gps_obj.begin(&Wire1);
-      #else
-        gps_obj.begin(&Wire);
+  if (!settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
+      #if defined(HAS_GPSI2C) 
+	  gps_obj.begin();
+      #elif defined(HAS_GPS)
+	  gps_obj.begin();
       #endif
-  #elif defined(HAS_GPS)
-    if (settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
-      gps_obj.begin();
-    }
-  #endif
+  }
 
   #ifdef HAS_SCREEN
     display_obj.tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -526,8 +524,9 @@ void setup()
     #if defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
       display_obj.clearScreen();
     #endif
-    menu_function_obj.RunSetup();
+      menu_function_obj.RunSetup();
   #endif
+  delay(1000);
 
   /*char ssidBuf[64] = {0};  // or prefill with existing SSID
   if (keyboardInput(ssidBuf, sizeof(ssidBuf), "Enter SSID")) {
@@ -545,11 +544,10 @@ void setup()
 
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
 
-  #if defined(CORE_DEBUG_LEVEL)
-    i2c_probe();
-  #endif
-
   cli_obj.RunSetup();
+
+  log_d("Setup Complete");
+  delay(250);
 }
 
 

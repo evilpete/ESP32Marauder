@@ -260,6 +260,9 @@ void Display::setCalData(bool landscape) {
         uint16_t calData[5] = { 312, 3431, 191, 3456, 2 };
       #elif defined(TFT_DIY)
         uint16_t calData[5] = { 339, 3470, 237, 3438, 2 }; // tft.setRotation(0); // Portrait with DIY TFT
+      #elif defined(MARAUDER_CYD_24)
+        uint16_t calData[5] = { 378, 3288, 526, 3311, 3 };
+        log_d("setCalData");
       #else
         uint16_t calData[5] = { 339, 3470, 237, 3438, 2 }; // DELETE
       #endif
@@ -322,9 +325,7 @@ void Display::RunSetup() {
       // CST3530_obj.begin(&Wire, TP_INT, TP_RST, TP_FREQ);
       // CST3530_obj.begin(TP_SDA, TO_SCL, TP_INT, TP_RST,f TP_FREQ)
       log_d("CST3530_obj.begin done");
-    #else
-      log_d("HAS_CST3530 False");
-    #endif
+  #endif
 
   #ifdef HAS_FT6336
     ft6336_init();
