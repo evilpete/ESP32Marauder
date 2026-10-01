@@ -338,7 +338,14 @@ void setup() {
     stickc_led.RunSetup();
   #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
     led_obj.RunSetup();
-  #endif
+
+    while(!Serial && millis() < 2000) {
+      delay(500);
+    }
+    #if ESP_ARDUINO_VERSION_MAJOR >= 3
+      log_d("setting setTxTimeoutMs()");
+      Serial.setTxTimeoutMs(0);
+    #endif
 
   init_system_time();
 

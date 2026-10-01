@@ -844,6 +844,7 @@
       #define HAS_IDF_3
       // HAS_MIC
       #define DEEPSLEEP
+      #define HAS_ZIGBEE
     #endif     // MARAUDER_WS_C5_28
 
   //// END BOARD FEATURES
