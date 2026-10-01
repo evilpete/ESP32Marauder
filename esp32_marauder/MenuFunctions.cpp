@@ -1296,7 +1296,7 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                     txt_color = TFT_ORANGE;
                   }
                 snprintf(timeBuffer, sizeof(timeBuffer), "%d%%", b_lev);
-                Serial.print("Batt: "); Serial.println(timeBuffer);
+                // Serial.print("Batt: "); Serial.println(timeBuffer);
                 break;
             } 
           #endif
@@ -1307,7 +1307,7 @@ void MenuFunctions::update_time_temp_batt(bool update) {
                 struct tm timeinfo;
                 if(getLocalTime(&timeinfo)) {
                     strftime(timeBuffer, sizeof(timeBuffer), "%k:%M", &timeinfo);
-                    Serial.print("Time: "); Serial.println(timeBuffer);
+                    // Serial.print("Time: "); Serial.println(timeBuffer);
                 }
             } else {
               return;
@@ -2361,6 +2361,7 @@ void MenuFunctions::RunSetup()
     this->changeMenu(&deviceMenu, true);
   });
   this->addNodes(&mainMenu, text_table1[30], TFTLIGHTGREY, REBOOT, []() {
+    display_obj.tft.fillScreen(TFT_BLACK);
     ESP.restart();
   });
   #ifdef POWER_HOLD_PIN

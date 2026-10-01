@@ -103,7 +103,8 @@ class GpsI2c {
     bool queue_enabled_flag = 0;
     // LinkedList<nmea_sentence_t> *queue=NULL;
 
-    String GetGNSSType();
+    const char *GetGNSSType();
+    uint8_t GetGNSSTypeCode();
 
     unsigned int text_cycles = 0;
     // LinkedList<String> *text_in=NULL;
@@ -143,6 +144,7 @@ class GpsI2c {
     bool good_fix = false;
     // char nav_system = '\0';
     String nav_system = "";
+    uint8_t nav_mode = 0;
     uint8_t num_sats = 0;
 };
 

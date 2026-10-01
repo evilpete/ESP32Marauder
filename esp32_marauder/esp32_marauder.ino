@@ -17,6 +17,11 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 
 
+#ifdef HAS_PM
+  #include "esp_log.h"
+  #include "esp_pm.h"
+#endif
+
 // #include "ESP32_PinDebug.h"
 
 #include <stdio.h>
@@ -248,15 +253,29 @@ void print_reset_reason() {
         Serial.println(address, HEX);
       }
     }
+
     Serial.print("Done. Found ");
     Serial.print(count);
     Serial.println(" devices.");
   }
 #endif // CORE_DEBUG_LEVEL)
 
-void setup()
-{
 
+#ifdef HAS_PM_NOT
+  static esp_err_t after_light_sleep(int64_t sleep_time_us, void *arg) {
+      log_d("Woken up from automatic light sleep, slept for %lld us", sleep_time_us);
+      // Add custom actions after waking up
+      return ESP_OK; // Must return ESP_OK
+  }
+
+  static esp_err_t before_light_sleep(int64_t sleep_time_us, void *arg) {
+      log_d("Entering automatic light sleep for %lld us", sleep_time_us);
+      // Add custom actions before sleep (e.g., toggling LEDs, saving state)
+      return ESP_OK; // Must return ESP_OK
+  }
+#endif // HAS_PM)
+
+void setup() {
 
   // https://github.com/Xinyuan-LilyGO/T-HMI/issues/34
   // LILYGO T-HMI : latch power on if on battery
@@ -289,8 +308,6 @@ void setup()
 
   Serial.begin(115200);  // 115200);
 
-
-
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
     Wire.begin(I2C_SDA, I2C_SCL);
@@ -309,8 +326,19 @@ void setup()
     // perimanSetPinBusExtraType(ACT_LED_PIN, "ACT_LED_PIN");
   #endif
 
-  while(!Serial)
+  while(!Serial && millis() < 2000)
     delay(10);
+
+  // Do some LED stuff
+  #ifdef HAS_FLIPPER_LED
+    flipper_led.RunSetup();
+  #elif defined(XIAO_ESP32_S3)
+    xiao_led.RunSetup();
+  #elif defined(MARAUDER_M5STICKC)
+    stickc_led.RunSetup();
+  #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
+    led_obj.RunSetup();
+  #endif
 
   init_system_time();
 
@@ -384,8 +412,6 @@ void setup()
   #ifdef CYD_SOUND
       sound_obj.RunSetup();
   #endif
-
-  init_system_time();
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
   #ifdef ESP_ARDUINO_VERSION_STR
@@ -497,17 +523,6 @@ void setup()
     battery_obj.battery_level = battery_obj.getBatteryLevel();
   #endif
 
-  // Do some LED stuff
-  #ifdef HAS_FLIPPER_LED
-    flipper_led.RunSetup();
-  #elif defined(XIAO_ESP32_S3)
-    xiao_led.RunSetup();
-  #elif defined(MARAUDER_M5STICKC)
-    stickc_led.RunSetup();
-  #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
-    led_obj.RunSetup();
-  #endif
-
   if (!settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
       #if defined(HAS_GPSI2C) 
 	  gps_obj.begin();
@@ -545,6 +560,39 @@ void setup()
   wifi_scan_obj.StartScan(WIFI_SCAN_OFF);
 
   cli_obj.RunSetup();
+
+  #ifdef HAS_PM
+      log_d("HAS_PM");
+
+      // Inside app_main or initialization function:
+      esp_pm_config_t pm_config = {
+	  .max_freq_mhz = 240,       // Max CPU frequency (e.g., 240, 160, or 80 MHz)
+	  .min_freq_mhz = 40,        // Min CPU frequency (typically XTAL frequency or divided)
+	  .light_sleep_enable = false // Enable/disable automatic light sleep
+      };
+
+
+      uint8_t pp = esp_pm_configure(&pm_config);
+
+      ESP_ERROR_CHECK(pp);
+      log_d("esp_pm_configure = %d", pp);
+
+    /*
+      esp_pm_sleep_cbs_register_config_t pm_callbacks = {
+        .enter_cb = before_light_sleep,
+        .exit_cb = after_light_sleep,
+        .enter_cb_user_arg = NULL,
+        .exit_cb_user_arg = NULL,
+        .enter_cb_prior = 5,
+        .exit_cb_prior = 5
+      };
+
+    pp = esp_pm_light_sleep_register_cbs(&pm_callbacks);
+
+    ESP_ERROR_CHECK(pp);
+    log_d("esp_pm_light_sleep_register_cbs = %d", pp);
+    */
+  #endif
 
   log_d("Setup Complete");
   delay(250);

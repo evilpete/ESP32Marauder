@@ -2,17 +2,12 @@
 
 
 #ifndef configs_h
+#define configs_h
 
-  #include "soc/soc_caps.h"
-  #include "esp_arduino_version.h"
-
-  #define configs_h
   #ifdef PLATFORMIO
     #include "soc/soc_caps.h"
-
     #include "esp_arduino_version.h"
   #endif
-
 
   #define POLISH_POTATO
 
@@ -63,7 +58,7 @@
   // five saved WiFi profiles without permanently caching their passwords.
   #define JSON_SETTING_SIZE 6144
 
-#define MARAUDER_VERSION "v1.17.0"
+  #define MARAUDER_VERSION "v1.17.0"
 
   #define GRAPH_REFRESH   100
 
@@ -304,6 +299,7 @@
     #define HAS_GPS
       #define HAS_GPSI2C
     #define HAS_DIRECT_UPLOAD
+    #define DEEPSLEEP
   #endif  // MARAUDER_REV_FEATHER
 
   #ifdef MARAUDER_V4
@@ -368,6 +364,7 @@
     #define HAS_CYD_TOUCH
     //#define HAS_NIMBLE_2
     #define HAS_DIRECT_UPLOAD
+    #define DEEPSLEEP
   #endif
 
   #ifdef MARAUDER_CYD_2USB
@@ -391,6 +388,7 @@
     #define HAS_NIMBLE_2
     #define HAS_IDF_3
     #define HAS_DIRECT_UPLOAD
+    #define DEEPSLEEP
   #endif
 
   #ifdef MARAUDER_CYD_3_5_INCH
@@ -414,6 +412,7 @@
     #define HAS_CYD_PORTRAIT
     //#define HAS_NIMBLE_2
     #define HAS_DIRECT_UPLOAD
+    #define DEEPSLEEP
   #endif
 
   #ifdef MARAUDER_CYD_GUITION
@@ -435,6 +434,7 @@
     //#define HAS_CYD_TOUCH
     //#define HAS_NIMBLE_2
     #define HAS_DIRECT_UPLOAD
+    #define DEEPSLEEP
   #endif
 
   #ifdef MARAUDER_KIT
@@ -589,6 +589,7 @@
     #define HAS_PWR_MGMT
       #define PWR_EN_PIN  10
       #define PWR_ON_PIN  14
+    #define HAS_PM
   #endif  // MARAUDER_CYD_HMI
 
     /*
@@ -754,6 +755,7 @@
       #define HAS_GPSI2C
     #define CYD_SOUND
       #define SOUND_PIN 26
+    #define DEEPSLEEP
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
@@ -775,6 +777,7 @@
     // #define HAS_IDF_3
     #define CYD_SOUND
       #define SOUND_PIN 26
+    #define DEEPSLEEP
   #endif   // MARAUDER_CYD_24
 
 
@@ -1178,7 +1181,7 @@
       #define D_PULL true
     #endif
 
-   #if defined(MARAUDER_WS_C5_28)
+    #if defined(MARAUDER_WS_C5_28)
       #define L_BTN -1
       #define R_BTN -1
       #define C_BTN 28
@@ -2566,7 +2569,7 @@
 
       #define SCREEN_CHAR_WIDTH 40
       #define HAS_ILI9341
-    
+
       #define BANNER_TEXT_SIZE 2
 
       #define I2C_SDA 33
@@ -2654,13 +2657,13 @@
       #define GREENBUTTON_Y FRAME_Y
       #define GREENBUTTON_W (FRAME_W/2)
       #define GREENBUTTON_H FRAME_H
-    
+
       #define STATUSBAR_COLOR 0x4A49
-    
+
       #define KIT_LED_BUILTIN 13
     #endif   // MARAUDER_JC2432W328C
 
-   #if defined(MARAUDER_CYD_HMI)
+    #if defined(MARAUDER_CYD_HMI)
        #define CHAN_PER_PAGE 7
        #define SCREEN_CHAR_WIDTH 40
       #define HAS_ILI9341
@@ -2759,7 +2762,7 @@
       #define MAX_SCREEN_BUFFER 21
 
       #define SCREEN_ORIENTATION 0
-    
+
       #define CHAR_WIDTH 12
       #define SCREEN_WIDTH TFT_WIDTH
       #define SCREEN_HEIGHT TFT_HEIGHT
@@ -2781,19 +2784,19 @@
       #define FRAME_Y 64
       #define FRAME_W 120
       #define FRAME_H 50
-    
+
       // Red zone size
       #define REDBUTTON_X FRAME_X
       #define REDBUTTON_Y FRAME_Y
       #define REDBUTTON_W (FRAME_W/2)
       #define REDBUTTON_H FRAME_H
-    
+
       // Green zone size
       #define GREENBUTTON_X (REDBUTTON_X + REDBUTTON_W)
       #define GREENBUTTON_Y FRAME_Y
       #define GREENBUTTON_W (FRAME_W/2)
       #define GREENBUTTON_H FRAME_H
-    
+
       #define STATUSBAR_COLOR 0x4A49
     #endif // MARAUDER_CYD_24
 
@@ -3239,9 +3242,9 @@
 
   #if defined(MARAUDER_JC2432W328C)
     #define BANNER_TIME 100
- 
+
     #define COMMAND_PREFIX "!"
- 
+
     // Keypad start position, key sizes and spacing
     #define KEY_X 120 // Centre of key
     #define KEY_Y 50
@@ -3255,12 +3258,12 @@
     #define BUTTON_PADDING 22
     // #define BUTTON_ARRAY_LEN 5
   #endif  //  MARAUDER_JC2432W328C
- 
+
   #if defined(MARAUDER_CYD_HMI)
     #define BANNER_TIME 1000
- 
+
     #define COMMAND_PREFIX "!"
- 
+
     // Keypad start position, key sizes and spacing
     #define KEY_X 120 // Centre of key
     #define KEY_Y 50
@@ -3274,13 +3277,13 @@
     #define BUTTON_PADDING 22
     // #define BUTTON_ARRAY_LEN 5
   #endif  // MARAUDER_CYD_HMI
- 
+
   // A
   #if defined(MARAUDER_CYD_24)
     #define BANNER_TIME 100
-    
+
     #define COMMAND_PREFIX "!"
-    
+
     // Keypad start position, key sizes and spacing
     #define KEY_X 120 // Centre of key
     #define KEY_Y 50
@@ -3466,6 +3469,7 @@
 
   //// MEMORY LOWER LIMIT STUFF
   // These values are in bytes
+  /*
   #ifdef MARAUDER_M5STICKC
     #define MEM_LOWER_LIM 10000
   #elif defined(MARAUDER_CARDPUTER) || defined(MARAUDER_CARDPUTER_ADV)
@@ -3525,6 +3529,8 @@
   #else
     #define MEM_LOWER_LIM 10000
   #endif
+  */
+  #define MEM_LOWER_LIM 10000
   //// END MEMORY LOWER LIMIT STUFF
 
   //// NEOPIXEL STUFF
@@ -3913,7 +3919,7 @@
 
   //// STUPID CYD STUFF
   #if defined(HAS_CYD_TOUCH) || defined(HAS_C5_SD) || defined(HAS_SEPARATE_SD)
-    #ifdef MARAUDER_CYD_MICRO
+    #if defined(MARAUDER_CYD_MICRO)
       #define XPT2046_IRQ  36
       #define XPT2046_MOSI 32
       #define XPT2046_MISO 39
@@ -3923,9 +3929,8 @@
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
-    #endif
 
-    #ifdef MARAUDER_CYD_2USB
+    #elif defined(MARAUDER_CYD_2USB)
       #define XPT2046_IRQ  36
       #define XPT2046_MOSI 32
       #define XPT2046_MISO 39
@@ -3935,87 +3940,74 @@
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
-    #endif
 
-    #ifdef MARAUDER_CYD_3_5_INCH
+    #elif defined(MARAUDER_CYD_3_5_INCH)
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
-    #endif
 
-    #if defined(MARAUDER_C5)
+    #elif defined(MARAUDER_C5)
       #define SD_MISO 2
       #define SD_MOSI 7
       #define SD_SCK  6
+
     #elif defined(MARAUDER_T_DONGLE_C5)
       #define SD_MISO 7
       #define SD_MOSI 2
       #define SD_SCK  6
-    #endif
 
-    #ifdef MARAUDER_V8
+    #elif defined(MARAUDER_V8)
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_V4
+    #elif (MARAUDER_V4)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_V6
+    #elif (MARAUDER_V6)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_V6_1
+    #elif (MARAUDER_V6_1)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_KIT
+    #elif (MARAUDER_KIT)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_MINI
+    #elif (MARAUDER_MINI)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_V7
+    #elif (MARAUDER_V7)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-    #ifdef MARAUDER_MINI_V3
+    #elif (MARAUDER_MINI_V3)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
-    #endif
 
-
-    #if defined(MARAUDER_CYD_HMI)
+    #elif defined(MARAUDER_CYD_HMI)
       #define XPT2046_IRQ  9
       #define XPT2046_MOSI 3
       #define XPT2046_MISO 4
       #define XPT2046_CLK  1
       #define XPT2046_CS   2
-    #endif
 
-    #if defined(MARAUDER_JC2432W328C)
+    #elif defined(MARAUDER_JC2432W328C)
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
-    #endif
 
-    #if defined(MARAUDER_CYD_24)
+    #elif defined(MARAUDER_CYD_24)
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
@@ -4045,49 +4037,42 @@
   //// FUNNY FLIPPER LED STUFF
 
   #ifdef HAS_FLIPPER_LED
-    #ifdef MARAUDER_FLIPPER
+    #if defined(MARAUDER_FLIPPER)
       #define B_PIN 4
       #define G_PIN 5
       #define R_PIN 6
-    #endif
 
-    #ifdef MARAUDER_MULTIBOARD_S3
+    #elif (MARAUDER_MULTIBOARD_S3)
       #define B_PIN 4
       #define G_PIN 5
       #define R_PIN 6
-    #endif
 
-    #ifdef MARAUDER_CYD_MICRO
+    #elif (MARAUDER_CYD_MICRO)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
-    #endif
 
-    #ifdef MARAUDER_CYD_2USB
+    #elif (MARAUDER_CYD_2USB)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
-    #endif
 
-    #ifdef MARAUDER_CYD_3_5_INCH
+    #elif (MARAUDER_CYD_3_5_INCH)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 22
-    #endif
 
-    #ifdef MARAUDER_CYD_GUITION
+    #elif (MARAUDER_CYD_GUITION)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
-    #endif
 
-    #if defined(MARAUDER_JC2432W328C)
+    #elif defined(MARAUDER_JC2432W328C)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
-    #endif
 
-    #if defined(MARAUDER_CYD_24)
+    #elif defined(MARAUDER_CYD_24)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
@@ -4194,8 +4179,8 @@
       #define TP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
       #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
 
-    #elif defined(MARAUDER_CYD_3_5_INCH_CAP) 
-      #define HAS_GT911 1 
+    #elif defined(MARAUDER_CYD_3_5_INCH_CAP)
+      #define HAS_GT911 1
       #define TP_SDA 33
       #define TP_SCL 32
       #define TP_INT 21
@@ -4298,4 +4283,4 @@
 
   // END CONFIGS LOGIC
 
-#endif  //  configs_h 
+#endif  //  configs_h

@@ -50,7 +50,7 @@ esp_err_t x = 0;
   inline float read_sys_temp() {
     // Read the temperature in Celsius
     if (temperature_sensor_get_celsius(temp_handle, &_celsius) == ESP_OK) {
-      log_d("Chip Temperature: %f", _celsius);
+      // log_d("Chip Temperature: %f", _celsius);
       return _celsius;
     } else {
       log_d("Error reading temperature");
