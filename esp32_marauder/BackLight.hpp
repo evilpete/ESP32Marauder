@@ -87,6 +87,18 @@
       CH32V003_obj.setPWM(0);
     }
 
+    static void backlight_PM_dim() {
+      log_d("HAS_AW9364 backlight_PM_dim");
+      brightnessSet(4);
+    }
+    static void backlight_PM_restore() {
+      log_d("HAS_AW9364 backlight_PM_restore");
+      brightnessSet(bl_level_idx)
+    }
+
+  // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
+  // #ifndef HAS_MINI_SCREEN
+
   // HAS_AW9364 used by MARAUDER_CYD_HMI / Lilygo-T-HMI
   // AW9364: 4-Channel 1-wire Dimming LED Driver
   #elif defined(HAS_AW9364)
@@ -177,6 +189,15 @@
       // _setBrightness(0);
     }
 
+    static void backlight_PM_dim() {
+      log_d("HAS_AW9364 backlight_PM_dim");
+      _setBrightness(4);
+    }
+
+    static void backlight_PM_restore() {
+      log_d("HAS_AW9364 backlight_PM_restore");
+      _setBrightness(bl_level_idx);
+    }
 
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
   // #ifndef HAS_MINI_SCREEN
@@ -294,6 +315,16 @@
       log_d("level = %d currentDuty=%d", bl_level_idx, currentDuty);
     }
 
+    static void backlight_PM_dim() {
+      log_d("HAS_AW9364 backlight_PM_dim");
+      BL_SET(BL_LEVELS[3]);
+    }
+
+    static void backlight_PM_restore() {
+      log_d("HAS_AW9364 backlight_PM_restore");
+      BL_SET(BL_LEVELS[bl_level_idx]);
+    }
+
   #else   // HAS_MINI_SCREEN
 
   static uint8_t BL_NUM_LEVELS = 1;
@@ -350,7 +381,9 @@
   static void brightnessSave(uint8_t level) { }
   static void backlightOn() { }
   static void backlightOff() { }
-
+  static void backlight_PM_dim() { }
+  static void backlight_PM_restore() { }
 #endif // HAS_SCREEN
+
 
 #endif   //  __BACKlIGHT_HPP__
