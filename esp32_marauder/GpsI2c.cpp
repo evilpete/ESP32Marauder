@@ -60,7 +60,7 @@ void GpsI2c::begin(TwoWire *wireInstance) {
      log_d("GpsI2c::begin fail");
      Serial.println("GpsI2c::begin Fail");
      // describeAllPins();
-     if ( (millis() - lastq) > 4400)
+     if ( (millis() - lastq) > 2500)
        return;
      delay(1050);
   }

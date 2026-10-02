@@ -163,6 +163,10 @@ extern void init_system_time();
     Sound_CYD sound_obj;
 #endif
 
+#ifdef HAS_ES8311
+  #include "ES8311.hpp"
+#endif
+
 #if defined(HAS_SD)
   #if defined(HAS_C5_SD) && defined(HAS_SCREEN)
     SDInterface sd_obj = SDInterface(nullptr);
@@ -275,7 +279,12 @@ void print_reset_reason() {
   }
 #endif // HAS_PM)
 
+uint8_t prevScanMode = 0;
+
 void setup() {
+
+  log_d("1 __COUNTER__ = %d", __COUNTER__);
+  log_d("2 __COUNTER__ = %d", __COUNTER__);
 
   // https://github.com/Xinyuan-LilyGO/T-HMI/issues/34
   // LILYGO T-HMI : latch power on if on battery
@@ -308,6 +317,9 @@ void setup() {
 
   Serial.begin(115200);  // 115200);
 
+  log_d("3 __COUNTER__ = %d", __COUNTER__);
+  log_d("4 __COUNTER__ = %d", __COUNTER__);
+
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
     Wire.begin(I2C_SDA, I2C_SCL);
@@ -329,6 +341,8 @@ void setup() {
   while(!Serial && millis() < 2000)
     delay(10);
 
+  log_d("5 __COUNTER__ = %d", __COUNTER__);
+  log_d("6 __COUNTER__ = %d", __COUNTER__);
   // Do some LED stuff
   #ifdef HAS_FLIPPER_LED
     flipper_led.RunSetup();
@@ -338,6 +352,7 @@ void setup() {
     stickc_led.RunSetup();
   #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
     led_obj.RunSetup();
+  #endif
 
     while(!Serial && millis() < 2000) {
       delay(500);
@@ -357,7 +372,7 @@ void setup() {
     // digitalWrite(TFT_BL, HIGH);
     // perimanSetPinBusExtraType(TFT_BL, "TFT_BL");
   #endif
-  
+
   #ifdef DEVELOPER
     print_reset_reason();
   #endif
@@ -472,6 +487,8 @@ void setup() {
     #endif
   #endif
 
+  log_d("7 _COUNTER__ = %d", __COUNTER__);
+
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
   #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
     brightnessInit();
@@ -516,6 +533,8 @@ void setup() {
     #endif
   #endif
 
+
+  log_d("8 __COUNTER__ = %d", __COUNTER__);
   Serial.println("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
 
@@ -531,10 +550,10 @@ void setup() {
   #endif
 
   if (!settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
-      #if defined(HAS_GPSI2C) 
-	  gps_obj.begin();
+      #if defined(HAS_GPSI2C)
+          gps_obj.begin();
       #elif defined(HAS_GPS)
-	  gps_obj.begin();
+          gps_obj.begin();
       #endif
   }
 
@@ -573,9 +592,9 @@ void setup() {
 
       // Inside app_main or initialization function:
       esp_pm_config_t pm_config = {
-	  .max_freq_mhz = 240,       // Max CPU frequency (e.g., 240, 160, or 80 MHz)
-	  .min_freq_mhz = 40,        // Min CPU frequency (typically XTAL frequency or divided)
-	  .light_sleep_enable = false // Enable/disable automatic light sleep
+          .max_freq_mhz = 240,       // Max CPU frequency (e.g., 240, 160, or 80 MHz)
+          .min_freq_mhz = 40,        // Min CPU frequency (typically XTAL frequency or divided)
+          .light_sleep_enable = false // Enable/disable automatic light sleep
       };
 
 
@@ -602,7 +621,107 @@ void setup() {
   #endif
 
   log_d("Setup Complete");
+
   delay(250);
+
+  log_d("9 __COUNTER__ = %d", __COUNTER__);
+
+  #ifdef HAS_ES8311
+
+    CH32V003_obj.printState();
+
+    log_d("ES8311_obj.begin");
+    ES8311_obj.begin(&Wire);
+    log_d("ES8311_obj began fin");
+
+    if (ES8311_obj.supported) {
+        log_d("ES8311_obj.supported");
+        delay(500);
+
+        log_d("getVolume = %d", ES8311_obj.getVolume());
+        ES8311_obj.setVolume(200);
+        log_d("getVolume = %d", ES8311_obj.getVolume());
+
+        CH32V003_obj.SetAudio(1);
+
+        Serial.println(F("ES8311_obj Three Beeps"));
+        delay(500);
+        ES8311_obj.playBeep(1000,80);
+        delay(1000);
+        ES8311_obj.playBeep(1000,80);
+        delay(1000);
+        ES8311_obj.playBeep(1500,80);
+        delay(500);
+
+        ES8311_obj.setVolume(150);
+        log_d("getVolume = %d", ES8311_obj.getVolume());
+
+        Serial.println(F("ES8311_obj Three More Beeps"));
+        delay(500);
+        ES8311_obj.playBeep(1000,80);
+        delay(1000);
+        ES8311_obj.playBeep(1000,80);
+        delay(1000);
+        ES8311_obj.playBeep(1500,80);
+        delay(500);
+
+        CH32V003_obj.SetAudio(1);
+        ES8311_obj.setVolume(200);
+        log_d("getVolume = %d", ES8311_obj.getVolume());
+
+        Serial.println(F("ES8311_obj Five Clicks"));
+        delay(1000);
+        ES8311_obj.playClick();
+        delay(1000);
+        ES8311_obj.playClick();
+        delay(1000);
+        ES8311_obj.playClick();
+        delay(1000);
+        ES8311_obj.playClick();
+        delay(1000);
+        ES8311_obj.playClick();
+
+        CH32V003_obj.SetAudio(1);
+        ES8311_obj.setVolume(200);
+        log_d("getVolume = %d", ES8311_obj.getVolume());
+
+        Serial.println(F("ES8311_obj Five More Clicks 3"));
+        delay(1000);
+        ES8311_obj.playClick3();
+        delay(1000);
+        ES8311_obj.playClick3();
+        delay(1000);
+        ES8311_obj.playClick3();
+        delay(1000);
+        ES8311_obj.playClick3();
+        delay(1000);
+        ES8311_obj.playClick3();
+
+        CH32V003_obj.SetAudio(1);
+        ES8311_obj.setVolume(200);
+        log_d("getVolume = %d", ES8311_obj.getVolume());
+
+        Serial.println(F("ES8311_obj Five More Clicks 4"));
+        delay(1000);
+        ES8311_obj.playClick4();
+        delay(1000);
+        ES8311_obj.playClick4();
+        delay(1000);
+        ES8311_obj.playClick4();
+        delay(1000);
+        ES8311_obj.playClick4();
+        delay(1000);
+        ES8311_obj.playClick4();
+
+    } else {
+      Serial.println(F("ES8311_obj not suppoprted"));
+    }
+  #endif  // HAS_ES8311
+
+  prevScanMode = wifi_scan_obj.currentScanMode;
+
+  log_d("10 __COUNTER__ = %d", __COUNTER__);
+    CH32V003_obj.printState();
 }
 
 
@@ -615,6 +734,21 @@ void loop()
     #ifndef HAS_ILI9341
       mini = true;
     #endif
+  #endif
+
+
+  #if defined(ADJ_CPUFREQ) & defined(SLOW_IDLE) && CONFIG_IDF_TARGET_ESP32
+  if (wifi_scan_obj.currentScanMode != prevScanMode) {
+    prevScanMode = wifi_scan_obj.currentScanMode;
+    if (wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) {
+      setCpuFrequencyMhz(80);
+      log_d("setCpuFrequencyMhz = 80");
+      Serial.begin(115200);  // 115200);
+    } else {
+      log_d("setCpuFrequencyMhz = 240");
+      Serial.begin(115200);  // 115200);
+    }
+  }
   #endif
 
   #if (defined(HAS_ILI9341) && !defined(MARAUDER_CYD_2USB))

@@ -167,7 +167,7 @@ private:
     TwoWire *_wire;
     // float _temperature = 0.0f;
     // float _humidity = 0.0f;
-};
+};  // class SHTC3
 
 inline SHTC3 SHTC3_obj;
 

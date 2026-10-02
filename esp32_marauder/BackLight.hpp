@@ -93,7 +93,7 @@
     }
     static void backlight_PM_restore() {
       log_d("HAS_AW9364 backlight_PM_restore");
-      brightnessSet(bl_level_idx)
+      brightnessSet(bl_level_idx);
     }
 
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)

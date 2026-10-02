@@ -756,6 +756,10 @@
     #define CYD_SOUND
       #define SOUND_PIN 26
     #define DEEPSLEEP
+
+    #define ADJ_CPUFREQ 1
+    #define SLOW_IDLE 1
+
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
@@ -778,6 +782,8 @@
     #define CYD_SOUND
       #define SOUND_PIN 26
     #define DEEPSLEEP
+    #define ADJ_CPUFREQ 1
+    #define SLOW_IDLE 1
   #endif   // MARAUDER_CYD_24
 
 
@@ -845,6 +851,7 @@
       // HAS_MIC
       #define DEEPSLEEP
       #define HAS_ZIGBEE
+      #define HAS_ES8311
     #endif     // MARAUDER_WS_C5_28
 
   //// END BOARD FEATURES

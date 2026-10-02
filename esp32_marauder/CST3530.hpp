@@ -336,6 +336,8 @@ private:
     static void IRAM_ATTR _isrHandler() { _isrFlag = true; }
 };
 
+inline CST3530 CST3530_obj;
+
 #endif   //  CST3530_hpp
 
 #endif    // HAS_CST3530

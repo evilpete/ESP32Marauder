@@ -93,6 +93,22 @@ public:
         return true;
     }
 
+
+    inline int GetAudio(uint8_t level) {
+        log_d("GetAudio");
+        return this->digitalRead(CH32V003_PIN_3);
+    }
+
+    inline void SetAudio(uint8_t level) {
+        log_d("SetAudio = %d", level);
+        this->pinMode(CH32V003_PIN_3, OUTPUT);
+        if (level == HIGH) {
+            this->digitalWrite(CH32V003_PIN_3, HIGH);
+        } else {
+            this->digitalWrite(CH32V003_PIN_3, LOW);
+        }
+    }
+
     inline void lcdReset() {
         this->pinMode(CH32V003_PIN_1, OUTPUT);
         this->digitalWrite(CH32V003_PIN_1, LOW);   // assert reset
@@ -161,7 +177,7 @@ public:
         // Waveshare source: temp[1] << 8 | temp[0]  - little-endian, 2 bytes
         uint8_t buf[2] = {0, 0};
         if (!readReg2(CH32V003_REG_ADC, buf, 2)) return -1;
-        return (int)((buf[1] << 8) | buf[0]);
+        return static_cast<int>((buf[1] << 8) | buf[0]);
     }
 
     // Converts raw reading to voltage assuming Waveshare's 3:1 resistor divider.
@@ -169,7 +185,7 @@ public:
         int raw = readADCRaw();
         if (raw < 0) return -1.0f;
         // 10-bit ADC (0-1023), 3:1 resistor divider on Waveshare boards
-        return ((float)raw / 1023.0f) * vref * 3.0f;
+        return (static_cast<float>(raw) / 1023.0f) * vref * 3.0f;
     }
 
     // -- Interrupt / RTC status ---------------------------------------------------
@@ -208,6 +224,9 @@ public:
         Serial.printf("  DIR (0x%02X): 0x%02X %06b  (1=in 0=out per bit)\n",
                       CH32V003_REG_DIR, _dirReg, _dirReg);
         Serial.printf("  OUT (0x%02X): 0x%02X\n", CH32V003_REG_OUT, _outReg);
+        int iout = readReg(CH32V003_REG_OUT);
+        Serial.printf(" IOUT (0x%02X): 0x%02X\n", CH32V003_REG_OUT,
+                      iout  >= 0 ? (uint8_t)iout  : 0xFF);
         int in  = readReg(CH32V003_REG_IN);
         Serial.printf("  IN  (0x%02X): 0x%02X\n", CH32V003_REG_IN,
                       in  >= 0 ? (uint8_t)in  : 0xFF);
