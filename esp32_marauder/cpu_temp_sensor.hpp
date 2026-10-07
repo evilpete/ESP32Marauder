@@ -81,7 +81,7 @@ esp_err_t x = 0;
   #else   // HAS_CPU_TEMP
 
     // this should not happen
-    inline bool init_sys_temp() { return false }
+  inline bool init_sys_temp() { return false }
   inline float get_sys_temp() { return 0.0 }
   inline float temperature() { return 0.0 }
 

@@ -7,7 +7,7 @@
 #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
 
   // should this be in a separate .cpp file
-  static void DeepSleep(int8_t wakeup_but = -1) {
+  inline void DeepSleep(int8_t wakeup_but = -1) {
 
     // 1. Disconnect from the network gracefully
     WiFi.disconnect(true);
@@ -65,7 +65,7 @@
     esp_deep_sleep_start();
   }
 
-  static void shutdown() {
+  inline void shutdown_system() {   // The name shutdown already exists globally. lwIP's sockets.h
 
     #ifdef POWER_HOLD_PIN
         // T-HMI
@@ -84,4 +84,5 @@
   }
 
 #endif  // DEEPSLEEP / POWER_HOLD_PIN
+
 #endif  // SHUTDOWN_HPP

@@ -35,8 +35,8 @@
 
 #if defined(HAS_SCREEN) && ( defined(TFT_BL) || defined(HAS_CH32V003) )
 
-  static Preferences bl_prefs;
-  static uint8_t bl_level_idx = 9; // default brightness
+  inline Preferences bl_prefs;
+  inline uint8_t bl_level_idx = 9; // default brightness
 
 
 // HAS_CH32V003 used by MARAUDER_WS_C5_28
@@ -45,21 +45,21 @@
     #include <CH32V003_IOExpander.hpp>
     // extern CH32V003_IOExpander CH32V003_obj;
 
-    static const uint8_t BL_LEVELS[] = {0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255};
+    inline const uint8_t BL_LEVELS[] = {0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255};
 
-    static uint8_t BL_NUM_LEVELS = 16;
+    inline uint8_t BL_NUM_LEVELS = 16;
     // Dummy Functions, should never be called but are here just in case
 
-    static void brightnessInit() { log_d("brightnessInit (CH32V003)"); }
+    inline void brightnessInit() { log_d("brightnessInit (CH32V003)"); }
 
-    static void brightnessCycle() { }
+    inline void brightnessCycle() { }
 
-    static uint8_t getBrightnessLevel() {
+    inline uint8_t getBrightnessLevel() {
       log_d("HAS_CH32V003 getBrightnessLevel level =  %d ", bl_level_idx);
       return bl_level_idx;
     }
 
-    static void brightnessSet(uint8_t level) {
+    inline void brightnessSet(uint8_t level) {
       if (level >= BL_NUM_LEVELS) {
         level = BL_NUM_LEVELS - 1;
         bl_level_idx = level;
@@ -68,30 +68,30 @@
       CH32V003_obj.setPWM(BL_LEVELS[bl_level_idx]);
     }
 
-    static void brightnessSave(uint8_t level) {
+    inline void brightnessSave(uint8_t level) {
       log_i("HAS_CH32V003 brightnessSave level = %d ", level);
       bl_level_idx = level;
       brightnessSet(level);
       bl_prefs.putUChar("level", bl_level_idx);
     }
 
-    static void backlightOn() {
+    inline void backlightOn() {
       if (bl_level_idx < 3) {
         bl_level_idx = 3;
       }
       brightnessSet(bl_level_idx);
     }
 
-    static void backlightOff() {
+    inline void backlightOff() {
     log_d("backlightOff CH32V003");
       CH32V003_obj.setPWM(0);
     }
 
-    static void backlight_PM_dim() {
+    inline void backlight_PM_dim() {
       log_d("HAS_AW9364 backlight_PM_dim");
       brightnessSet(4);
     }
-    static void backlight_PM_restore() {
+    inline void backlight_PM_restore() {
       log_d("HAS_AW9364 backlight_PM_restore");
       brightnessSet(bl_level_idx);
     }
@@ -105,8 +105,8 @@
 
     uint8_t BL_NUM_LEVELS = 16;
 
-    static void _setBrightness(uint8_t value) {
-        static uint8_t _brightness = 0;
+    inline void _setBrightness(uint8_t value) {
+        uint8_t _brightness = 0;
 
         if (_brightness == value) {
             return;
@@ -136,7 +136,7 @@
         _brightness = value;
     }
 
-    static void brightnessInit() {
+    inline void brightnessInit() {
       log_i("HAS_AW9364 brightnessInit TFT_BL = %d", TFT_BL);
       pinMode(TFT_BL, OUTPUT);
       digitalWrite(TFT_BL, 1);
@@ -149,19 +149,19 @@
       // bl_level_idx = BL_NUM_LEVELS;
     }
 
-    static void brightnessCycle() {
+    inline void brightnessCycle() {
         bl_level_idx = (bl_level_idx + 1) % BL_NUM_LEVELS;
         _setBrightness(bl_level_idx);
         bl_prefs.putUChar("level", bl_level_idx);
         log_d("[Brightness] Level %d / %.0f %%", (bl_level_idx + 1), (static_cast<float>(bl_level_idx / BL_NUM_LEVELS) * 100));
     }
 
-    uint8_t getBrightnessLevel() {
+    inline uint8_t getBrightnessLevel() {
       log_d("HAS_AW9364 getBrightnessLevel level =  %d ", bl_level_idx);
       return bl_level_idx;
     }
 
-    static void brightnessSet(uint8_t level) {
+    inline void brightnessSet(uint8_t level) {
         log_i("HAS_AW9364 brightnessSet level = %d ", level);
         if (level > BL_NUM_LEVELS) level = BL_NUM_LEVELS;
         bl_level_idx = level;
@@ -169,32 +169,32 @@
         // bl_prefs.putUChar("level", bl_level_idx);
     }
 
-    static void brightnessSave(uint8_t level) {
+    inline void brightnessSave(uint8_t level) {
         log_i("HAS_AW9364 brightnessSave level = %d ", level);
         bl_level_idx = level;
         brightnessSet(level);
         bl_prefs.putUChar("level", bl_level_idx);
     }
 
-    static void backlightOn() {
+    inline void backlightOn() {
       log_d("HAS_AW9364 backlightOn: %d", bl_level_idx);
       digitalWrite(TFT_BL, 1);
       if (bl_level_idx < 3) bl_level_idx = 3;
       _setBrightness(bl_level_idx);
     }
 
-    static void backlightOff() {
+    inline void backlightOff() {
       log_d("HAS_AW9364 backlightOff: %d", bl_level_idx);
       digitalWrite(TFT_BL, 0);
       // _setBrightness(0);
     }
 
-    static void backlight_PM_dim() {
+    inline void backlight_PM_dim() {
       log_d("HAS_AW9364 backlight_PM_dim");
       _setBrightness(4);
     }
 
-    static void backlight_PM_restore() {
+    inline void backlight_PM_restore() {
       log_d("HAS_AW9364 backlight_PM_restore");
       _setBrightness(bl_level_idx);
     }
@@ -228,7 +228,7 @@
       #endif
     #endif
 
-    static void brightnessInit() {
+    inline void brightnessInit() {
       log_d("flipperLED::brightnessInit: TFT_BL=%d", TFT_BL);
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
@@ -245,7 +245,7 @@
       log_d("    BL TLED = %d", TLED);
     }
 
-    static void brightnessCycle() {
+    inline void brightnessCycle() {
       bl_level_idx = (bl_level_idx + 1) % BL_NUM_LEVELS;
       BL_SET(BL_LEVELS[bl_level_idx]);
       bl_prefs.putUChar("level", bl_level_idx);
@@ -258,14 +258,14 @@
       Serial.println(F("%)"));
     }
 
-    static uint8_t getBrightnessLevel() {
+    inline uint8_t getBrightnessLevel() {
       uint32_t currentDuty = ledcRead(TLED);
       // uint32_t currFreq = ledcReadFreq(TLED);
       log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
       return bl_level_idx;
     }
 
-    static void brightnessSet(uint8_t level) {
+    inline void brightnessSet(uint8_t level) {
     log_d("brightnessSet lodc");
       if (level >= BL_NUM_LEVELS) {
         level = BL_NUM_LEVELS - 1;
@@ -283,7 +283,7 @@
       log_i("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
     }
 
-    static void brightnessSave(uint8_t level) {
+    inline void brightnessSave(uint8_t level) {
       log_d("brightnessSave lodc");
       if (level >= BL_NUM_LEVELS) level = BL_NUM_LEVELS - 1;
       bl_level_idx = level;
@@ -295,7 +295,7 @@
       log_i("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
     }
 
-    static void backlightOn() {
+    inline void backlightOn() {
       log_d("backlightOn lodc");
       if (bl_level_idx < 3)
         bl_level_idx = 3;
@@ -307,7 +307,7 @@
       log_d("level = %d currentDuty=%d, Freq=%d", bl_level_idx, currentDuty, ledcReadFreq(TLED));
     }
 
-    static void backlightOff() {
+    inline void backlightOff() {
       BL_SET(0);
       // log_d("backlightOff");
     log_d("backlightOff ledc");
@@ -315,33 +315,33 @@
       log_d("level = %d currentDuty=%d", bl_level_idx, currentDuty);
     }
 
-    static void backlight_PM_dim() {
+    inline void backlight_PM_dim() {
       log_d("HAS_AW9364 backlight_PM_dim");
       BL_SET(BL_LEVELS[3]);
     }
 
-    static void backlight_PM_restore() {
+    inline void backlight_PM_restore() {
       log_d("HAS_AW9364 backlight_PM_restore");
       BL_SET(BL_LEVELS[bl_level_idx]);
     }
 
   #else   // HAS_MINI_SCREEN
 
-  static uint8_t BL_NUM_LEVELS = 1;
+  inline uint8_t BL_NUM_LEVELS = 1;
   // dummyFunctions
-  static void brightnessInit() {
+  inline void brightnessInit() {
       log_d("brightnessInit(noDim): TFT_BL = %d", TFT_BL);
       Serial.print(F("[brightnessInit] HAS_MINI_SCREEN "));
       pinMode(TFT_BL, OUTPUT);
   }
 
   // dummy
-  static void brightnessCycle() { }
-  static uint8_t getBrightnessLevel() { return 9; }
-  static void brightnessSet(uint8_t level) { (void) level; }
-  static void brightnessSave(uint8_t level) { (void) level; }
+  inline void brightnessCycle() { }
+  inline uint8_t getBrightnessLevel() { return 9; }
+  inline void brightnessSet(uint8_t level) { (void) level; }
+  inline void brightnessSave(uint8_t level) { (void) level; }
 
-  static void backlightOn() {
+  inline void backlightOn() {
     log_d("backlightOn");
     #ifdef TFT_BL
       // ???
@@ -357,7 +357,7 @@
     #endif
   }
 
-  static void backlightOff() {
+  inline void backlightOff() {
     log_d("backlightOff pin");
     #if defined(MARAUDER_MINI) || defined(MARAUDER_MINI_V3)
       digitalWrite(TFT_BL, HIGH);
@@ -372,17 +372,17 @@
 
 #else // HAS_SCREEN
 
-  static uint8_t BL_NUM_LEVELS = 1;
+  inline uint8_t BL_NUM_LEVELS = 1;
   // Dummy Functions, should never be called but are here just in case
-  static void brightnessInit() { log_d("-- brightnessInit Fallthrough"); }
-  static void brightnessCycle() { }
-  static uint8_t getBrightnessLevel() { return 9; }
-  static void brightnessSet(uint8_t level) { }
-  static void brightnessSave(uint8_t level) { }
-  static void backlightOn() { }
-  static void backlightOff() { }
-  static void backlight_PM_dim() { }
-  static void backlight_PM_restore() { }
+  inline void brightnessInit() { log_d("-- brightnessInit Fallthrough"); }
+  inline void brightnessCycle() { }
+  inline uint8_t getBrightnessLevel() { return 9; }
+  inline void brightnessSet(uint8_t level) { }
+  inline void brightnessSave(uint8_t level) { }
+  inline void backlightOn() { }
+  inline void backlightOff() { }
+  inline void backlight_PM_dim() { }
+  inline void backlight_PM_restore() { }
 #endif // HAS_SCREEN
 
 

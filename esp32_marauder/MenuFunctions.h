@@ -393,6 +393,7 @@ class MenuFunctions
 
     uint16_t x = -1, y = -1;
     boolean pressed = false;
+    uint32_t last_touch = 0;
 
     bool disable_touch;
 

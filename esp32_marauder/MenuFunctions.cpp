@@ -268,6 +268,7 @@ void MenuFunctions::displayMenuButtons() {
   #endif
 }
 
+
 // Function to check menu input
 void MenuFunctions::main(uint32_t currentTime)
 {
@@ -368,12 +369,14 @@ void MenuFunctions::main(uint32_t currentTime)
     display_obj.displayBuffer();
 
 
-  int pre_getTouch = millis();
+  uint32_t  pre_getTouch = last_touch =  millis();
 
   #ifdef HAS_ILI9341
     if (!this->disable_touch)
       pressed = display_obj.updateTouch(&t_x, &t_y);
   #endif
+
+
 
 
   // Brightness gesture: hold top or bottom zone 1.5s to enter brightness mode
@@ -793,7 +796,7 @@ void MenuFunctions::main(uint32_t currentTime)
             wifi_scan_obj.drawChannelLine();
           }
           #ifdef HAS_SOUND
-            sound_obj.click();
+            sound_obj.tit();
           #endif
         }
         if (menu_button == DOWN_BUTTON) {
@@ -865,13 +868,13 @@ void MenuFunctions::main(uint32_t currentTime)
             wifi_scan_obj.drawChannelLine();
           }
           #ifdef HAS_SOUND
-            sound_obj.click();
+            sound_obj.tit();
           #endif
         }
         if(menu_button == SELECT_BUTTON) {
           current_menu->list->get(current_menu->selected).callable();
           #ifdef HAS_SOUND
-            sound_obj.click();
+            sound_obj.tit();
           #endif
         }
         else {
@@ -2431,7 +2434,7 @@ void MenuFunctions::RunSetup()
   });
   #ifdef POWER_HOLD_PIN
     this->addNodes(&mainMenu, "Power Off", TFTLIGHTGREY, SHUTDOWN, []() {
-        shutdown();
+        shutdown_system();
     });
   #elif defined(DEEPSLEEP)
     this->addNodes(&mainMenu, "Deep Sleep", TFTLIGHTGREY, SHUTDOWN, []() {
@@ -4246,14 +4249,15 @@ void MenuFunctions::RunSetup()
     do_menu_sync_ntp();
   });
 
-  #if defined(ADJ_CPUFREQ)
+  #if defined(ADJ_CPUFREQ) && defined(CONFIG_IDF_TARGET_ESP32)
   // && !defined(CONFIG_PM_ENABLE) && !defined(HAS_PM)
       this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
           checkHeap("Menu 240Mhz");
           Serial.println(F("Set CPU to 240Mhz"));
-          pm_set_cpu_freq(240);
+          // pm_set_cpu_freq(240);
+          setCpuFrequencyMhz(240); // 1. Throttle CPU Save Batt
           display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
           display_obj.tft.drawCentreString("Set CPU 240Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
           checkHeap("Menu 240Mhz done");
@@ -4265,7 +4269,8 @@ void MenuFunctions::RunSetup()
 
         checkHeap("Menu 160Mhz done");
         Serial.println(F("Set CPU 160Mhz"));
-        pm_set_cpu_freq(160); // 1. Throttle CPU Save Batt
+        // pm_set_cpu_freq(160); 
+        setCpuFrequencyMhz(160); // 1. Throttle CPU Save Batt
         display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
         display_obj.tft.drawCentreString("Set CPU 160Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
 
@@ -5745,6 +5750,9 @@ void MenuFunctions::displayCurrentMenu(int start_index)
         // Wait for release
         while (display_obj.updateTouch(&tx, &ty)) delay(10);
 
+          #ifdef HAS_SOUND
+            sound_obj.tit();
+          #endif
         if (ty < zoneUp) {
           if (level < BL_NUM_LEVELS) {
             level++;

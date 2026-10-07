@@ -47,6 +47,7 @@ class NullSound {
     void beep(uint32_t = 0, uint32_t = 0) {}
     void click() {}
     void tick() {}
+    void titk() {}
     void click2(uint16_t mod1 = 2, uint16_t mod2 = 4) {}
 };
 
@@ -102,6 +103,7 @@ class Sound {
 
     void click()  { if (enabled()) sound_dev.click(); log_d("click"); }
     void tick()   { if (enabled()) sound_dev.tick(); log_d("tick");}
+    void tit()   { if (enabled()) sound_dev.tit(); log_d("tit");}
     // void click2() { if (enabled()) sound_dev.click2(); log_d("click2");}
     // std::function<void()> click2 = sound_dev.click2;
     // void (&click2)() = sound_dev.click2;
