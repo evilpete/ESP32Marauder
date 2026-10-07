@@ -33,6 +33,7 @@ bool system_time_set = false;
 
 void init_system_time() {
 
+  log_d("Init Sys Time");
   #ifdef HAS_RTC
     #ifdef RTC_SDA
       rtc_obj.RunSetup(RTC_SDA, RTC_SCL);
@@ -43,13 +44,15 @@ void init_system_time() {
     log_d("RTC NOT Installed");
   #endif
 
-  struct tm timeinfo;
-  if (getLocalTime(&timeinfo)) {
-    Serial.println(&timeinfo, "%F %T");
-    system_time_set = true;
-  // } else {
-  //   log_w("getLocalTime Fail");
-  }
+  // no need for this at first boot...
+  //   struct tm timeinfo;
+  //   if (getLocalTime(&timeinfo)) {
+  //     Serial.println(&timeinfo, "%F %T");
+  //     system_time_set = true;
+  //   } else {
+  //     log_w("System Time Not Set");
+  //     system_time_set = false;
+  //  }
 
 }
 

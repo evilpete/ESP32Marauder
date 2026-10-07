@@ -29,7 +29,7 @@
 
 */
 
-#if (defined(HAS_SCREEN) || defined(THAS_T_DONGLE_DISPLAY))  && ( !defined(TFT_BL) || !defined(HAS_CH32V003) )
+#if (defined(HAS_SCREEN) || defined(THAS_T_DONGLE_DISPLAY))  && ( !defined(TFT_BL) && !defined(HAS_CH32V003) )
   #warning "HAS_SCREEN is defined and TFT_BL is undefined"
 #endif
 
@@ -50,7 +50,7 @@
     static uint8_t BL_NUM_LEVELS = 16;
     // Dummy Functions, should never be called but are here just in case
 
-    static void brightnessInit() { }
+    static void brightnessInit() { log_d("brightnessInit (CH32V003)"); }
 
     static void brightnessCycle() { }
 
@@ -229,7 +229,7 @@
     #endif
 
     static void brightnessInit() {
-      log_d("flipperLED::RunSetup: TFT_BL=%d", TFT_BL);
+      log_d("flipperLED::brightnessInit: TFT_BL=%d", TFT_BL);
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
       bl_prefs.begin("backlight", false);

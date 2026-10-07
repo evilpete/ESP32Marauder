@@ -71,9 +71,6 @@
   #include "BatteryInterface.h"
 #endif
 
-#ifdef CYD_SOUND
-  #include "Sound_CYD.h"
-#endif
 
 #if defined(HAS_GPS) && !defined(HAS_GPSI2C)
   #include "GpsInterface.h"
@@ -93,13 +90,10 @@
   #include "LedInterface.h"
 #endif
 
-#ifdef CYD_SOUND
-  extern Sound_CYD sound_obj;
-#endif
 //  WIFI_POWER_21dBm = 84,      // 21dBm
 //  WIFI_POWER_20_5dBm = 82,    // 20.5dBm
 //  WIFI_POWER_20dBm = 80,      // 20dBm
-int8_t wifi_power = 80;
+extern int8_t wifi_power;   // defined in WiFiScan.cpp
 
 #ifdef HAS_DIRECT_UPLOAD
   #include <WiFiClientSecure.h>
@@ -348,8 +342,8 @@ static NimBLEAddress pendingAddress(
     BLE_ADDR_PUBLIC
 );
 
-bool connectionPending = false;
-bool operationInProgress = false;
+extern bool connectionPending;     // defined in WiFiScan.cpp
+extern bool operationInProgress;
 #endif
 
 #pragma pack(push, 1)

@@ -31,6 +31,7 @@ static bool _ft6336_read(uint8_t reg, uint8_t *buf, uint8_t len) {
 }
 
 static void ft6336_init() {
+    log_d("ft6336 init");
     pinMode(TP_RST, OUTPUT);
     digitalWrite(TP_RST, LOW);
     delay(10);

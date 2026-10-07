@@ -1,5 +1,14 @@
 #include "CommandLine.h"
 
+#ifdef HAS_SCREEN
+  #include "BackLight.hpp"
+#endif 
+
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  #include "shutdown.hpp"
+#endif
+
+
 // Brightness functions defined in BackLight.cpp
 // GCOVR_EXCL_START -- serial protocol output depends on Arduino Serial.
 namespace {
@@ -50,13 +59,11 @@ namespace {
 // GCOVR_EXCL_STOP
 
 // Brightness functions defined in esp32_marauder.ino
-/*
-#ifndef HAS_MINI_SCREEN
-  extern void brightnessCycle();
-  extern uint8_t getBrightnessLevel();
-  extern const uint8_t BL_NUM_LEVELS;
-#endif
-*/
+// #ifndef HAS_MINI_SCREEN
+//   extern void brightnessCycle();
+//   extern uint8_t getBrightnessLevel();
+//   extern const uint8_t BL_NUM_LEVELS;
+// #endif
 
 void CommandLine::RunSetup() {
   #ifndef MARAUDER_V8
@@ -72,6 +79,7 @@ void CommandLine::RunSetup() {
   Serial.println(F("--------------------------------\n\n"));
   
   Serial.print("> ");
+  Serial.flush();
 }
 
 String CommandLine::getSerialInput() {
@@ -311,6 +319,8 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_NTP_SYNC);
     Serial.println(HELP_DATE);
     Serial.println(HELP_SETDATE);
+    Serial.println(HELP_PROBE_I2C);
+    Serial.println(HELP_BLEEP);
 
     #ifdef HAS_SD
       Serial.println(HELP_RESCANSD_CMD);
@@ -849,33 +859,25 @@ void CommandLine::runCommand(String input) {
 
    #ifdef ADJ_CPUFREQ
     else if (cmd_args.get(0) == CPUFREQ_CMD) {
-      int a_sw = this->argSearch(&cmd_args, "240");
-      int b_sw = this->argSearch(&cmd_args, "160");
-      int c_sw = this->argSearch(&cmd_args, "80");
-      // int d_sw = this->argSearch(&cmd_args, "40");
-      // int e_sw = this->argSearch(&cmd_args, "20");
+      // cpufreq <max> [min] : with PM the DFS range is max..min (min defaults to max)
+      int max_mhz = cmd_args.size() > 1 ? cmd_args.get(1).toInt() : 0;
+      int min_mhz = cmd_args.size() > 2 ? cmd_args.get(2).toInt() : 0;
 
-      if (a_sw != -1) {
-        setCpuFrequencyMhz(240);
-        Serial.println(F("Set CPU to 240Mhz"));
-      } else if (b_sw != -1) {
-        setCpuFrequencyMhz(160);
-        Serial.println(F("Set CPU to 160Mhz"));
-      } else if (c_sw != -1) {
-        setCpuFrequencyMhz(80);
-        Serial.println(F("Set CPU to 80Mhz"));
-
-       /*
-      } else if (d_sw != -1) {
-        setCpuFrequencyMhz(40);
-        Serial.println(F("Set CPU to 40Mhz"));
-      } else if (e_sw != -1) {
-        setCpuFrequencyMhz(20);
-        Serial.println(F("Set CPU to 20Mhz"));
-        */
-
+      if (max_mhz == 240 || max_mhz == 160 || max_mhz == 80) {
+        if (min_mhz != 0 && (min_mhz < 80 || min_mhz > max_mhz)) {
+          Serial.println(F("min must be 80..max"));
+        } else {
+          esp_err_t err = pm_set_cpu_freq(max_mhz, min_mhz);
+          Serial.printf("Set CPU to %d/%dMhz: %s\n", max_mhz, min_mhz ? min_mhz : max_mhz, esp_err_to_name(err));
+        }
+      } else if (cmd_args.size() > 1 && cmd_args.get(1) == "default") {
+        esp_err_t err = pm_set_default_freq();
+        Serial.printf("Set CPU to %d/%dMhz: %s\n", PM_MAX_FREQ, PM_MIN_FREQ, esp_err_to_name(err));
+      } else if (cmd_args.size() > 1 && cmd_args.get(1) == "locks") {
+        pm_dump_locks();
+        return;
       }
-      uint32_t cpuFreq = getCpuFrequencyMhz();
+
       Serial.print(F("CpuFrequency = "));
       Serial.print(getCpuFrequencyMhz());
       Serial.println(F(" Mhz"));
@@ -2303,6 +2305,20 @@ void CommandLine::runCommand(String input) {
   }
 
 
+  /*
+  else if (cmd_args.get(0) == BLEEP) {
+      extern void bleep();
+      bleep();
+  }*/
+  else if (cmd_args.get(0) == PROBE_I2C) {
+
+    #if defined(I2C_SDA) && defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
+      extern void i2c_probe();
+
+      i2c_probe();
+    #endif
+
+  }
   else if (cmd_args.get(0) == NTP_SYNC_CMD) {
     bool sync_ntp(const char *ntpServer = nullptr);
 

@@ -102,7 +102,7 @@ void Settings::_buildCache() {
       _cache.wt = json["Settings"][i]["value"].as<String>();
     else if (strcmp(name, WDG_KEY_NAME) == 0)
       _cache.wdg_key = json["Settings"][i]["value"].as<String>();
-#ifdef CYD_SOUND
+#ifdef HAS_SOUND
     else if (strcmp(name, "EnableSND") == 0)
       _cache.EnableSND = json["Settings"][i]["value"].as<bool>();
 #endif
@@ -278,7 +278,7 @@ template <> bool Settings::loadSetting<bool>(const char* key) {
     return _cache.EPDeauth;
   if (strcmp(key, "ChanHop") == 0)
     return _cache.ChanHop;
-#ifdef CYD_SOUND
+#ifdef HAS_SOUND
   if (strcmp(key, "EnableSND") == 0)
     return _cache.EnableSND;
 #endif
@@ -334,7 +334,7 @@ template <> uint8_t Settings::loadSetting<uint8_t>(const char* key) {
   if (strcmp(key, "Probe GPS at Boot") == 0)
     return (uint8_t)_cache.ProbeGPS;
 
-#ifdef CYD_SOUND
+#ifdef HAS_SOUND
   if (strcmp(key, "EnableSND") == 0)
     return (uint8_t)_cache.EnableSND;
 #endif
@@ -404,7 +404,7 @@ template <> bool Settings::saveSetting<bool>(const char* key, bool value) {
         _cache.ChanHop = value;
       else if (strcmp(key, "Probe GPS at Boot") == 0)
         _cache.ProbeGPS = value;
-#ifdef CYD_SOUND
+#ifdef HAS_SOUND
       else if (strcmp(key, "EnableSND") == 0)
         _cache.EnableSND = value;
 #endif
@@ -546,6 +546,8 @@ void Settings::printJsonSettings(String json_string) {
     else
     Serial.println("Value: " + json["Settings"][i]["value"].as<String>() + "\n");
   }
+  Serial.print("Count "); 
+  Serial.println((int)json["Settings"].size());
 }
 
 // ---------------------------------------------------------------------------
@@ -564,105 +566,107 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
 
   if (!spec) {
     DynamicJsonDocument jsonBuffer(JSON_SETTING_SIZE);
+    uint8_t x = 0;   // No More renumbering
 
-    jsonBuffer["Settings"][0]["name"] = "ForcePMKID";
-    jsonBuffer["Settings"][0]["type"] = "bool";
-    jsonBuffer["Settings"][0]["value"] = false;
-    jsonBuffer["Settings"][0]["range"]["min"] = false;
-    jsonBuffer["Settings"][0]["range"]["max"] = true;
+    jsonBuffer["Settings"][x]["name"] = "ForcePMKID";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = false;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][1]["name"] = "ForceProbe";
-    jsonBuffer["Settings"][1]["type"] = "bool";
-    jsonBuffer["Settings"][1]["value"] = false;
-    jsonBuffer["Settings"][1]["range"]["min"] = false;
-    jsonBuffer["Settings"][1]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "ForceProbe";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = false;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][2]["name"] = "SavePCAP";
-    jsonBuffer["Settings"][2]["type"] = "bool";
-    jsonBuffer["Settings"][2]["value"] = true;
-    jsonBuffer["Settings"][2]["range"]["min"] = false;
-    jsonBuffer["Settings"][2]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "SavePCAP";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = true;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][3]["name"] = "Timestamp PCAP files";
-    jsonBuffer["Settings"][3]["type"] = "bool";
-    jsonBuffer["Settings"][3]["value"] = true;
-    jsonBuffer["Settings"][3]["range"]["min"] = false;
-    jsonBuffer["Settings"][3]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "Timestamp PCAP files";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = true;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][4]["name"] = "EnableLED";
-    jsonBuffer["Settings"][4]["type"] = "bool";
-    jsonBuffer["Settings"][4]["value"] = true;
-    jsonBuffer["Settings"][4]["range"]["min"] = false;
-    jsonBuffer["Settings"][4]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "EnableLED";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = true;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][5]["name"] = "EPDeauth";
-    jsonBuffer["Settings"][5]["type"] = "bool";
-    jsonBuffer["Settings"][5]["value"] = false;
-    jsonBuffer["Settings"][5]["range"]["min"] = false;
-    jsonBuffer["Settings"][5]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "EPDeauth";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = false;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][6]["name"] = "ChanHop";
-    jsonBuffer["Settings"][6]["type"] = "bool";
-    jsonBuffer["Settings"][6]["value"] = false;
-    jsonBuffer["Settings"][6]["range"]["min"] = false;
-    jsonBuffer["Settings"][6]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "ChanHop";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = false;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
     // Speed boot time
-    jsonBuffer["Settings"][7]["name"] = "Probe GPS at Boot";
-    jsonBuffer["Settings"][7]["type"] = "bool";
-    jsonBuffer["Settings"][7]["value"] = false;
-    jsonBuffer["Settings"][7]["range"]["min"] = false;
-    jsonBuffer["Settings"][7]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "Probe GPS at Boot";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = false;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
-    jsonBuffer["Settings"][8]["name"] = "ClientSSID";
-    jsonBuffer["Settings"][8]["type"] = "String";
-    jsonBuffer["Settings"][8]["value"] = "";
-    jsonBuffer["Settings"][8]["range"]["min"] = "";
-    jsonBuffer["Settings"][8]["range"]["max"] = "";
-
-    jsonBuffer["Settings"][9]["name"] = "ClientPW";
-    jsonBuffer["Settings"][9]["type"] = "String";
-    jsonBuffer["Settings"][9]["value"] = "";
-    jsonBuffer["Settings"][9]["range"]["min"] = "";
-    jsonBuffer["Settings"][9]["range"]["max"] = "";
-
-    jsonBuffer["Settings"][10]["name"] = "wu";
-    jsonBuffer["Settings"][10]["type"] = "String";
-    jsonBuffer["Settings"][10]["value"] = "";
-    jsonBuffer["Settings"][10]["range"]["min"] = "";
-    jsonBuffer["Settings"][10]["range"]["max"] = "";
-
-    jsonBuffer["Settings"][11]["name"] = "wt";
-    jsonBuffer["Settings"][11]["type"] = "String";
-    jsonBuffer["Settings"][11]["value"] = "";
-    jsonBuffer["Settings"][11]["range"]["min"] = "";
-    jsonBuffer["Settings"][11]["range"]["max"] = "";
-
-    jsonBuffer["Settings"][12]["name"] = WDG_KEY_NAME;
-    jsonBuffer["Settings"][12]["type"] = "String";
-    jsonBuffer["Settings"][12]["value"] = "";
-    jsonBuffer["Settings"][12]["range"]["min"] = "";
-    jsonBuffer["Settings"][12]["range"]["max"] = "";
-
-    jsonBuffer["Settings"][13]["name"] = SAVED_WIFI_KEY_NAME;
-    jsonBuffer["Settings"][13]["type"] = "wifi_list";
-    jsonBuffer["Settings"][13].createNestedArray("value");
-    jsonBuffer["Settings"][13]["range"]["min"] = 0;
-    jsonBuffer["Settings"][13]["range"]["max"] = MAX_SAVED_WIFI_PROFILES;
-
-    jsonBuffer["Settings"][14]["name"] = GEOFENCES_KEY_NAME;
-    jsonBuffer["Settings"][14]["type"] = "geofence_list";
-    jsonBuffer["Settings"][14].createNestedArray("value");
-    jsonBuffer["Settings"][14]["range"]["min"] = 0;
-    jsonBuffer["Settings"][14]["range"]["max"] = MAX_GEOFENCES;
-
-#ifdef CYD_SOUND
-    jsonBuffer["Settings"][15]["name"] = "EnableSND";
-    jsonBuffer["Settings"][15]["type"] = "bool";
-    jsonBuffer["Settings"][15]["value"] = true;
-    jsonBuffer["Settings"][15]["range"]["min"] = false;
-    jsonBuffer["Settings"][15]["range"]["max"] = true;
+#ifdef HAS_SOUND
+    jsonBuffer["Settings"][++x]["name"] = "EnableSND";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = true;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 #endif
+
+    jsonBuffer["Settings"][++x]["name"] = "ClientSSID";
+    jsonBuffer["Settings"][x]["type"] = "String";
+    jsonBuffer["Settings"][x]["value"] = "";
+    jsonBuffer["Settings"][x]["range"]["min"] = "";
+    jsonBuffer["Settings"][x]["range"]["max"] = "";
+
+    jsonBuffer["Settings"][++x]["name"] = "ClientPW";
+    jsonBuffer["Settings"][x]["type"] = "String";
+    jsonBuffer["Settings"][x]["value"] = "";
+    jsonBuffer["Settings"][x]["range"]["min"] = "";
+    jsonBuffer["Settings"][x]["range"]["max"] = "";
+
+    jsonBuffer["Settings"][++x]["name"] = "wu";
+    jsonBuffer["Settings"][x]["type"] = "String";
+    jsonBuffer["Settings"][x]["value"] = "";
+    jsonBuffer["Settings"][x]["range"]["min"] = "";
+    jsonBuffer["Settings"][x]["range"]["max"] = "";
+
+    jsonBuffer["Settings"][++x]["name"] = "wt";
+    jsonBuffer["Settings"][x]["type"] = "String";
+    jsonBuffer["Settings"][x]["value"] = "";
+    jsonBuffer["Settings"][x]["range"]["min"] = "";
+    jsonBuffer["Settings"][x]["range"]["max"] = "";
+
+    jsonBuffer["Settings"][++x]["name"] = WDG_KEY_NAME;
+    jsonBuffer["Settings"][x]["type"] = "String";
+    jsonBuffer["Settings"][x]["value"] = "";
+    jsonBuffer["Settings"][x]["range"]["min"] = "";
+    jsonBuffer["Settings"][x]["range"]["max"] = "";
+
+    jsonBuffer["Settings"][++x]["name"] = SAVED_WIFI_KEY_NAME;
+    jsonBuffer["Settings"][x]["type"] = "wifi_list";
+    jsonBuffer["Settings"][x].createNestedArray("value");
+    jsonBuffer["Settings"][x]["range"]["min"] = 0;
+    jsonBuffer["Settings"][x]["range"]["max"] = MAX_SAVED_WIFI_PROFILES;
+
+    jsonBuffer["Settings"][++x]["name"] = GEOFENCES_KEY_NAME;
+    jsonBuffer["Settings"][x]["type"] = "geofence_list";
+    jsonBuffer["Settings"][x].createNestedArray("value");
+    jsonBuffer["Settings"][x]["range"]["min"] = 0;
+    jsonBuffer["Settings"][x]["range"]["max"] = MAX_GEOFENCES;
+
 
     serializeJson(jsonBuffer, settingsFile);
     serializeJson(jsonBuffer, settings_string);

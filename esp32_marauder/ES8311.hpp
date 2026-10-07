@@ -84,7 +84,7 @@ class ES8311 {
                int bclk = ES8311_I2S_BCLK, int ws = ES8311_I2S_WS,
                int dout = ES8311_I2S_DOUT, int mclk = ES8311_I2S_MCLK,
                uint32_t sample_rate = I2S_SAMPLE_RATE) {
-        if (supported) return true;
+        if (supported) { log_d("ES8311 already started"); return true; }
 
         #ifdef I2C_SDA
           if (sda != I2C_SDA)
@@ -106,12 +106,11 @@ class ES8311 {
                int bclk = ES8311_I2S_BCLK, int ws = ES8311_I2S_WS,
                int dout = ES8311_I2S_DOUT, int mclk = ES8311_I2S_MCLK,
                uint32_t sample_rate = I2S_SAMPLE_RATE) {
-
-        if (supported) return true;
-
+        if (supported) { log_d("ES8311 already started"); return true; }
         _wire = mywire;
         _sampleRate = sample_rate;
         _useMclk = (mclk >= 0);
+
 
         if (!probe()) {
             log_e("ES8311 not found at 0x%02X", ES8311_ADDR);
@@ -136,75 +135,132 @@ class ES8311 {
       // 0 .. 255, 0xBF = 0 dB, 0xFF = +32 dB
     void setVolume(uint8_t vol) {
         if (supported) writeRegister(0x32, vol);
+        log_d("setVolume = %d", vol);
     }
 
-    int getVolume() {
-        if (!supported) return -1;
-        return readRegister(0x32);
+    int32_t getVolume() {
+        if (supported) return readRegister(0x32);
+        return -1;
     }
 
     void mute(bool on) {
         if (!supported) return;
         writeRegister(0x31, on ? 0x60 : 0x00);
+        log_d("mute");
     }
 
       // Playback APIs
-    void playBeep(float frequencyHz = BEEP_FREQ, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000) {
-        if (!supported) return;
+    int16_t peak = 0;   // debug: largest sample of the last beep
 
-        size_t num_samples = (_sampleRate * durationMs) / 1000;
-
-        int16_t *buf = reinterpret_cast<int16_t *>(malloc(num_samples * sizeof(int16_t)));
-        if (!buf) {
-          log_e("malloc fail");
-          return;
-        }
-
-        float amplitude_f = static_cast<float>(amplitude);
-        for (size_t i = 0; i < num_samples; i++) {
-            float t = static_cast<float>(i) / _sampleRate;
-            buf[i] = static_cast<int16_t>(amplitude_f * sinf(2.0f * PI * frequencyHz * t));
-        }
-
-        size_t bytes_written;
-        i2s_channel_write(_txHandle, buf, num_samples * sizeof(int16_t), &bytes_written, portMAX_DELAY);
-        free(buf);
+    void beep(float frequencyHz = BEEP_FREQ, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000) {
+        beep2(frequencyHz, 0.0f, durationMs, amplitude);
     }
 
-    void playClick4() {
+      // One tone, or two mixed tones when freq2 != 0
+    void beep2(float frequencyHz = BEEP_FREQ, float freq2 = 0.0f, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000,
+               TickType_t timeout = portMAX_DELAY) {
         if (!supported) return;
-        const size_t num_samples = 150;
-        int16_t buf[num_samples] = {0};
+        log_d("beep freq1=%d freq2=%d", frequencyHz, freq2);
+
+        size_t remaining = (_sampleRate * durationMs) / 1000;
+        log_d("remaining = %d", remaining);
+
+          // Small stack chunk, refilled from a running phase so any
+          // frequency stays continuous across chunk boundaries.
+        int16_t buf[128];
+        const float step = 2.0f * PI * frequencyHz / _sampleRate;
+        const float step2 = 2.0f * PI * freq2 / _sampleRate;
+
+          // Two mixed tones share the amplitude so the sum can't clip
+        const float amplitude_f = static_cast<float>(amplitude) / (freq2 > 0.0f ? 2.0f : 1.0f);
+        float phase = 0.0f;
+        float phase2 = 0.0f;
+        peak = 0;
+
+        while (remaining > 0) {
+            size_t n = remaining < 128 ? remaining : 128;
+            for (size_t i = 0; i < n; i++) {
+                float v = sinf(phase);
+                phase += step;
+                if (phase >= 2.0f * PI) phase -= 2.0f * PI;
+
+                if (freq2 > 0.0f) {
+                  v += sinf(phase2);
+                  phase2 += step2;
+                  if (phase2 >= 2.0f * PI) phase2 -= 2.0f * PI;
+                }
+                buf[i] = static_cast<int16_t>(amplitude_f * v);
+                if (buf[i] > peak) peak = buf[i];
+            }
+
+            if (!write(buf, n * sizeof(int16_t), timeout)) {
+                log_e("i2s write failed");
+                break;
+            }
+            remaining -= n;
+        }
+        log_d("beep peak = %d", peak);
+    }
+
+// Pattern Samples Period  Fundamental Duty (high) DC offset
+// i % 2 == 0  + − 2       8000 Hz 50% 0
+// i % 3 == 0  + − −   3   5333 Hz 33% −7333
+// i % 4 == 0  + − − − 4   4000 Hz 25% −11000
+//  mod 5 gives            3200 Hz,
+//  mod 6 gives            2667 Hz
+//  mod 8 gives            2000 Hz.
+// 20 samples is 1.25 ms, and 1 / 1.25 ms = 800 Hz. For
+
+      // Clicks are called from scan callbacks: never block for long
+    void tick() {
+        if (!supported) return;
+        log_d("tick vol=%d", getVolume());
+        int16_t buf[150] = {0};
           // Quick hardware click impulse
         for (size_t i = 0; i < 20; i++) {
-            buf[i] = (i % 4 == 0) ? 22000 : -22000;
+            if (i > 10 && i < 15)
+              buf[i] = (i % 2 == 0) ? 22000 : -22000;
+            else
+              buf[i] = (i % 4 == 0) ? 22000 : -22000;
         }
-        size_t bytes_written;
-        i2s_channel_write(_txHandle, buf, sizeof(buf), &bytes_written, portMAX_DELAY);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
     }
 
-    void playClick3() {
+    void click() {
         if (!supported) return;
-        const size_t num_samples = 150;
-        int16_t buf[num_samples] = {0};
+        log_d("click vol=%d", getVolume());
+        int16_t buf[150] = {0};
           // Quick hardware click impulse
         for (size_t i = 0; i < 20; i++) {
             buf[i] = (i % 3 == 0) ? 22000 : -22000;
         }
-        size_t bytes_written;
-        i2s_channel_write(_txHandle, buf, sizeof(buf), &bytes_written, portMAX_DELAY);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
     }
 
-    void playClick() {
+      // Short dual tone. Placeholder values: tune f1 / f2 / durationMs
+      // until it sounds right as the "station" geiger click.
+    void click2(uint16_t mod1 = 2, uint16_t mod2 = 4) {
         if (!supported) return;
-        const size_t num_samples = 150;
-        int16_t buf[num_samples] = {0};
+        log_d("tick vol=%d", getVolume());
+        int16_t buf[150] = {0};
           // Quick hardware click impulse
         for (size_t i = 0; i < 20; i++) {
-            buf[i] = (i % 2 == 0) ? 22000 : -22000;
+            if (i > 10 && i < 15)
+              buf[i] = (i % mod1 == 0) ? 22000 : -22000;
+            else
+              buf[i] = (i % mod2 == 0) ? 22000 : -22000;
         }
-        size_t bytes_written;
-        i2s_channel_write(_txHandle, buf, sizeof(buf), &bytes_written, portMAX_DELAY);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
+    }
+
+      // Drop anything still queued in the DMA buffers
+    void stop() {
+        if (!supported) return;
+        i2s_channel_disable(_txHandle);
+        i2s_channel_enable(_txHandle);
     }
 
  private:
@@ -213,6 +269,13 @@ class ES8311 {
     uint32_t _sampleRate = I2S_SAMPLE_RATE;
     i2s_chan_handle_t _txHandle = nullptr;
     bool _useMclk = true;
+
+    static constexpr TickType_t CLICK_TIMEOUT = pdMS_TO_TICKS(20);
+
+    bool write(const int16_t *buf, size_t bytes, TickType_t timeout) {
+        size_t bytes_written = 0;
+        return i2s_channel_write(_txHandle, buf, bytes, &bytes_written, timeout) == ESP_OK;
+    }
 
     bool writeRegister(uint8_t reg, uint8_t val) {
         _wire->beginTransmission(ES8311_ADDR);
@@ -332,9 +395,6 @@ class ES8311 {
     void deinitI2S() {
         if (_txHandle) {
             i2s_channel_disable(_txHandle);
-
-
-
             i2s_del_channel(_txHandle);
             _txHandle = nullptr;
         }

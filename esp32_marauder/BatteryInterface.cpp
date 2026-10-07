@@ -112,6 +112,8 @@ int8_t BatteryInterface::getBatteryLevel() {
 
   #ifdef HAS_BATTERY
 
+
+
     #ifdef HAS_CH32V003
       if (this->has_adc_battery) {
         float bVolt =    CH32V003_obj.readBatteryVoltage();

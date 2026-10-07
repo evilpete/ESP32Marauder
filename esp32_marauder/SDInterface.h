@@ -90,7 +90,7 @@ class SDInterface {
     bool validateUpdate(File &updateBin);
 
   public:
-    #ifdef HAS_C5_SD  && defined(HAS_SCREEN)
+    #if defined(HAS_C5_SD) && defined(HAS_SCREEN)
       SDInterface(SPIClass* spi);
       void setSPI(SPIClass* spi) { _spi = spi; }   // Fix SPI after Display_obj fuckers it
     #endif

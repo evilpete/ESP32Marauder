@@ -5,6 +5,19 @@
 
 #ifdef HAS_SCREEN
 
+// we don't need the constructors called for ever include "Display.h
+
+// HAS_CAP_TOUCH
+#ifdef  HAS_FT6336
+  #include "ft6336.h"
+#elif defined(HAS_CST3530)
+  #include "CST3530.hpp"
+#elif defined(HAS_CST820)
+  #include "CST820.hpp"
+#elif defined(HAS_CST820)
+   #include "CST820.hpp"
+#endif
+
 namespace {
 
 uint8_t readLogoAlpha(uint16_t x, uint16_t y) {
@@ -98,18 +111,10 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
   #ifdef HAS_CST3530
      if (CST3530_obj.available()) {
        CST3530_obj.readData();
-       // Serial.print("Event ");
-       // Serial.println((int)CST3530_obj.data->event);
        if (CST3530_obj.data->event == CST3530Event::DOWN) {  // Down event
          *x = CST3530_obj.data->x;
          *y = CST3530_obj.data->y;
 
-         // CST3530Point p = touch.getPoint(i);
-         // *x = p.x;
-         // *y = p.y;
-
-         // CST3530_obj.getTouch(x, y);
-         // if ( *x || *y ) { log_d("x=%d y=%d", *x, *y); }
          return 1;
        }
      }

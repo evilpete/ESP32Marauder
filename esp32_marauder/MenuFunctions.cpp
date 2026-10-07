@@ -9,6 +9,27 @@
 
 #ifdef HAS_SCREEN
 
+extern void checkHeap(const char *where);
+
+// we don't need the constructors called for every MenuFunctions.h include
+#ifdef HAS_SOUND
+  #include "Sound.hpp"
+#endif
+
+#include "BackLight.hpp"
+
+// future use
+#ifdef HAS_TEMP_SENSOR
+  #include "temp_sensor.hpp"
+  #define USE_TEMP TempSensor_obj.supported
+#else
+  #define USE_TEMP false
+#endif
+
+#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
+  #include "shutdown.hpp"
+#endif
+
 extern const unsigned char menu_icons[][66];
 extern LinkedList<AccessPoint>* access_points;
 extern LinkedList<Station>* stations;
@@ -771,7 +792,7 @@ void MenuFunctions::main(uint32_t currentTime)
             #endif
             wifi_scan_obj.drawChannelLine();
           }
-          #ifdef CYD_SOUND
+          #ifdef HAS_SOUND
             sound_obj.click();
           #endif
         }
@@ -843,13 +864,13 @@ void MenuFunctions::main(uint32_t currentTime)
             #endif
             wifi_scan_obj.drawChannelLine();
           }
-          #ifdef CYD_SOUND
+          #ifdef HAS_SOUND
             sound_obj.click();
           #endif
         }
         if(menu_button == SELECT_BUTTON) {
           current_menu->list->get(current_menu->selected).callable();
-          #ifdef CYD_SOUND
+          #ifdef HAS_SOUND
             sound_obj.click();
           #endif
         }
@@ -1272,6 +1293,21 @@ void MenuFunctions::update_time_temp_batt(bool update) {
       uint16_t bg_color = STATUSBAR_COLOR;
       uint16_t txt_color = TFT_WHITE;
 
+      #ifdef DEBUG_SHOW_FREQ
+          char freqbuff[32] = {0};
+          uint32_t cpuFreq = getCpuFrequencyMhz();
+          if ( cpuFreq < 240 ) {
+            txt_color = TFT_GREEN;
+            display_obj.tft.setTextColor(txt_color, TFT_BLACK, true);
+          }
+          snprintf(freqbuff, sizeof(freqbuff), "CPU=%dMhz", getCpuFrequencyMhz());
+          display_obj.tft.drawRightString(freqbuff, SCREEN_WIDTH ,  (STATUS_BAR_WIDTH * 2) + 1, 1);
+          if (txt_color != TFT_WHITE) {
+            txt_color = TFT_WHITE;
+            display_obj.tft.setTextColor(txt_color, TFT_BLACK, true);
+          }
+
+      #endif
       // Use "(time >> 12) & 0x02" to cycle through different values
       // With a biased for time
       switch(ct) {
@@ -2126,6 +2162,7 @@ void MenuFunctions::buildBluetoothFoxHuntMenu() {
 
 
 void do_menu_sync_ntp() {
+    checkHeap("do_menu_sync_ntp");
     display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
     bool sync_ntp(const char *ntpServer = nullptr);    // system_time.cpp
 
@@ -2133,6 +2170,7 @@ void do_menu_sync_ntp() {
      display_obj.tft.println("WIFI is not connected.");
      return;
    }
+   // wifi_scan_obj.joinSavedWiFi(true);
 
    sync_ntp();
    struct tm timeinfo;
@@ -2143,6 +2181,7 @@ void do_menu_sync_ntp() {
    } else {
      log_d("Failed to obtain time from NTP");
    }
+    checkHeap("do_menu_sync_ntp Done");
    return;
 }
 
@@ -4172,8 +4211,10 @@ void MenuFunctions::RunSetup()
   this->addNodes(&adminMenu, "WifiTx 20dBm (Default)", TFTLIME, WIFI, [this]() {
     // this->changeMenu(&adminSubMenu, true);
       // WIFI_POWER_20dB = 80
+      checkHeap("adminMenu WifiTx 20dBm");
       wifi_power = 78;
       esp_wifi_set_max_tx_power(wifi_power);
+      checkHeap("adminMenu WifiTx 20dBm Done");
      this->changeMenu(&adminMenu, true);
   });
 
@@ -4201,25 +4242,30 @@ void MenuFunctions::RunSetup()
 
   this->addNodes(&adminMenu, "Sync Clock with WiFi", TFTPINK, SETTINGS, [this]() {
     this->changeMenu(&adminSubMenu, true);
+
     do_menu_sync_ntp();
   });
 
-  #ifdef ADJ_CPUFREQ
+  #if defined(ADJ_CPUFREQ)
+  // && !defined(CONFIG_PM_ENABLE) && !defined(HAS_PM)
       this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
+          checkHeap("Menu 240Mhz");
           Serial.println(F("Set CPU to 240Mhz"));
-          setCpuFrequencyMhz(240);
+          pm_set_cpu_freq(240);
           display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
           display_obj.tft.drawCentreString("Set CPU 240Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          checkHeap("Menu 240Mhz done");
 
       });
 
       this->addNodes(&adminMenu, "Throttle CPU 160Mhz", TFTGREENYEL, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
+        checkHeap("Menu 160Mhz done");
         Serial.println(F("Set CPU 160Mhz"));
-        setCpuFrequencyMhz(160); // 1. Throttle CPU Save Batt
+        pm_set_cpu_freq(160); // 1. Throttle CPU Save Batt
         display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
         display_obj.tft.drawCentreString("Set CPU 160Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
 
@@ -4232,6 +4278,7 @@ void MenuFunctions::RunSetup()
         };
         esp_task_wdt_reconfigure(&wdt_config);
         #endif
+          checkHeap("Menu 160Mhz done");
 
       });
 
@@ -4257,9 +4304,13 @@ void MenuFunctions::RunSetup()
   // Show reason for last reboot...
   this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
     this->changeMenu(&adminSubMenu, true);
+      checkHeap("Menu Reset Reasion");
       display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
       display_obj.tft.drawCentreString(resetReasonName(), TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
       print_reset_reason();
+      delay(1500);
+      checkHeap("Menu Reset Reasion Done");
+      this->changeMenu(&adminMenu, true);
   });
 
   // GPS Menu
@@ -4337,7 +4388,26 @@ void MenuFunctions::RunSetup()
   for (int i = 0; i < settings_obj.getNumberSettings(); i++) {
     String settingName = settings_obj.setting_index_to_name(i);
     const char* type = this->callSetting(settingName.c_str());
+    const char* name_str = settingName.c_str();
     if (type && strcmp(type, "bool") == 0) {
+
+      #ifndef HAS_GPS
+      if (strcmp(name_str, "Probe GPS at Boot") == 0)
+        continue;
+      #endif   // HAS_GPS
+      #ifndef HAS_SOUND
+      if (strcmp(name_str, "EnableSND") == 0)
+        continue;
+      #endif   // HAS_SOUND
+      #ifndef HAS_LED
+      if (strcmp(name_str, "EnableLED") == 0)
+        continue;
+      #endif   // HAS_SOUND
+      #ifndef HAS_SD
+        if ((strcmp(name_str, "SavePCAP") == 0) || strcmp(name_str, "Timestamp PCAP files") == 0)
+          continue;
+      #endif   // HAS_SD
+
       this->addNodes(&settingsMenu, settingName.c_str(), TFTLIGHTGREY, SETTINGS, [this, i, settingName]() {
           settings_obj.toggleSetting(settingName.c_str());
           this->callSetting(settingName.c_str());
@@ -5433,6 +5503,7 @@ uint16_t MenuFunctions::getColor(uint16_t color) {
 
 // Function to change menu
 void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
+  checkHeap("MenuFunctions::changeMenu");
   #ifdef HAS_SD
     const bool leaving_sd_browser = current_menu == &sdDeleteMenu && menu != &sdDeleteMenu;
   #endif
@@ -5443,7 +5514,7 @@ void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
     display_obj.init();
 
     #ifdef HAS_ILI9341
-      extern void backlightOn();
+      // extern void backlightOn();
           backlightOn();
     #endif
   }
@@ -5467,6 +5538,7 @@ void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
   //#ifdef MARAUDER_V8
   //  digitalWrite(TFT_BL, HIGH);
   //#endif
+  checkHeap("MenuFunctions::changeMenu Done");
 }
 
 void MenuFunctions::buildButtons(Menu *menu, int starting_index, const char* button_name) {
@@ -5619,9 +5691,9 @@ void MenuFunctions::displayCurrentMenu(int start_index)
   void MenuFunctions::brightnessMode() {
 
     // From BackLight.cpp
-    extern void brightnessSave(uint8_t level);
-    extern void brightnessSet(uint8_t level);
-    extern uint8_t getBrightnessLevel();
+    // extern void brightnessSave(uint8_t level);
+    // extern void brightnessSet(uint8_t level);
+    // extern uint8_t getBrightnessLevel();
     // extern const uint8_t BL_NUM_LEVELS;
 
     uint8_t level = getBrightnessLevel();

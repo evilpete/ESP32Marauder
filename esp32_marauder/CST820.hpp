@@ -69,13 +69,14 @@ struct data_struct {
 */
 class CST820 {
 public:
-    inline CST820() : _wire(nullptr), sda(-1), scl(-1) {}
+    inline CST820() : _wire(nullptr), sda(-1), scl(-1) { log_d("CST820 instantiated"); }
 
     inline void begin(int8_t _sda = -1, int8_t _scl = -1, int8_t _rst = -1,
                        int8_t _int = -1, uint32_t freq = 0) {
         TwoWire *mywire;
 
         log_d("CST820::begin");
+
         if (_sda != -1 && _sda != I2C_SDA) {
             mywire = &Wire1;
             log_d("CST820::begin using Wire1");

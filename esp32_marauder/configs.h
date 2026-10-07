@@ -5,6 +5,8 @@
 #define configs_h
 
   #ifdef PLATFORMIO
+
+    #include "sdkconfig.h"
     #include "soc/soc_caps.h"
     #include "esp_arduino_version.h"
   #endif
@@ -585,7 +587,6 @@
       #define USE_MMC_WRITE_SECTORS
     // #define HAS_GPS
     #define HAS_NIMBLE_2
-    #define ADJ_CPUFREQ
     #define HAS_PWR_MGMT
       #define PWR_EN_PIN  10
       #define PWR_ON_PIN  14
@@ -753,13 +754,13 @@
       #define USE_SD
     #define HAS_GPS
       #define HAS_GPSI2C
-    #define CYD_SOUND
+    #define HAS_SOUND
+      #define CYD_SOUND
+      #define HAS_CYD_SOUND
       #define SOUND_PIN 26
     #define DEEPSLEEP
-
     #define ADJ_CPUFREQ 1
     #define SLOW_IDLE 1
-
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
@@ -779,11 +780,15 @@
     #define HAS_GPS
       #define HAS_GPSI2C
     // #define HAS_IDF_3
-    #define CYD_SOUND
+    #define HAS_SOUND
+      #define CYD_SOUND
+      #define HAS_CYD_SOUND
       #define SOUND_PIN 26
     #define DEEPSLEEP
     #define ADJ_CPUFREQ 1
     #define SLOW_IDLE 1
+    #define HAS_SOUND
+      #define CYD_SOUND
   #endif   // MARAUDER_CYD_24
 
 
@@ -828,7 +833,6 @@
       #define HAS_SD
         #define USE_SD
         #define HAS_C5_SD
-
       #define I2C_SDA           0
       #define I2C_SCL           1
       #define HAS_CH32V003         // CH32V003 IO expander
@@ -843,7 +847,6 @@
           #define BATTERY_ADC_PIN 0x06    // CH32V003 Reg Id
       #define HAS_RTC
         #define HAS_PCF85063         // i2c real-time clock (RTC)
-
       #define HAS_GPS
         #define HAS_GPSI2C
       // #define HAS_CYD_PORTRAIT
@@ -851,7 +854,9 @@
       // HAS_MIC
       #define DEEPSLEEP
       #define HAS_ZIGBEE
-      #define HAS_ES8311
+      #define HAS_SOUND
+        #define HAS_ES8311
+      #define HAS_PM
     #endif     // MARAUDER_WS_C5_28
 
   //// END BOARD FEATURES
@@ -3063,24 +3068,6 @@
     //#define BUTTON_ARRAY_LEN 5
   #endif
 
-  #if defined(MARAUDER_CYD_HMI)
-    #define BANNER_TIME 100
-
-    #define COMMAND_PREFIX "!"
-
-    // Keypad start position, key sizes and spacing
-    #define KEY_X 120 // Centre of key
-    #define KEY_Y 50
-    #define KEY_W 240 // Width and height
-    #define KEY_H 22
-    #define KEY_SPACING_X 0 // X and Y gap
-    #define KEY_SPACING_Y 1
-    #define KEY_TEXTSIZE 1   // Font size multiplier
-    #define ICON_W 22
-    #define ICON_H 22
-    #define BUTTON_PADDING 22
-    //#define BUTTON_ARRAY_LEN 5
-  #endif
 
   #if defined(MARAUDER_CYD_GUITION)
     #define BANNER_TIME 100
@@ -3743,8 +3730,10 @@
       #define GPS_RX 16
     #endif
   #else
-    #define mac_history_len 100
-    #define mac_history_len_half (mac_history_len / 2)
+    #ifndef mac_history_len
+      #define mac_history_len 100
+      #define mac_history_len_half (mac_history_len / 2)
+    #endif
   #endif
   //// END GPS STUFF
 
@@ -4023,12 +4012,12 @@
 
   #endif // STUPID CYD STUFF
 
-  #ifdef CYD_SOUND
+  #if defined(HAS_SOUND) && defined(CYD_SOUND)
     #define SOUND_PIN 26
   #endif
   //// END STUPID CYD STUFF
 
-  #ifdef PLATFORMIO
+  #ifdef PLATFORMIO_NOT
     #if defined(HAS_IDF_3)
       #if defined(SOC_USB_OTG_SUPPORTED) && (defined(HAS_SD) || defined(HAS_SDMMC))
         #define MSC_SHARE
@@ -4221,7 +4210,24 @@
 // #pragma GCC diagnostic push
 // #pragma GCC diagnostic warning "-Wcpp"
 
+  #if defined(HAS_PM) && __has_include("sdkconfig.h")
+    #include "sdkconfig.h"
+  #endif
+  #if defined(HAS_PM) && !defined(CONFIG_PM_ENABLE)
+    #warning "HAS_PM defined but Arduino libs built without CONFIG_PM_ENABLE, power management disabled"
+  #endif
 
+  #if defined(HAS_SOUND) && (!defined(HAS_CYD_SOUND) || !defined(HAS_ES8311) )
+    #warning "HAS_SOUND set without source device HAS_CYD_SOUND or HAS_ES8311"
+    // #undef HAS_SOUND
+  #endif
+
+  #if defined(HAS_PM) && __has_include("sdkconfig.h")
+    #include "sdkconfig.h"
+  #endif
+  #if defined(HAS_PM) && !defined(CONFIG_PM_ENABLE)
+    #warning "HAS_PM defined but Arduino libs built without CONFIG_PM_ENABLE, power management disabled"
+  #endif
 
   #if defined(HAS_NIMBLE_2) && !defined(HAS_BT)
     #warning "HAS_NIMBLE_2 defined without HAS_BT, check 'BOARD FEATURES' section"
@@ -4292,3 +4298,5 @@
   // END CONFIGS LOGIC
 
 #endif  //  configs_h
+
+extern void checkHeap(const char *where);

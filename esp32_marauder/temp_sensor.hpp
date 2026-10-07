@@ -11,9 +11,6 @@
 #warning "HAS_CPU_TEMP SET"
 #endif
 
-#ifdef HAS_TEMP_SENSOR
-#warning "HAS_TEMP_SENSOR SET"
-#endif
 
   // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
   #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
@@ -23,7 +20,6 @@
       #define HAS_CPU_TEMP
   #else
     #undef HAS_CPU_TEMP
-  #error "undef HAS_CPU_TEMP"
   #endif
 
 //do we have a SENSOR?
@@ -41,28 +37,44 @@
 
 #if defined(HAS_SHTC3)
     #include <SHTC3.hpp>
-#elif defined (HAS_CPU_TEMP)
+#endif
+#if defined(HAS_CPU_TEMP)
     #include "cpu_temp_sensor.hpp"
 #endif
 
 
   class TempSensor {
-     public:
+
+   public:
+       ~TempSensor() {
+         #if defined(HAS_CPU_TEMP)
+           disable_sys_temp();
+         #endif
+       }
+
       bool supported = false;
+      bool cpu_supported = false;
       TwoWire *_wire;
       uint32_t lastRead = 0;
 
       void RunSetup(TwoWire *wireInstance = nullptr);
       float temperature();
+      float cpu_temperature();
   };  //  class TempSensor
 
 
 #if !defined(HAS_SHTC3) && !defined(HAS_CPU_TEMP)
-  inline void TempSensor::RunSetup(TwoWire *wireInstance) {}
+  inline void TempSensor::RunSetup(TwoWire *wireInstance) { log_d("!! TempSensor::RunSetup"); }
   inline float TempSensor::temperature() { return 0.0; }
 #else
 
   inline void TempSensor::RunSetup(TwoWire *wireInstance) {
+    log_d("TempSensor::RunSetup *wire");
+
+   if ( supported ) {
+     log_d("TempSensor already started");
+   }
+
     if (wireInstance == nullptr)
       _wire = &Wire;
     else
@@ -73,9 +85,13 @@
         log_d("HAS_SHTC3 supported = %d", this->supported);
     #elif defined(HAS_HAS_AHT20)
       // noop
-    #elif defined (HAS_CPU_TEMP)
-        this->supported = init_sys_temp();
-        log_d("HAS_CPU_TEMP supported = %d", this->supported);
+    #endif
+
+    #if defined(HAS_CPU_TEMP)
+      this->cpu_supported = init_sys_temp();
+      if (!this->supported)
+        this->supported = this->cpu_supported;
+      log_d("HAS_CPU_TEMP supported = %d", this->supported);
     #else
         this->supported = false;
     #endif
@@ -94,16 +110,26 @@
         return SHTC3_obj.temperature();
       #elif defined(HAS_HAS_AHT20)
         return 0.0;
-      #elif defined (HAS_CPU_TEMP)
+      #elif defined(HAS_CPU_TEMP)
         if (now - lastRead < 60000)
-          return read_sys_temp();
+          return get_sys_temperature();
 
         lastRead = now;
         return read_sys_temp();
-      #else init
+      #else
         return 0.0;
       #endif
   }
+
+  inline float TempSensor::cpu_temperature() {
+    #if defined(HAS_CPU_TEMP)
+      if (this->cpu_supported) 
+        return read_sys_temp();
+    #endif
+      return 0.0;
+  }
+
+
 
 inline TempSensor TempSensor_obj;
 

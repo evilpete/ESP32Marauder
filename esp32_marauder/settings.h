@@ -54,7 +54,7 @@ class Settings {
       bool  EnableLED   = true;
       bool  EPDeauth    = false;
       bool  ChanHop     = false;
-  #ifdef CYD_SOUND
+  #ifdef HAS_SOUND
       bool  EnableSND   = true;
   #endif
       bool  ProbeGPS     = false;

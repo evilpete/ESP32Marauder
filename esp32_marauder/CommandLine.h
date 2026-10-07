@@ -4,11 +4,11 @@
 #define CommandLine_h
 
 #include "configs.h"
+#include "PowerMgmt.hpp"
 
 #ifdef HAS_SCREEN
   #include "MenuFunctions.h"
   #include "Display.h"
-  #include "BackLight.hpp"
 #endif 
 
 #include "WiFiScan.h"
@@ -22,9 +22,6 @@
   #include "LedInterface.h"
 #endif
 
-#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
-  #include "shutdown.hpp"
-#endif
 
 // If system time/date has been set
 extern bool system_time_set;
@@ -63,8 +60,8 @@ extern LinkedList<ProbeReqSsid>* probe_req_ssids;
 extern const String PROGMEM version_number;
 extern const String PROGMEM board_target;
 
-extern void shutdown();
-extern void DeepSleep(int8_t wakeup_but);
+// extern void shutdown();
+// extern void DeepSleep(int8_t wakeup_but);
 
 //// Commands
 
@@ -91,6 +88,8 @@ const char PROGMEM NTP_SYNC_CMD[] = "ntp_sync";
 const char PROGMEM DATE_CMD[] = "date";
 const char PROGMEM SETDATE_CMD[] = "setdate";
 const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
+const char PROGMEM PROBE_I2C[] = "i2c";
+const char PROGMEM BLEEP[] = "bleep";
 
 
 #ifdef HAS_SD
@@ -195,6 +194,8 @@ const char PROGMEM HELP_NMEA_CMD[] = "nmea";
 const char PROGMEM HELP_NTP_SYNC[] = "ntp_sync";
 const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
 const char PROGMEM HELP_DATE[] = "print system time/date";
+const char PROGMEM HELP_PROBE_I2C[] = "print i2c probe";
+const char PROGMEM HELP_BLEEP[] = "bleep";
 
 #ifdef HAS_SD
   const char PROGMEM HELP_RESCANSD_CMD[] = "rescansd : rescan for SD card";
@@ -203,7 +204,7 @@ const char PROGMEM HELP_DATE[] = "print system time/date";
   const char PROGMEM HELP_MSC_CMD[] = "msc [start | stop | pause | resume] : Share SD over USB"; 
 #endif
 #ifdef ADJ_CPUFREQ
-  const char PROGMEM HELP_CPUFREQ_CMD[] = "cpufreq [240 | 160 | 80 | 40 | 20]"; 
+  const char PROGMEM HELP_CPUFREQ_CMD[] = "cpufreq [<max> [min] | default | locks] : max/min 240|160|80, locks dumps PM stats"; 
 #endif
 const char PROGMEM HELP_RESET_REASON_CMD[] = "resetreasion : print reason for last reboot / crash";
 

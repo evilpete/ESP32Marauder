@@ -5,9 +5,12 @@ Partition Scheme: Minimal SPIFFS
 https://www.online-utility.org/image/convert/to/XBM
 */
 
+#include "esp_heap_caps.h"
 #include "configs.h"
+#include "esp_ota_ops.h"
 
-#ifdef I2C_FREQ
+
+#ifdef I2C_SDA
   #include "Wire.h"
 #endif
 
@@ -21,6 +24,7 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "esp_log.h"
   #include "esp_pm.h"
 #endif
+#include "PowerMgmt.hpp"
 
 // #include "ESP32_PinDebug.h"
 
@@ -127,9 +131,10 @@ extern void init_system_time();
 
 // Brightness functions defined in BackLight.cpp
 #ifdef HAS_SCREEN
-  void brightnessInit();
-  extern void backlightOff();
-  extern void backlightOn();
+  #include "BackLight.hpp"
+  // void brightnessInit();
+  // extern void backlightOff();
+  // extern void backlightOn();
 #endif
 
 #ifdef HAS_T_DONGLE_DISPLAY
@@ -158,14 +163,13 @@ extern void init_system_time();
   MenuFunctions menu_function_obj;
 #endif
 
-#ifdef CYD_SOUND
-    #include "Sound_CYD.h"
-    Sound_CYD sound_obj;
+#ifdef HAS_SOUND
+   #include "Sound.hpp"
 #endif
 
-#ifdef HAS_ES8311
-  #include "ES8311.hpp"
-#endif
+// #ifdef HAS_ES8311
+//   #include "ES8311.hpp"
+// #endif
 
 #if defined(HAS_SD)
   #if defined(HAS_C5_SD) && defined(HAS_SCREEN)
@@ -195,7 +199,29 @@ const String PROGMEM version_number = MARAUDER_VERSION;
   Adafruit_NeoPixel strip = Adafruit_NeoPixel(Pixels, PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
+
 uint32_t currentTime  = 0;
+
+void checkHeap(const char *where)
+{
+//    Serial.printf(
+//        "\n========== HEAP CHECK: %s ==========\n",
+//        where
+//    );
+
+    bool ok = heap_caps_check_integrity_all(true);
+
+    if (!ok) {
+        Serial.printf(
+            "\n******** HEAP CORRUPTION DETECTED AT: %s ********\n",
+            where
+        );
+
+        delay(100);
+
+        abort();
+    }
+}
 
 
 /*  Fixed Below
@@ -209,6 +235,7 @@ uint32_t currentTime  = 0;
 //  Type is located in /tools/sdk/esp32/include/esp_system/include/esp_system.h
 const char *resetReasonName() {
   esp_reset_reason_t r = esp_reset_reason();
+  checkHeap("resetReasonName");
   switch (r) {
     case ESP_RST_UNKNOWN:   return "Unknown";
     case ESP_RST_POWERON:   return "PowerOn";    //Power on or RST pin toggled
@@ -238,7 +265,7 @@ void print_reset_reason() {
   Serial.println(resetReasonName());
 }
 
-#if defined(CORE_DEBUG_LEVEL)
+#if defined(I2C_SDA) && defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
 
   void i2c_probe() {
     Serial.println("I2c Probe");
@@ -249,8 +276,34 @@ void print_reset_reason() {
       if (error == 0) {
         Serial.print("I2C device found at address 0x");
         if (address < 16) Serial.print("0");
-        Serial.println(address, HEX);
+        Serial.print(address, HEX);
         count++;
+
+	if (address == 0x13) { Serial.println(" PCF85063A (alt)"); } 
+	else if (address == 0x18) { Serial.println(" ES8311"); }
+	else if (address == 0x20) { Serial.println(" GPS"); } 
+	else if (address == 0x24) { Serial.println(" CH32V003"); } 
+	else if (address == 0x28) { Serial.println(" MFRC522 RFID (alt)"); }
+	else if (address == 0x2D) { Serial.println(" MFRC522 RFID"); }
+	else if (address == 0x36) { Serial.println(" MAX17048 / Rotary Encoder"); } 
+	else if (address == 0x37) { Serial.println(" PCT2075"); } 
+	else if (address == 0x38) { Serial.println(" AHT20"); } 
+	else if (address == 0x3D) { Serial.println(" Rotary Encoder (alt)"); } 
+	else if (address == 0x40) { Serial.println(" Si7021 / MFRC522 RFID"); } 
+	else if (address == 0x48) { Serial.println(" PN532 RFID"); }
+	else if (address == 0x51) { Serial.println(" PCF85063A"); } 
+	else if (address == 0x53) { Serial.println(" MFRC522 RFID"); }
+	else if (address == 0x57) { Serial.println(" MFRC522 RFID"); }
+	else if (address == 0x58) { Serial.println(" CST3530"); } 
+	else if (address == 0x68) { Serial.println(" DS3231"); } 
+	else if (address == 0x6A) { Serial.println(" PCF85063A"); } 
+	else if (address == 0x6B) { Serial.println(" QMI8658"); } 
+	else if (address == 0x70) { Serial.println(" SHTC3"); } 
+	else if (address == 0x75) { Serial.println(" IP5306"); } 
+	else if (address == 0x76) { Serial.println(" BMP280"); } 
+	else if (address == 0x7E) { Serial.println(" reserved address"); } 
+	else Serial.println();
+
       } else if (error == 4) {
         Serial.print("Unknown error at address 0x");
         if (address < 16) Serial.print("0");
@@ -265,26 +318,11 @@ void print_reset_reason() {
 #endif // CORE_DEBUG_LEVEL)
 
 
-#ifdef HAS_PM_NOT
-  static esp_err_t after_light_sleep(int64_t sleep_time_us, void *arg) {
-      log_d("Woken up from automatic light sleep, slept for %lld us", sleep_time_us);
-      // Add custom actions after waking up
-      return ESP_OK; // Must return ESP_OK
-  }
-
-  static esp_err_t before_light_sleep(int64_t sleep_time_us, void *arg) {
-      log_d("Entering automatic light sleep for %lld us", sleep_time_us);
-      // Add custom actions before sleep (e.g., toggling LEDs, saving state)
-      return ESP_OK; // Must return ESP_OK
-  }
-#endif // HAS_PM)
-
 uint8_t prevScanMode = 0;
+
 
 void setup() {
 
-  log_d("1 __COUNTER__ = %d", __COUNTER__);
-  log_d("2 __COUNTER__ = %d", __COUNTER__);
 
   // https://github.com/Xinyuan-LilyGO/T-HMI/issues/34
   // LILYGO T-HMI : latch power on if on battery
@@ -317,8 +355,6 @@ void setup() {
 
   Serial.begin(115200);  // 115200);
 
-  log_d("3 __COUNTER__ = %d", __COUNTER__);
-  log_d("4 __COUNTER__ = %d", __COUNTER__);
 
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
@@ -338,11 +374,6 @@ void setup() {
     // perimanSetPinBusExtraType(ACT_LED_PIN, "ACT_LED_PIN");
   #endif
 
-  while(!Serial && millis() < 2000)
-    delay(10);
-
-  log_d("5 __COUNTER__ = %d", __COUNTER__);
-  log_d("6 __COUNTER__ = %d", __COUNTER__);
   // Do some LED stuff
   #ifdef HAS_FLIPPER_LED
     flipper_led.RunSetup();
@@ -354,6 +385,14 @@ void setup() {
     led_obj.RunSetup();
   #endif
 
+  #ifdef HAS_ES8311_NOT
+    #ifdef I2C_SDA
+      ES8311_obj.begin(&Wire);
+    #else
+      ES8311_obj.begin();
+    #endif
+  #endif
+
     while(!Serial && millis() < 2000) {
       delay(500);
     }
@@ -363,6 +402,7 @@ void setup() {
     #endif
 
   init_system_time();
+  log_d("init_system_time done");
 
   // TFT_BL >= 0 does not if TFT_BL is -1
   // due to cpp's "unsigned promotion rules" where -1 == maxint
@@ -415,6 +455,9 @@ void setup() {
   #if defined(HAS_SCREEN) && defined(TFT_CS) && TFT_CS != -1
     digitalWrite(TFT_CS, HIGH);
   #endif
+  #ifdef HAS_CH32V003
+    log_d("CH32V003_obj.GetAudio=%d", CH32V003_obj.GetAudio());
+  #endif
 
   #if defined(HAS_SD) && !defined(HAS_C5_SD) && !defined(HAS_SDMMC)
   // #if defined(HAS_SD) && defined(SD_CS) && !defined(HAS_C5_SD)
@@ -431,7 +474,7 @@ void setup() {
   //while(!Serial)
   //  delay(10);
 
-  #ifdef CYD_SOUND
+  #ifdef HAS_SOUND
       sound_obj.RunSetup();
   #endif
 
@@ -444,6 +487,18 @@ void setup() {
             ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
   #endif
 
+  #ifdef GIT_BRANCH
+    Serial.print("GIT:  " GIT_BRANCH " ");
+    #ifdef GIT_REV
+      Serial.println(GIT_REV);
+    #else
+      Serial.println();
+    #endif
+  #endif
+
+  const esp_partition_t *run = esp_ota_get_running_partition();
+  Serial.printf("Running from %s @0x%lx\n", run->label, (unsigned long)run->address);
+
   #ifdef HAS_PSRAM
     if (!psramInit()) {
       Serial.println(F("PSRAM not available"));
@@ -454,7 +509,7 @@ void setup() {
   #ifdef HAS_SIMPLEX_DISPLAY
     #if defined(HAS_SD)
       // Do some SD stuff
-      if(!sd_obj.initSD())
+      if (!sd_obj.initSD())
         Serial.println(F("SD Card NOT Supported"));
     #endif
   #endif
@@ -487,7 +542,6 @@ void setup() {
     #endif
   #endif
 
-  log_d("7 _COUNTER__ = %d", __COUNTER__);
 
   // Init PWM brightness AFTER display init (so ledcAttach overrides TFT_eSPI's pinMode)
   #if defined(HAS_SCREEN) && !defined(HAS_MINI_SCREEN)
@@ -534,7 +588,6 @@ void setup() {
   #endif
 
 
-  log_d("8 __COUNTER__ = %d", __COUNTER__);
   Serial.println("wifi_scan_obj.RunSetup");
   wifi_scan_obj.RunSetup();
 
@@ -587,141 +640,29 @@ void setup() {
 
   cli_obj.RunSetup();
 
-  #ifdef HAS_PM
+  #if defined(HAS_PM) && defined(CONFIG_PM_ENABLE)
+
       log_d("HAS_PM");
 
-      // Inside app_main or initialization function:
-      esp_pm_config_t pm_config = {
-          .max_freq_mhz = 240,       // Max CPU frequency (e.g., 240, 160, or 80 MHz)
-          .min_freq_mhz = 40,        // Min CPU frequency (typically XTAL frequency or divided)
-          .light_sleep_enable = false // Enable/disable automatic light sleep
-      };
+      // DFS range comes from PM_MAX_FREQ / PM_MIN_FREQ (PowerMgmt.hpp).
+      // Light sleep stays off unless PM_LIGHT_SLEEP is defined.
+      esp_err_t pp = pm_set_default_freq();
 
 
-      uint8_t pp = esp_pm_configure(&pm_config);
-
-      ESP_ERROR_CHECK(pp);
-      log_d("esp_pm_configure = %d", pp);
-
-    /*
-      esp_pm_sleep_cbs_register_config_t pm_callbacks = {
-        .enter_cb = before_light_sleep,
-        .exit_cb = after_light_sleep,
-        .enter_cb_user_arg = NULL,
-        .exit_cb_user_arg = NULL,
-        .enter_cb_prior = 5,
-        .exit_cb_prior = 5
-      };
-
-    pp = esp_pm_light_sleep_register_cbs(&pm_callbacks);
-
-    ESP_ERROR_CHECK(pp);
-    log_d("esp_pm_light_sleep_register_cbs = %d", pp);
-    */
   #endif
 
   log_d("Setup Complete");
 
-  delay(250);
-
-  log_d("9 __COUNTER__ = %d", __COUNTER__);
-
-  #ifdef HAS_ES8311
-
-    CH32V003_obj.printState();
-
-    log_d("ES8311_obj.begin");
-    ES8311_obj.begin(&Wire);
-    log_d("ES8311_obj began fin");
-
-    if (ES8311_obj.supported) {
-        log_d("ES8311_obj.supported");
-        delay(500);
-
-        log_d("getVolume = %d", ES8311_obj.getVolume());
-        ES8311_obj.setVolume(200);
-        log_d("getVolume = %d", ES8311_obj.getVolume());
-
-        CH32V003_obj.SetAudio(1);
-
-        Serial.println(F("ES8311_obj Three Beeps"));
-        delay(500);
-        ES8311_obj.playBeep(1000,80);
-        delay(1000);
-        ES8311_obj.playBeep(1000,80);
-        delay(1000);
-        ES8311_obj.playBeep(1500,80);
-        delay(500);
-
-        ES8311_obj.setVolume(150);
-        log_d("getVolume = %d", ES8311_obj.getVolume());
-
-        Serial.println(F("ES8311_obj Three More Beeps"));
-        delay(500);
-        ES8311_obj.playBeep(1000,80);
-        delay(1000);
-        ES8311_obj.playBeep(1000,80);
-        delay(1000);
-        ES8311_obj.playBeep(1500,80);
-        delay(500);
-
-        CH32V003_obj.SetAudio(1);
-        ES8311_obj.setVolume(200);
-        log_d("getVolume = %d", ES8311_obj.getVolume());
-
-        Serial.println(F("ES8311_obj Five Clicks"));
-        delay(1000);
-        ES8311_obj.playClick();
-        delay(1000);
-        ES8311_obj.playClick();
-        delay(1000);
-        ES8311_obj.playClick();
-        delay(1000);
-        ES8311_obj.playClick();
-        delay(1000);
-        ES8311_obj.playClick();
-
-        CH32V003_obj.SetAudio(1);
-        ES8311_obj.setVolume(200);
-        log_d("getVolume = %d", ES8311_obj.getVolume());
-
-        Serial.println(F("ES8311_obj Five More Clicks 3"));
-        delay(1000);
-        ES8311_obj.playClick3();
-        delay(1000);
-        ES8311_obj.playClick3();
-        delay(1000);
-        ES8311_obj.playClick3();
-        delay(1000);
-        ES8311_obj.playClick3();
-        delay(1000);
-        ES8311_obj.playClick3();
-
-        CH32V003_obj.SetAudio(1);
-        ES8311_obj.setVolume(200);
-        log_d("getVolume = %d", ES8311_obj.getVolume());
-
-        Serial.println(F("ES8311_obj Five More Clicks 4"));
-        delay(1000);
-        ES8311_obj.playClick4();
-        delay(1000);
-        ES8311_obj.playClick4();
-        delay(1000);
-        ES8311_obj.playClick4();
-        delay(1000);
-        ES8311_obj.playClick4();
-        delay(1000);
-        ES8311_obj.playClick4();
-
-    } else {
-      Serial.println(F("ES8311_obj not suppoprted"));
-    }
-  #endif  // HAS_ES8311
 
   prevScanMode = wifi_scan_obj.currentScanMode;
 
-  log_d("10 __COUNTER__ = %d", __COUNTER__);
-    CH32V003_obj.printState();
+  
+  #ifdef HAS_CH32V003
+    #if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 2
+      CH32V003_obj.printState();
+    #endif
+  #endif
+  checkHeap("end setup");
 }
 
 
@@ -729,6 +670,7 @@ void loop()
 {
   currentTime = millis();
   bool mini = false;
+  checkHeap("top loop");
 
   #ifdef SCREEN_BUFFER
     #ifndef HAS_ILI9341
@@ -737,7 +679,7 @@ void loop()
   #endif
 
 
-  #if defined(ADJ_CPUFREQ) & defined(SLOW_IDLE) && CONFIG_IDF_TARGET_ESP32
+  #if defined(ADJ_CPUFREQ) & defined(SLOW_IDLE) && CONFIG_IDF_TARGET_ESP32 && defined(NEVER)
   if (wifi_scan_obj.currentScanMode != prevScanMode) {
     prevScanMode = wifi_scan_obj.currentScanMode;
     if (wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) {
@@ -767,10 +709,14 @@ void loop()
     #endif
   #endif
 
+  checkHeap("cli_obj.main");
   // Update all of our objects
   cli_obj.main(currentTime);
+  checkHeap("wifi_scan_obj.main");
   wifi_scan_obj.main(currentTime);
+  checkHeap("recon_obj.main");
   recon_obj.main(currentTime);
+
 
   #ifdef HAS_T_DONGLE_DISPLAY
     t_dongle_display.update(currentTime, wifi_scan_obj);
@@ -782,6 +728,7 @@ void loop()
     }
   #endif
 
+  checkHeap("Buffrer Save");
   // Save buffer to SD and/or serial
   buffer_obj.save();
 
@@ -789,6 +736,7 @@ void loop()
   //   battery_obj.main(currentTime);
   //#endif
 
+  checkHeap("menu_function_obj.main");
   // menu_function_obj.updateStatusBar();
   if ((wifi_scan_obj.currentScanMode != WIFI_PACKET_MONITOR) ||
       (mini)) {
@@ -796,6 +744,7 @@ void loop()
       menu_function_obj.main(currentTime);
     #endif
   }
+  checkHeap("led");
   #ifdef HAS_FLIPPER_LED
     flipper_led.main();
   #elif defined(XIAO_ESP32_S3)
@@ -811,7 +760,10 @@ void loop()
   #endif
 
   #ifdef HAS_SCREEN
-    delay(1);
+    if (wifi_scan_obj.currentScanMode == 0)  
+      delay(20);
+    else
+      delay(1);
   #else
     delay(50);
   #endif

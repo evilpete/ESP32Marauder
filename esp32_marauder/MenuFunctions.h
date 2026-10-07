@@ -16,7 +16,7 @@
 
 #ifdef HAS_SCREEN
 
-#include "BackLight.hpp"
+
 
 #define BATTERY_ANALOG_ON 0
 
@@ -28,25 +28,6 @@
 #include "settings.h"
 #include "MenuInputRepeat.h"
 
-// future use
-#define USE_TEMP false
-
-#ifdef CYD_SOUND
-  #include "Sound_CYD.h"
-  extern Sound_CYD sound_obj;
-#endif
-
-#if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
-  #include "shutdown.hpp"
-#endif
-
-
-#ifdef HAS_TEMP_SENSOR
-  #include "temp_sensor.hpp"
-  #define USE_TEMP TempSensor_obj.supported
-#else
-  #define USE_TEMP false
-#endif
 
 
 // If system time/date has been set
@@ -91,8 +72,6 @@ extern SDInterface sd_obj;
   #define USE_BATT false
 #endif
 extern Settings settings_obj;
-extern void shutdown();
-extern void DeepSleep(int8_t);
 
 // extern void shutdown();
 // extern void DeepSleep(int8_t);

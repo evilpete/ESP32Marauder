@@ -21,28 +21,41 @@
 
 inline temperature_sensor_handle_t temp_handle = NULL;
 inline float _celsius = 0.0;
+inline bool already_inited = false;
 
 inline bool init_sys_temp() {
 esp_err_t x = 0;
 
     log_d("init_sys_temp");
+    if ( already_inited ) {
+      log_d("cpu_temp_sensor: already running");
+      return true;
+    } 
 
-    // Configure sensor range (e.g., -10°C to 80°C)
+    log_d("cpu_temp_sensor: Init");
+
+    // Configure sensor range (e.g., -10<C2><B0>C to 80<C2><B0>C)
     temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
 
     // Install and enable the internal sensor
-    x = temperature_sensor_install(&temp_sensor_config, &temp_handle);
     x = ESP_ERROR_CHECK_WITHOUT_ABORT(temperature_sensor_install(&temp_sensor_config, &temp_handle));
 
-    log_d("temperature_sensor_install: x = %d", x);
-    if (x != ESP_OK) return false;
+    log_d("cpu_temp_sensor: x = %d", x);
+    // ESP_ERR_INVALID_STATE implies The framework already allocated it! 
+    // thus  can safely proceed knowing it is up and running.
+    if (x != ESP_OK && x != ESP_ERR_INVALID_STATE) return false;
 
     x = ESP_ERROR_CHECK_WITHOUT_ABORT(temperature_sensor_enable(temp_handle));
 
-    log_d("temperature_sensor_enable: x = %d", x);
+    log_d("cpu_temp_sensor: x = %d", x);
     log_d("x = %d", x);
-    return x == ESP_OK;
+    if (x == ESP_OK) {
+      already_inited = true;
+      return true;
+    }
+    return false;
   }
+
 
   inline float get_sys_temperature() { return _celsius; }
 
@@ -52,7 +65,7 @@ esp_err_t x = 0;
       // log_d("Chip Temperature: %f", _celsius);
       return _celsius;
     } else {
-      log_d("Error reading temperature");
+      log_d("Error reading cpu_temp_sensor");
 
       return 0.0;
     }

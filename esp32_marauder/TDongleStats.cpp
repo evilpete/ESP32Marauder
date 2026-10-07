@@ -1,3 +1,7 @@
+#include "configs.h"
+
+#ifdef HAS_T_DONGLE_DISPLAY
+
 #include "TDongleStats.h"
 
 const char* TDongleStats::modeLabel(uint8_t mode) {
@@ -14,3 +18,4 @@ const char* TDongleStats::modeLabel(uint8_t mode) {
     default: return "ACTIVE";
   }
 }
+#endif

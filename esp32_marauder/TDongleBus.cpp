@@ -1,3 +1,6 @@
+#include "configs.h"
+
+#ifdef HAS_T_DONGLE_DISPLAY
 #include "TDongleBus.h"
 
 #include <Arduino.h>
@@ -9,3 +12,5 @@ void deselectTDongleSharedSpi(uint8_t tftCsPin, uint8_t sdCsPin) {
   pinMode(sdCsPin, OUTPUT);
   digitalWrite(sdCsPin, HIGH);
 }
+
+#endif
