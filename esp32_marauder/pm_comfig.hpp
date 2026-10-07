@@ -19,66 +19,62 @@
 #include "configs.h"
 #include "esp_idf_version.h"
 
-// esp_pm_config_t is the IDF 5.x name; IDF 4.x used per-target structs.
-#if defined(HAS_PM) && defined(CONFIG_PM_ENABLE) && ESP_IDF_VERSION_MAJOR >= 5
-  #define MARAUDER_USE_PM 1
-  #include "esp_pm.h"
+#if ( defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1) || defined(DEVELOPER)
+  #include "debug_func.hpp"
 #endif
 
-// Defaults: min 160 keeps APB at 80MHz so SPI (TFT / SD) clock dividers stay valid.
-#ifndef PM_MAX_FREQ
-  #define PM_MAX_FREQ 240
-#endif
-#ifndef PM_MIN_FREQ
-  #define PM_MIN_FREQ 160
-#endif
-#if PM_MIN_FREQ < 80
-  #error "PM_MIN_FREQ below 80MHz drops APB below 80MHz and breaks SPI clocks"
-#endif
 
-// Set the CPU clock range.  With PM, DFS scales between min_mhz and max_mhz
-// (pass min == max to pin the clock).  Without PM, max_mhz is applied directly.
-static inline esp_err_t pm_set_cpu_freq(uint32_t max_mhz, uint32_t min_mhz = 0) {
-  if (min_mhz == 0 || min_mhz > max_mhz)
-    min_mhz = max_mhz;
+#include "esp_pm.h"
 
-#ifdef MARAUDER_USE_PM
-  esp_pm_config_t pm_config = {
-    .max_freq_mhz = (int)max_mhz,
-    .min_freq_mhz = (int)min_mhz,
-  #ifdef PM_LIGHT_SLEEP
-    .light_sleep_enable = true
-  #else
-    .light_sleep_enable = false
+  #if ESP_IDF_VERSION_MAJOR >= 5  // ESP-IDF 5.x
+    #define PM_CONFIG_TYPE esp_pm_config_t
+  #elif defined(CONFIG_IDF_TARGET_ESP32S3) // ESP-IDF 4.4 + ESP32-S3
+    #define PM_CONFIG_TYPE esp_pm_config_esp32s3_t
+  #elif defined(CONFIG_IDF_TARGET_ESP32S2) // ESP-IDF 4.4 + ESP32-S2
+    #define PM_CONFIG_TYPE esp_pm_config_esp32s2_t
+  #elif defined(CONFIG_IDF_TARGET_ESP32C3) // ESP-IDF 4.4 + ESP32-C3
+    #define PM_CONFIG_TYPE esp_pm_config_esp32c3_t
+  #elif defined(CONFIG_IDF_TARGET_ESP32C6) // ESP-IDF 4.4 + ESP32-C6
+    #define PM_CONFIG_TYPE esp_pm_config_esp32c6_t
+  #elif defined(CONFIG_IDF_TARGET_ESP32) // ESP-IDF 4.4 + original ESP32
+    #define PM_CONFIG_TYPE esp_pm_config_esp32_t
   #endif
-  };
-  esp_err_t err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_pm_configure(&pm_config));
-  log_d("esp_pm_configure(%lu/%lu) = %s", max_mhz, min_mhz, esp_err_to_name(err));
-  return err;
-#else
-  return setCpuFrequencyMhz(max_mhz) ? ESP_OK : ESP_ERR_INVALID_ARG;
-#endif
-}
 
-// Apply the board's default DFS range (PM_MAX_FREQ / PM_MIN_FREQ).
-static inline esp_err_t pm_set_default_freq() {
-  return pm_set_cpu_freq(PM_MAX_FREQ, PM_MIN_FREQ);
-}
+  #ifndef PM_MAX_FREQ
+    #define PM_MAX_FREQ 240
+  #endif
+  #ifndef PM_MIN_FREQ
+    #define PM_MIN_FREQ 160
+  #endif
+  #if PM_MIN_FREQ < 80
+    #define PM_MIN_FREQ 80
+  #endif
 
-// Print PM lock / frequency-mode statistics to the serial console.
-static inline void pm_dump_locks() {
-#if defined(MARAUDER_USE_PM) && defined(CONFIG_PM_PROFILING)
-  fflush(stdout);
-  esp_pm_dump_locks(stdout);
-  fflush(stdout);
-#elif defined(MARAUDER_USE_PM)
-  Serial.println(F("PM lock dump needs CONFIG_PM_PROFILING=y in the Arduino libs"));
-#else
-  Serial.println(F("Power management not enabled in this build"));
-#endif
-  Serial.print(F("CpuFrequency = "));
-  Serial.print(getCpuFrequencyMhz());
-  Serial.println(F(" Mhz"));
+inline esp_err_t enable_pm() {
+
+#ifdef CONFIG_PM_ENABLE
+
+  #ifdef USE_PM
+    PM_CONFIG_TYPE pm_config = {
+      .max_freq_mhz = PM_MAX_FREQ
+      .min_freq_mhz = PM_MIN_FREQ,
+    #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
+      .light_sleep_enable = true
+    #else
+      .light_sleep_enable = false
+    #endif
+    };
+
+    log_d("esp_pm_configure max=%d min=%d sleep_enable=%s", pm_config.max_freq_mhz, pm_config.min_freq_mhz,
+        pm_config.light_sleep_enable ? "true" : "false");
+
+    esp_err_t err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_pm_configure(&pm_config));
+
+
+    return err;
+  #endif  // USE_PM
+#endif    //  CONFIG_PM_ENABLE
+
 }
 
 #endif // PowerMgmt_hpp

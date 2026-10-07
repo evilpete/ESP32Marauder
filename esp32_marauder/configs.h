@@ -884,14 +884,9 @@
       #define PWR_EN_PIN  10    // power to peripherals
       #define PWR_ON_PIN  14    // Batt power to board
       #define POWER_HOLD_PIN PWR_ON_PIN
+      #define HAS_PM
     #endif
 
-  #endif
-
-  #if defined(MARAUDER_CYD_HMI)
-    #define PWR_EN_PIN  10    // power to peripherals
-    #define PWR_ON_PIN  14    // Batt power to board
-    #define POWER_HOLD_PIN PWR_ON_PIN
   #endif
 
   //// END POWER MANAGEMENT

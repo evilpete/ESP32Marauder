@@ -20,13 +20,16 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 
 
-#ifdef HAS_PM
+#if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_DFS_INIT_AUTO))
   #include "esp_log.h"
-  #include "esp_pm.h"
+  #include "pm_comfig.hpp"
 #endif
-#include "PowerMgmt.hpp"
 
-// #include "ESP32_PinDebug.h"
+#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
+
+  // o#include "ESP32_PinDebug.h"    // prints pin configuration
+  #include "debug_func.hpp"
+#endif
 
 #include <stdio.h>
 
@@ -265,57 +268,6 @@ void print_reset_reason() {
   Serial.println(resetReasonName());
 }
 
-#if defined(I2C_SDA) && defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
-
-  void i2c_probe() {
-    Serial.println("I2c Probe");
-    byte count = 0;
-    for (byte address = 1; address < 127; address++) {
-      Wire.beginTransmission(address); // Start transmission to address
-      byte error = Wire.endTransmission(); // End and get status
-      if (error == 0) {
-        Serial.print("I2C device found at address 0x");
-        if (address < 16) Serial.print("0");
-        Serial.print(address, HEX);
-        count++;
-
-	if (address == 0x13) { Serial.println(" PCF85063A (alt)"); } 
-	else if (address == 0x18) { Serial.println(" ES8311"); }
-	else if (address == 0x20) { Serial.println(" GPS"); } 
-	else if (address == 0x24) { Serial.println(" CH32V003"); } 
-	else if (address == 0x28) { Serial.println(" MFRC522 RFID (alt)"); }
-	else if (address == 0x2D) { Serial.println(" MFRC522 RFID"); }
-	else if (address == 0x36) { Serial.println(" MAX17048 / Rotary Encoder"); } 
-	else if (address == 0x37) { Serial.println(" PCT2075"); } 
-	else if (address == 0x38) { Serial.println(" AHT20"); } 
-	else if (address == 0x3D) { Serial.println(" Rotary Encoder (alt)"); } 
-	else if (address == 0x40) { Serial.println(" Si7021 / MFRC522 RFID"); } 
-	else if (address == 0x48) { Serial.println(" PN532 RFID"); }
-	else if (address == 0x51) { Serial.println(" PCF85063A"); } 
-	else if (address == 0x53) { Serial.println(" MFRC522 RFID"); }
-	else if (address == 0x57) { Serial.println(" MFRC522 RFID"); }
-	else if (address == 0x58) { Serial.println(" CST3530"); } 
-	else if (address == 0x68) { Serial.println(" DS3231"); } 
-	else if (address == 0x6A) { Serial.println(" PCF85063A"); } 
-	else if (address == 0x6B) { Serial.println(" QMI8658"); } 
-	else if (address == 0x70) { Serial.println(" SHTC3"); } 
-	else if (address == 0x75) { Serial.println(" IP5306"); } 
-	else if (address == 0x76) { Serial.println(" BMP280"); } 
-	else if (address == 0x7E) { Serial.println(" reserved address"); } 
-	else Serial.println();
-
-      } else if (error == 4) {
-        Serial.print("Unknown error at address 0x");
-        if (address < 16) Serial.print("0");
-        Serial.println(address, HEX);
-      }
-    }
-
-    Serial.print("Done. Found ");
-    Serial.print(count);
-    Serial.println(" devices.");
-  }
-#endif // CORE_DEBUG_LEVEL)
 
 
 uint8_t prevScanMode = 0;
@@ -355,6 +307,11 @@ void setup() {
 
   Serial.begin(115200);  // 115200);
 
+  #if (defined(HAS_PM) && defined(CONFIG_PM_ENABLE)) or defined(CONFIG_PM_DFS_INIT_AUTO)
+      // if CONFIG_PM_DFS_INIT_AUTO is set then min freq is 80 and we want 160
+      // esp_err_t pp 
+      enable_pm();
+  #endif
 
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
@@ -374,16 +331,6 @@ void setup() {
     // perimanSetPinBusExtraType(ACT_LED_PIN, "ACT_LED_PIN");
   #endif
 
-  // Do some LED stuff
-  #ifdef HAS_FLIPPER_LED
-    flipper_led.RunSetup();
-  #elif defined(XIAO_ESP32_S3)
-    xiao_led.RunSetup();
-  #elif defined(MARAUDER_M5STICKC)
-    stickc_led.RunSetup();
-  #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
-    led_obj.RunSetup();
-  #endif
 
   #ifdef HAS_ES8311_NOT
     #ifdef I2C_SDA
@@ -577,6 +524,18 @@ void setup() {
     settings_obj.createDefaultSettings(SPIFFS);
   }
 
+  // Do some LED stuff
+  // has to follow settings
+  #ifdef HAS_FLIPPER_LED
+    flipper_led.RunSetup();
+  #elif defined(XIAO_ESP32_S3)
+    xiao_led.RunSetup();
+  #elif defined(MARAUDER_M5STICKC)
+    stickc_led.RunSetup();
+  #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
+    led_obj.RunSetup();
+  #endif
+
   buffer_obj = Buffer();
 
   #ifndef HAS_SIMPLEX_DISPLAY
@@ -640,16 +599,6 @@ void setup() {
 
   cli_obj.RunSetup();
 
-  #if defined(HAS_PM) && defined(CONFIG_PM_ENABLE)
-
-      log_d("HAS_PM");
-
-      // DFS range comes from PM_MAX_FREQ / PM_MIN_FREQ (PowerMgmt.hpp).
-      // Light sleep stays off unless PM_LIGHT_SLEEP is defined.
-      esp_err_t pp = pm_set_default_freq();
-
-
-  #endif
 
   log_d("Setup Complete");
 
@@ -760,9 +709,10 @@ void loop()
   #endif
 
   #ifdef HAS_SCREEN
-    if (wifi_scan_obj.currentScanMode == 0)  
-      delay(20);
-    else
+    if (wifi_scan_obj.currentScanMode == 0 && (currentTime - menu_function_obj.last_touch) > 5000) {
+      delay(10);
+      // Serial.print("."); Serial.flush();
+    } else
       delay(1);
   #else
     delay(50);

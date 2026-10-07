@@ -5095,6 +5095,7 @@ static void p_info(const char *text, bool newline = true) {
   #endif
   if (newline) Serial.println(text); else Serial.print(text);
 }
+
 static inline void p_info(const String &s, bool newline = true) { p_info(s.c_str(), newline); }
 
 
@@ -5170,7 +5171,7 @@ void WiFiScan::RunInfo() {
   p_info(buffer);
 
   #ifdef HAS_PSRAM
-    snprintf(buffer, sizeof(buffer), "PSRAM Size:  %luMB", ESP.getPsramSize() / (1024 * 1024));
+    snprintf(buffer, sizeof(buffer), "PSRAM Size:  %dMB", (int)(ESP.getPsramSize() / (1024 * 1024)));
     p_info(buffer);
   #else
     p_info("PSRAM Size: 0");
@@ -5190,8 +5191,18 @@ void WiFiScan::RunInfo() {
   #if defined(HAS_SD)
     if (sd_obj.supported) {
       p_info(text_table4[28]);
-      snprintf(buffer, sizeof(buffer), "%s %lluMB", text_table4[29], sd_obj.card_sz);
+
+      snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1024));
       p_info(buffer);
+
+      p_info(text_table4[28]);
+      snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1048576));
+      p_info(buffer);
+
+
+      Serial.print("sd_obj.cardSizeMB: ");
+      Serial.println(sd_obj.cardSizeMB);
+
     } else {
       p_info(text_table4[30]);
       p_info(text_table4[31]);

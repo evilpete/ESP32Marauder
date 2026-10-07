@@ -4,7 +4,7 @@
 #define CommandLine_h
 
 #include "configs.h"
-#include "PowerMgmt.hpp"
+#include "pm_comfig.hpp"
 
 #ifdef HAS_SCREEN
   #include "MenuFunctions.h"
@@ -90,6 +90,7 @@ const char PROGMEM SETDATE_CMD[] = "setdate";
 const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
 const char PROGMEM PROBE_I2C[] = "i2c";
 const char PROGMEM BLEEP[] = "bleep";
+const char PROGMEM PM_DUMP_CMD[] = "psdump";
 
 
 #ifdef HAS_SD
@@ -196,6 +197,7 @@ const char PROGMEM HELP_SETDATE[] = "setdate YY-MM-DD HH:MM:SS";
 const char PROGMEM HELP_DATE[] = "print system time/date";
 const char PROGMEM HELP_PROBE_I2C[] = "print i2c probe";
 const char PROGMEM HELP_BLEEP[] = "bleep";
+const char PROGMEM HELP_PM_DUMP[] = "dump PM state";
 
 #ifdef HAS_SD
   const char PROGMEM HELP_RESCANSD_CMD[] = "rescansd : rescan for SD card";

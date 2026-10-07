@@ -49,7 +49,7 @@ class CYD_Sound {
         // No volume control on a piezo
       void setVolume(uint8_t vol) { (void)vol; }
       int32_t getVolume() { return -1; }
-      void mute(bool on) { log_d("mute");  if (on) noTone(SOUND_PIN); }
+      void mute(bool on) { if (on) noTone(SOUND_PIN); }
 
       void beep(uint32_t frequencyHz = 1000, uint32_t durationMs = 80) {
           log_d("Beep");
@@ -58,20 +58,30 @@ class CYD_Sound {
 
         // UI / menu click
       void click() {   // Arg not used
-          log_d("click");
-          tone(SOUND_PIN, 400, 8);
+          // log_d("click");
+          // tone(SOUND_PIN, 400, 8);
+          tone(SOUND_PIN, 150, 10);
       }
 
         // Geiger tick, low (APs)
       void tick(bool x = 1) { // Arg not used
-          log_d("tick");
-            Tone(SOUND_PIN,150, 20);
-            Tone(SOUND_PIN,180, 10);
+          // log_d("tick");
+             tone(SOUND_PIN, 250, 10);
+            // Tone(SOUND_PIN,150, 20);
+            // Tone(SOUND_PIN,180, 10);
+      }
+
+        // Geiger tick, low (APs)
+      void tit(bool x = 1) { // Arg not used
+          // log_d("tit");
+             tone(SOUND_PIN, 400, 8);
+            // Tone(SOUND_PIN,150, 20);
+            // Tone(SOUND_PIN,180, 10);
       }
 
         // Geiger tick, high (stations)
       void click2(uint16_t mod1 = 2, uint16_t mod2 = 4) {
-          log_d("click2");
+          // log_d("click2");
           if (mod1 < 50) mod2 *= 100;
           if (mod2 < 50) mod1 *= 100;
           tone(SOUND_PIN, mod1, 10);

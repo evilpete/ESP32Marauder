@@ -227,6 +227,18 @@ class ES8311 {
         write(buf, sizeof(buf), CLICK_TIMEOUT);
     }
 
+    void tit() {
+        if (!supported) return;
+        log_d("click vol=%d", getVolume());
+        int16_t buf[150] = {0};
+          // Quick hardware click impulse
+        for (size_t i = 0; i < 20; i++) {
+            buf[i] = (i % 2 == 0) ? 22000 : -22000;
+        }
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
+        write(buf, sizeof(buf), CLICK_TIMEOUT);
+    }
+
     void click() {
         if (!supported) return;
         log_d("click vol=%d", getVolume());

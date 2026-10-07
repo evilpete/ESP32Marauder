@@ -87,7 +87,7 @@ enum timestampOpt {
   TIMESTAMP_DATE  ///< `YYYY-MM-DD`
 };
 
-class TimeSpan;
+inline class TimeSpan;
 
 /*!
  * @brief A date and time, API compatible with RTClib's DateTime.
