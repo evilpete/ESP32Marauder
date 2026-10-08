@@ -69,8 +69,6 @@
 #else
 
   inline void TempSensor::RunSetup(TwoWire *wireInstance) {
-    log_d("TempSensor::RunSetup *wire");
-
    if ( supported ) {
      log_d("TempSensor already started");
    }

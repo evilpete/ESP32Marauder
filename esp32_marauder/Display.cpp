@@ -10,11 +10,19 @@
 // HAS_CAP_TOUCH
 #ifdef  HAS_FT6336
   #include "ft6336.h"
+<<<<<<< HEAD
 #elif defined(HAS_CST3530)
   #include "CST3530.hpp"
 #elif defined(HAS_CST820)
   #include "CST820.hpp"
 #elif defined(HAS_CST820)
+=======
+#elif defined( HAS_CST3530
+  #include "CST3530.hpp"
+#elif defined( HAS_CST820
+  #include "CST820.hpp"
+#elif defined( HAS_CST820
+>>>>>>> T-HMI-WS_C5
    #include "CST820.hpp"
 #endif
 
@@ -115,6 +123,15 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
          *x = CST3530_obj.data->x;
          *y = CST3530_obj.data->y;
 
+<<<<<<< HEAD
+=======
+         // CST3530Point p = touch.getPoint(i);
+         // *x = p.x;
+         // *y = p.y;
+
+         // CST3530_obj.getTouch(x, y);
+         // if ( *x || *y ) { log_d("x=%d y=%d", *x, *y); }
+>>>>>>> T-HMI-WS_C5
          return 1;
        }
      }
@@ -248,7 +265,7 @@ bool Display::isTouchHeld(uint16_t threshold) {
 void Display::init() {
   tft.init();
 
-  #if defined(HAS_DUAL_BAND) && !defined(MARAUDER_MINI_V3)
+  #if defined(HAS_DUAL_BAND) && !defined(MARAUDER_MINI_V3) && !defined(MARAUDER_POOM)
     digitalWrite(TFT_BL, HIGH);
   #endif
 }
@@ -368,7 +385,18 @@ void Display::RunSetup() {
 void Display::drawBootSplash() {
   const int16_t width = tft.width();
   const int16_t height = tft.height();
-  #ifdef MARAUDER_CYD_3_5_INCH
+  #ifdef MARAUDER_POOM
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextWrap(false);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawCentreString("ESP32 Marauder", width / 2, 10, 1);
+    tft.drawCentreString(version_number, width / 2, 27, 1);
+    tft.drawCentreString("POOM", width / 2, 44, 1);
+    tft.display(true);
+    return;
+  #endif
+  #if defined(MARAUDER_CYD_3_5_INCH) || defined(MARAUDER_PANCAKE)
     constexpr bool half_scale_logo = true;
   #else
     constexpr bool half_scale_logo = false;
@@ -512,6 +540,9 @@ void Display::tftDrawYScaleButtons(byte y_scale)
 }
 
 void Display::tftDrawChannelScaleButtons(int set_channel, bool lnd_an) {
+  #ifdef MARAUDER_POOM
+    return;
+  #endif
   #ifdef MARAUDER_PANCAKE
     TOP_FIXED_AREA_2 = lnd_an ? 48 : 64;
   #endif
@@ -572,6 +603,9 @@ void Display::tftDrawChannelScaleButtons(int set_channel, bool lnd_an) {
 }
 
 void Display::tftDrawChanHopButton(bool lnd_an, bool en) {
+  #ifdef MARAUDER_POOM
+    return;
+  #endif
   #ifdef MARAUDER_PANCAKE
     TOP_FIXED_AREA_2 = lnd_an ? 48 : 64;
   #endif
@@ -633,6 +667,9 @@ void Display::tftDrawChanHopButton(bool lnd_an, bool en) {
 }
 
 void Display::tftDrawExitScaleButtons(bool lnd_an) {
+  #ifdef MARAUDER_POOM
+    return;
+  #endif
   #ifdef MARAUDER_PANCAKE
     TOP_FIXED_AREA_2 = lnd_an ? 48 : 64;
   #endif
@@ -760,6 +797,14 @@ void Display::processAndPrintString(TFT_eSPI& tft, const String& originalString)
   tft.print(line);
 }
 
+bool Display::queueLine(const String& line) {
+  if (display_buffer == nullptr) return false;
+  if (!display_queue_pressure.allow(display_buffer->size())) return false;
+  if (!marauder::RuntimeMemoryGuard::instance().allow(line.length() + 48))
+    return false;
+  return display_buffer->add(line);
+}
+
 void Display::displayBuffer(bool do_clear)
 {
   if (this->display_buffer->size() > 0)
@@ -798,7 +843,9 @@ void Display::displayBuffer(bool do_clear)
         screen_buffer->add(display_buffer->shift());
 
         for (int i = 0; i < this->screen_buffer->size(); i++) {
-		  #ifdef MARAUDER_PANCAKE
+		  #ifdef MARAUDER_POOM
+			tft.setCursor(xPos, STATUS_BAR_WIDTH + (i * TEXT_HEIGHT));
+		  #elif defined(MARAUDER_PANCAKE)
 			tft.setCursor(xPos, (i * TEXT_HEIGHT) + TOP_FIXED_AREA_2);
 		  #else
 			#ifdef HAS_TOUCH

@@ -52,7 +52,8 @@ jobs:
           - { name: "T-HMI ESP32-S3",                flag: "MARAUDER_CYD_HMI",         fbqn: "esp32:esp32:esp32s3:CDCOnBoot=cdc,FlashSize=16M,PartitionScheme=huge_app,PSRAM=enabled",        file_name: "t_hmi_s3",                tft: true,  tft_file: "User_Setup_LilyGo_T_HMI.h",         build_dir: "esp32c3",                     addr: "0x1000",   idf_ver: "3.3.4",    nimble_ver: "2.3.8",   esp_async: "bigbrodude6119/ESPAsyncWebServer",    esp_async_ver: "master" }
           - { name: "Waveshare ESP32-C5-Touch",      flag: "MARAUDER_WS_C5_28",        fbqn: "esp32:esp32:esp32c5:CDCOnBoot=cdc,FlashMode=qio,FlashSize=16M,PartitionScheme=huge_app,PSRAM=enabled", file_name: "ws_c5_touch",      tft: true,  tft_file: "User_Setup_marauder_ws_c5_28.h",     build_dir: "esp32c5",                    addr: "0x1000",   idf_ver: "3.3.4",    nimble_ver: "2.3.8",   esp_async: "bigbrodude6119/ESPAsyncWebServer",    esp_async_ver: "master", tft_repo: "H4W9/TFT_eSPI", tft_ref: "ESP32-C5" }
           - { name: "Marauder Pancake",              flag: "MARAUDER_PANCAKE",         fbqn: "esp32:esp32:esp32c5:FlashSize=8M,PartitionScheme=default_8MB,PSRAM=enabled",                    file_name: "pancake",                 tft: true,  tft_file: "User_Setup_marauder_pancake.h",      build_dir: "esp32c5",                    addr: "0x2000",   idf_ver: "3.3.4",    nimble_ver: "2.3.8",   esp_async: "bigbrodude6119/ESPAsyncWebServer",    esp_async_ver: "master", tft_repo: "H4W9/TFT_eSPI", tft_ref: "ESP32-C5" }
-
+          - { name: "POOM",                           flag: "MARAUDER_POOM",             fbqn: "esp32:esp32:esp32c5:FlashSize=8M,PartitionScheme=default_8MB,PSRAM=enabled",                    file_name: "poom",                    tft: false, tft_file: "",                                   build_dir: "esp32c5",                    addr: "0x2000",   idf_ver: "3.3.4",    nimble_ver: "2.3.8",   esp_async: "bigbrodude6119/ESPAsyncWebServer",    esp_async_ver: "master" }
+          
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -273,10 +274,16 @@ jobs:
           
       - name: Configure TFT_eSPI (if needed)
         run: |
-          pwd
           if [[ ${{ matrix.board.tft }} == true ]]; then
-            find /home/runner/ -name "*TFT_eSPI*"
-            sed -i 's/^\/\/#include <${{ matrix.board.tft_file }}>/#include <${{ matrix.board.tft_file }}>/' /home/runner/work/ESP32Marauder/ESP32Marauder/CustomTFT_eSPI/User_Setup_Select.h
+            setup_file="$GITHUB_WORKSPACE/CustomTFT_eSPI/User_Setup_Select.h"
+            setup_header="$GITHUB_WORKSPACE/CustomTFT_eSPI/${{ matrix.board.tft_file }}"
+            test -f "$setup_file"
+            test -f "$setup_header"
+            sed -i 's|^//#include <${{ matrix.board.tft_file }}>|#include <${{ matrix.board.tft_file }}>|' "$setup_file"
+            grep -Fqx '#include <${{ matrix.board.tft_file }}>' "$setup_file" || {
+              echo "::error::Failed to select ${{ matrix.board.tft_file }} in TFT_eSPI"
+              exit 1
+            }
           fi
 
       - name: Configure LilyGo T-Dongle C5 partition table
@@ -334,6 +341,9 @@ jobs:
         run: |
           VERSION_DOT=$(grep '#define MARAUDER_VERSION' ./esp32_marauder/configs.h | sed -E 's/.*"v([^"]+)"/v\1/')
           echo "version_dot=$VERSION_DOT" >> $GITHUB_ENV
+
+      - name: Generate release documentation
+        run: python3 tools/release_notes.py --channel stable --output release-notes.md
           
       - name: Create Release
         id: create_release
@@ -346,6 +356,7 @@ jobs:
           draft: true
           files: |
             esp32_marauder_v*.bin
+<<<<<<< HEAD
           body: |
             [justcallmekokollc.com](https://justcallmekokollc.com)
 
@@ -400,6 +411,9 @@ jobs:
             | AWOK V2/V3 screen (white usb) | `_v6_1.bin` |
             | AWOK V2 flipper (orange usb) | `_flipper.bin` |
             | AWOK V3 flipper (orange usb) | `_marauder_dev_board_pro.bin` |
+=======
+          body_path: release-notes.md
+>>>>>>> T-HMI-WS_C5
 
       - name: Dispatch private C5 builds
         env:

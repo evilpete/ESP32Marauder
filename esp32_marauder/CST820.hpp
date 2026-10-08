@@ -75,8 +75,12 @@ public:
                        int8_t _int = -1, uint32_t freq = 0) {
         TwoWire *mywire;
 
+<<<<<<< HEAD
         log_d("CST820::begin");
 
+=======
+#ifdef I2C_SDA
+>>>>>>> T-HMI-WS_C5
         if (_sda != -1 && _sda != I2C_SDA) {
             mywire = &Wire1;
             log_d("CST820::begin using Wire1");

@@ -69,11 +69,20 @@ class InstallerManifestTests(unittest.TestCase):
         self.assertIn('marauder-installer-assets.zip', installer_workflow)
         self.assertNotIn('release-assets/*.bin\n', installer_workflow)
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.assertEqual(len(registry["targets"]), 29)
         self.assertEqual(len(boards), 26)
 =======
         self.assertEqual(len(registry["targets"]), 28)
         self.assertEqual(len(boards), 25)
+>>>>>>> T-HMI-WS_C5
+=======
+        self.assertEqual(len(registry["targets"]), 28)
+        self.assertEqual(len(boards), 25)
+=======
+        self.assertEqual(len(registry["targets"]), 27)
+        self.assertEqual(len(boards), 24)
+>>>>>>> origin/master
 >>>>>>> T-HMI-WS_C5
         self.assertEqual(
             private_flags,
@@ -197,9 +206,16 @@ class InstallerManifestTests(unittest.TestCase):
             self.assertEqual(release["channel"], "stable")
             self.assertEqual(release["sourceCommit"], "a" * 40)
 <<<<<<< HEAD
+<<<<<<< HEAD
             self.assertEqual(len(release["targets"]), 29)
 =======
             self.assertEqual(len(release["targets"]), 28)
+>>>>>>> T-HMI-WS_C5
+=======
+            self.assertEqual(len(release["targets"]), 28)
+=======
+            self.assertEqual(len(release["targets"]), 27)
+>>>>>>> origin/master
 >>>>>>> T-HMI-WS_C5
             self.assertIn("/" + "a" * 40 + "/", release["$schema"])
 

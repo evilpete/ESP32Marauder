@@ -60,6 +60,9 @@ extern int8_t wifi_power;
   #if (C_BTN >= 0)
     extern Switches c_btn;
   #endif
+  #ifdef MARAUDER_POOM
+    extern Switches b_btn;
+  #endif
 #endif
 
 extern WiFiScan wifi_scan_obj;
@@ -167,6 +170,7 @@ class MenuFunctions
       BLE_TARGETS,
       FINDMY_TARGETS,
       FLIPPER_TARGETS,
+      IBEACON_TARGETS,
       META_TARGETS,
       FLOCK_TARGETS,
     };
@@ -280,6 +284,9 @@ class MenuFunctions
     // Bluetooth menu stuff
     Menu bluetoothSnifferMenu;
     Menu bluetoothAttackMenu;
+    Menu iBeaconMenu;
+    Menu iBeaconInfoMenu;
+    Menu remoteIdMenu;
 
     // Settings things menus
     Menu generateSSIDsMenu;

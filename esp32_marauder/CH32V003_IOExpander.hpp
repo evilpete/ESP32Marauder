@@ -110,19 +110,31 @@ public:
     }
 
 
+<<<<<<< HEAD
     inline int GetAudio() {
+=======
+    inline int GetAudio(uint8_t level) {
+        log_d("GetAudio");
+>>>>>>> T-HMI-WS_C5
         return this->digitalRead(CH32V003_PIN_3);
     }
 
     inline void SetAudio(uint8_t level) {
         log_d("SetAudio = %d", level);
+<<<<<<< HEAD
         this->pinMode(CH32V003_PIN_3, CH32V003_MODE_OUTPUT);
+=======
+        this->pinMode(CH32V003_PIN_3, OUTPUT);
+>>>>>>> T-HMI-WS_C5
         if (level == HIGH) {
             this->digitalWrite(CH32V003_PIN_3, HIGH);
         } else {
             this->digitalWrite(CH32V003_PIN_3, LOW);
         }
+<<<<<<< HEAD
         // log_d("Set/GetAudio = %d", this->digitalRead(CH32V003_PIN_3));
+=======
+>>>>>>> T-HMI-WS_C5
     }
 
     inline void lcdReset() {
@@ -248,9 +260,11 @@ public:
         return true;
     }
 
+#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL >2
     // Dump all registers to Serial.
     inline void printState() {
         Serial.println("-- CH32V003 IO Expander --");
+<<<<<<< HEAD
         Serial.printf("  DIR (0x%02X): 0x%02X %08b %d (1=out 0=in per bit)\n",
                       CH32V003_REG_DIR, _dirReg, _dirReg, _outReg);
         Serial.printf("  OUT (0x%02X): 0x%02X %08b %d\n", CH32V003_REG_OUT, _outReg, _outReg, _outReg);
@@ -258,6 +272,14 @@ public:
         int iiout = (iout >= 0 ? (uint8_t)iout  : 0xFF);
         Serial.printf(" IOUT (0x%02X): 0x%02X %08b %d\n", CH32V003_REG_OUT, iiout, (uint8_t)iout, iout);
                       //iout  >= 0 ? (uint8_t)iout  : 0xFF);
+=======
+        Serial.printf("  DIR (0x%02X): 0x%02X %06b  (1=in 0=out per bit)\n",
+                      CH32V003_REG_DIR, _dirReg, _dirReg);
+        Serial.printf("  OUT (0x%02X): 0x%02X\n", CH32V003_REG_OUT, _outReg);
+        int iout = readReg(CH32V003_REG_OUT);
+        Serial.printf(" IOUT (0x%02X): 0x%02X\n", CH32V003_REG_OUT,
+                      iout  >= 0 ? (uint8_t)iout  : 0xFF);
+>>>>>>> T-HMI-WS_C5
         int in  = readReg(CH32V003_REG_IN);
         int iin  = (in  >= 0 ? (uint8_t)in  : 0xFF);
         Serial.printf("  IN  (0x%02X): 0x%02X %08b %d \n", CH32V003_REG_IN, iin, (uint8_t)in, in);
@@ -274,6 +296,7 @@ public:
                       intr >= 0 ? (uint8_t)intr : 0xFF);
         Serial.println("--------------------------");
     }
+#endif 
 
 private:
     TwoWire &_wire;

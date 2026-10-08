@@ -14,8 +14,18 @@
 #include "SPIFFS.h"
 #include "Assets.h"
 #include "BootSplash.h"
+<<<<<<< HEAD
 
 #include <TFT_eSPI.h>
+=======
+#include "MemoryGuard.h"
+
+#ifdef MARAUDER_POOM
+  #include "PoomDisplay.h"
+#else
+  #include <TFT_eSPI.h>
+#endif
+>>>>>>> T-HMI-WS_C5
 
 // Reject board/display configuration mismatches at compile time. A mismatched
 // TFT setup can boot normally while driving the wrong controller and pins.
@@ -37,6 +47,7 @@
 
 
 
+<<<<<<< HEAD
 // we don't need the constructors called for ever include "Display.h
 
 //#ifdef HAS_CST820  // HAS_CAP_TOUCH
@@ -55,6 +66,28 @@
 //   #include <CST820.hpp>
 //   extern CST820 CST820_touch;
 // #endif
+=======
+/*
+// we don't need the constructors called for ever include "Display.h
+
+#ifdef HAS_CST820  // HAS_CAP_TOUCH
+   #include "CST820.hpp"
+  extern CST820 CST820_touch;
+#endif
+#ifdef  HAS_FT6336 // HAS_CAP_TOUCH
+  #include "ft6336.h"
+#endif
+
+#ifdef HAS_CST3530
+  #include <CST3530.hpp>
+#endif
+
+#ifdef HAS_CST820
+  #include <CST820.hpp>
+  // extern CST820 CST820_touch;
+#endif
+*/
+>>>>>>> T-HMI-WS_C5
 
 // WiFi stuff
 #define OTA_UPDATE 100
@@ -133,6 +166,11 @@ class Display
     bool draw_tft = false;
     bool exit_draw = false;
     bool headless_mode = false;
+<<<<<<< HEAD
+=======
+    marauder::QueueBackpressureState display_queue_pressure{
+        DISPLAY_BUFFER_LIMIT};
+>>>>>>> T-HMI-WS_C5
 
     uint8_t TOP_FIXED_AREA_2 = 48;
     uint8_t print_delay_1, print_delay_2 = 10;
@@ -173,6 +211,10 @@ class Display
     void tftDrawChanHopButton(bool lnd_an = true, bool en = false);
     void buildBanner(String msg, int xpos);
     void clearScreen();
+<<<<<<< HEAD
+=======
+    bool queueLine(const String& line);
+>>>>>>> T-HMI-WS_C5
     void displayBuffer(bool do_clear = false);
     void drawBootSplash();
     void getTouchWhileFunction(bool pressed);
