@@ -68,22 +68,8 @@ class InstallerManifestTests(unittest.TestCase):
         self.assertIn("github.event_name == 'release'", installer_workflow)
         self.assertIn('marauder-installer-assets.zip', installer_workflow)
         self.assertNotIn('release-assets/*.bin\n', installer_workflow)
-<<<<<<< HEAD
-<<<<<<< HEAD
         self.assertEqual(len(registry["targets"]), 29)
         self.assertEqual(len(boards), 26)
-=======
-        self.assertEqual(len(registry["targets"]), 28)
-        self.assertEqual(len(boards), 25)
->>>>>>> T-HMI-WS_C5
-=======
-        self.assertEqual(len(registry["targets"]), 28)
-        self.assertEqual(len(boards), 25)
-=======
-        self.assertEqual(len(registry["targets"]), 27)
-        self.assertEqual(len(boards), 24)
->>>>>>> origin/master
->>>>>>> T-HMI-WS_C5
         self.assertEqual(
             private_flags,
             {"MARAUDER_V8", "MARAUDER_MINI_V3", "DUAL_MINI_C5"},
@@ -205,18 +191,7 @@ class InstallerManifestTests(unittest.TestCase):
             self.assertEqual(release["metadataStatus"], "authoritative")
             self.assertEqual(release["channel"], "stable")
             self.assertEqual(release["sourceCommit"], "a" * 40)
-<<<<<<< HEAD
-<<<<<<< HEAD
             self.assertEqual(len(release["targets"]), 29)
-=======
-            self.assertEqual(len(release["targets"]), 28)
->>>>>>> T-HMI-WS_C5
-=======
-            self.assertEqual(len(release["targets"]), 28)
-=======
-            self.assertEqual(len(release["targets"]), 27)
->>>>>>> origin/master
->>>>>>> T-HMI-WS_C5
             self.assertIn("/" + "a" * 40 + "/", release["$schema"])
 
     def test_combiner_rejects_target_identity_drift(self) -> None:

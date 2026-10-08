@@ -384,13 +384,15 @@ void MenuFunctions::main(uint32_t currentTime)
     display_obj.displayBuffer();
 
 
-  uint32_t  pre_getTouch = last_touch =  millis();
+  // uint32_t  pre_getTouch =  millis();
 
   #ifdef HAS_ILI9341
     if (!this->disable_touch)
       pressed = display_obj.updateTouch(&t_x, &t_y);
   #endif
 
+  if (pressed)
+    last_touch = millis();
 
 
 
@@ -1326,7 +1328,7 @@ void MenuFunctions::update_time_temp_batt(bool update) {
       uint16_t bg_color = STATUSBAR_COLOR;
       uint16_t txt_color = TFT_WHITE;
 
-      #ifdef DEBUG_SHOW_FREQ
+      #ifdef NEVER
           char freqbuff[32] = {0};
           uint32_t cpuFreq = getCpuFrequencyMhz();
           if ( cpuFreq < 240 ) {
@@ -1565,16 +1567,11 @@ void MenuFunctions::updateStatusBar()
     #endif
   #endif
 
-<<<<<<< HEAD
-  #ifdef HAS_MINI_SCREEN
-    display_obj.tft.setTextColor(the_color, other_color, true);
-=======
   #if defined(MARAUDER_POOM)
     display_obj.tft.setTextColor(the_color, STATUSBAR_COLOR, true);
     display_obj.tft.drawString("SD", 116, 0, 1);
   #elif defined(HAS_MINI_SCREEN)
     display_obj.tft.setTextColor(the_color, STATUSBAR_COLOR, true);
->>>>>>> T-HMI-WS_C5
     display_obj.tft.drawString("SD", TFT_WIDTH - 12, 0, 1);
   #endif
 
@@ -3288,13 +3285,8 @@ void MenuFunctions::RunSetup()
                 this->changeMenu(&savedWifiMenu, true);
               }
               else {
-<<<<<<< HEAD
-              this->changeMenu(current_menu, true);
-            }
-=======
                 this->changeMenu(&wifiGeneralMenu, true);
               }
->>>>>>> T-HMI-WS_C5
             }
             #ifdef MARAUDER_POOM
               else {

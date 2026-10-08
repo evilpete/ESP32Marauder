@@ -6,14 +6,11 @@
 #include "configs.h"
 #include "utils.h"
 #include "GpsTrackerStats.h"
-<<<<<<< HEAD
 #ifdef HAS_ZIGBEE
   #include "ZBScan.h"
 #endif
-=======
 #include "IBeacon.h"
 #include "RemoteIdDecoder.h"
->>>>>>> T-HMI-WS_C5
 
 #include <ArduinoJson.h>
 #include <algorithm>

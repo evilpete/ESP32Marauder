@@ -18,6 +18,12 @@
 #include <Arduino.h>
 #include "configs.h"
 #include "esp_idf_version.h"
+#include "esp_debug_helpers.h"
+
+// #if ( defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1) || defined(DEVELOPER)
+//   #include "debug_func.hpp"
+// #endif
+
 
 #include "esp_pm.h"
 
@@ -36,7 +42,13 @@
   #endif
 
   #ifndef PM_MAX_FREQ
-    #define PM_MAX_FREQ 240
+    #if defined(CONFIG_IDF_TARGET_ESP32C2) // ESP-IDF 4.4 + ESP32-C3
+      #define PM_MAX_FREQ 120
+    #if defined(CONFIG_IDF_TARGET_ESP32C3) // ESP-IDF 4.4 + ESP32-C3
+      #define PM_MAX_FREQ 160
+    #else
+      #define PM_MAX_FREQ 240
+    #endif
   #endif
   #ifndef PM_MIN_FREQ
     #define PM_MIN_FREQ 80
@@ -45,33 +57,28 @@
     #define PM_MIN_FREQ 80
   #endif
 
-// Adjust based on your calibration
-#define TP_THRESHOLD = 40;
-#ifdef XPT2046_IRQ
-    #define TP_INT XPT2046_IRQ
-#endif
 
-inline void int_callback() {
-  // Optional interrupt callback
-  }
-i
+
+bool pm_configured = false;
 
 inline esp_err_t enable_pm() {
+  log_d("enable_pm Start");
+
+  if (pm_configured) {
+    log_d("enable_pm already configured");
+    return ESP_OK;
+  }
 
   esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
   esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
 
+   esp_backtrace_print(4);
+
 
 #ifdef CONFIG_PM_ENABLE
+
   log_d("CONFIG_PM_ENABLE Set");
 
-  #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(TP_INT) && TFT_INT != -1
-    // Initialize touch interrupt
-    touchAttachInterrupt(TP_INT, callback, TP_THRESHOLD);
-
-    // Enable touch pad as light/deep sleep wake source
-    esp_sleep_enable_touchpad_wakeup();
-  #endif
 
 
   #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
@@ -152,7 +159,7 @@ inline esp_err_t enable_pm() {
     PM_CONFIG_TYPE pm_config = {
       .max_freq_mhz = PM_MAX_FREQ,
       .min_freq_mhz = PM_MIN_FREQ,
-     #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
+     #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
        .light_sleep_enable = true
      #else
       .light_sleep_enable = false
@@ -165,6 +172,8 @@ inline esp_err_t enable_pm() {
     err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_pm_configure(&pm_config));
 
     delay(50);
+    if (err == ESP_OK)
+      pm_configured = true;
 
 
     return err;
@@ -192,3 +201,25 @@ inline esp_err_t enable_pm() {
 #endif
 
 #endif // _PM_CONFIG_
+
+
+#ifdef NEVER
+
+  // Adjust based on your calibration
+  #define TP_THRESHOLD 40
+  #ifdef XPT2046_IRQ
+      #define TP_INT XPT2046_IRQ
+  #endif
+  // [[maybe_unused]]
+  // inline void int_callback() {} // Optional interrupt callback
+  auto int_callback = []() {};
+
+  #if defined(NEVER) &&  defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(TP_INT) && TFT_INT != -1
+    // Initialize touch interrupt
+    touchAttachInterrupt(TP_INT, int_callback, TP_THRESHOLD);
+    // Enable touch pad as light/deep sleep wake source
+    esp_sleep_enable_touchpad_wakeup();
+  #endif
+
+
+#endif   //  NEVER

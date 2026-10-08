@@ -10,19 +10,11 @@
 // HAS_CAP_TOUCH
 #ifdef  HAS_FT6336
   #include "ft6336.h"
-<<<<<<< HEAD
 #elif defined(HAS_CST3530)
   #include "CST3530.hpp"
 #elif defined(HAS_CST820)
   #include "CST820.hpp"
 #elif defined(HAS_CST820)
-=======
-#elif defined( HAS_CST3530
-  #include "CST3530.hpp"
-#elif defined( HAS_CST820
-  #include "CST820.hpp"
-#elif defined( HAS_CST820
->>>>>>> T-HMI-WS_C5
    #include "CST820.hpp"
 #endif
 
@@ -123,15 +115,6 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
          *x = CST3530_obj.data->x;
          *y = CST3530_obj.data->y;
 
-<<<<<<< HEAD
-=======
-         // CST3530Point p = touch.getPoint(i);
-         // *x = p.x;
-         // *y = p.y;
-
-         // CST3530_obj.getTouch(x, y);
-         // if ( *x || *y ) { log_d("x=%d y=%d", *x, *y); }
->>>>>>> T-HMI-WS_C5
          return 1;
        }
      }

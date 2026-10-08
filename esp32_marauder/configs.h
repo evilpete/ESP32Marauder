@@ -745,7 +745,7 @@
       #define SOUND_PIN 26
     #define DEEPSLEEP
     #define ADJ_CPUFREQ 1
-    #define SLOW_IDLE 1
+    #define ALLOW_LIGHTSLEEP
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
@@ -841,6 +841,7 @@
     #define HAS_SOUND
       #define HAS_ES8311
     #define HAS_PM
+    // define ALLOW_LIGHTSLEEP
   #endif     // MARAUDER_WS_C5_28
 
   #ifdef MARAUDER_POOM

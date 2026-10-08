@@ -4,6 +4,16 @@
 #ifndef SHUTDOWN_HPP
 #define SHUTDOWN_HPP
 
+#ifndef WAKEUP_GPIO
+  #if defined(CONFIG_IDF_TARGET_ESP32C5)
+    #define WAKEUP_GPIO 28
+  #elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
+    #define WAKEUP_GPIO 29
+  #else
+    #define WAKEUP_GPIO 0 
+  #endif
+#endif
+
 #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
 
   // should this be in a separate .cpp file
@@ -38,6 +48,10 @@
     // rtc_gpio_isolate(GPIO_NUM_12);
     // 18 19 5 23 10 33 32 16 17 20 
     esp_sleep_config_gpio_isolate();
+
+
+    // esp_sleep_enable_ext0_wakeup(WAKEUP_GPIO, 0); // 0 = LOW trigger, 1 = HIGH trigger
+
     
     if (wakeup_but >= 0) {
       gpio_hold_dis((gpio_num_t) wakeup_but);

@@ -318,6 +318,7 @@ void CommandLine::startScanFromCLI(int scan_mode, uint16_t color, const char* sc
 void CommandLine::runCommand(String input) {
   if (input == "") return;
 
+  menu_function_obj.last_touch = millis();
   if(wifi_scan_obj.scanning() && wifi_scan_obj.currentScanMode == WIFI_SCAN_GPS_NMEA){
     if(input != STOPSCAN_CMD) return;    
   }
@@ -2417,15 +2418,13 @@ void CommandLine::runCommand(String input) {
       extern void bleep();
       bleep();
   }*/
-  else if (cmd_args.get(0) == PROBE_I2C) {
+//  else if (cmd_args.get(0) == PROBE_I2C) {
+//    #if defined(I2C_SDA) && defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
+//      extern void i2c_probe();
+//      i2c_probe();
+//    #endif
+//  }
 
-    #if defined(I2C_SDA) && defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
-      extern void i2c_probe();
-
-      i2c_probe();
-    #endif
-
-  }
   else if (cmd_args.get(0) == NTP_SYNC_CMD) {
     bool sync_ntp(const char *ntpServer = nullptr);
 

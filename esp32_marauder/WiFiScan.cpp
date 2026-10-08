@@ -17,7 +17,10 @@
   struct mac_addr* mac_history = nullptr;
 #endif
 
-static const uint8_t *g_filter_bssid = nullptr;
+
+extern void checkHeap(const char *where);
+
+static const uint8_t *g_filner_bssid = nullptr;
 uint8_t *current_act = nullptr;
 
 MacEntry WiFiScan::mac_entries[mac_history_len_half];
@@ -5282,23 +5285,8 @@ void WiFiScan::RunInfo() {
     display_obj.tft.setCursor(0, SCREEN_HEIGHT * 2 / 7);  // gives the same result using integers only
     display_obj.tft.setTextSize(1);
     display_obj.tft.setTextColor(TFT_CYAN);
-<<<<<<< HEAD
   #endif
 
-=======
-    display_obj.tft.println(text_table4[20]);
-    display_obj.tft.println(text_table4[21] + display_obj.version_number);
-    display_obj.tft.println("Hardware: " + (String)HARDWARE_NAME);
-    display_obj.tft.println("App partition: " + app_partition);
-    display_obj.tft.println(text_table4[22] + (String)esp_get_idf_version());
-  #endif
-
-  Serial.println(text_table4[20]);
-  Serial.println(text_table4[21] + (String)MARAUDER_VERSION);
-  Serial.println("Hardware: " + (String)HARDWARE_NAME);
-  Serial.println("App partition: " + app_partition);
-  Serial.println(text_table4[22] + (String)esp_get_idf_version());
->>>>>>> T-HMI-WS_C5
 
   if (system_time_set) {
     struct tm timeinfo;
@@ -5329,7 +5317,7 @@ void WiFiScan::RunInfo() {
     // p_info(buffer);
   #endif
 
-  p_info("App partition: " + app_partition)
+  // p_info("App partition: " + app_partition)
 
   #ifdef CONFIG_IDF_TARGET
     snprintf(buffer, sizeof(buffer), "IDF_TARGET: %s", CONFIG_IDF_TARGET);
@@ -5384,6 +5372,8 @@ void WiFiScan::RunInfo() {
 
       Serial.print("sd_obj.cardSizeMB: ");
       Serial.println(sd_obj.cardSizeMB);
+      Serial.print("sd_obj.card_sz: ");
+      Serial.println(sd_obj.card_sz);
 
     } else {
       p_info(text_table4[30]);
@@ -5414,6 +5404,7 @@ void WiFiScan::RunInfo() {
   #endif   // temp_sensor_hpp
 
   p_info("Uptime: " + uptimeString());  // wraps after about 49 days because it uses
+
 
   if (this->wifi_connected)
       showNetworkInfo();
@@ -7979,11 +7970,7 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
 
         #ifdef HAS_SCREEN
           if (!recon_obj.suppressScanUi())
-<<<<<<< HEAD
-          display_obj.display_buffer->add(display_string);
-=======
             display_obj.queueLine(display_string);
->>>>>>> origin/master
         #endif
         
         if (essid == "") {
@@ -8195,23 +8182,12 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
       Serial.print(F(" "));
 
       if (!recon_obj.suppressScanUi())
-<<<<<<< HEAD
-      display_obj.display_buffer->add(display_string);
-=======
         display_obj.queueLine(display_string);
->>>>>>> origin/master
     #endif
 
-<<<<<<< HEAD
-    if (mem_check) {
-      // AccessPoint ap = access_points->get(ap_index);
-      // ap.stations->add(stations->size() - 1);
-      // access_points->set(ap_index, ap);
-=======
     if (station_retained) {
       AccessPoint ap = access_points->get(ap_index);
       marauder::memoryGuardedAdd(ap.stations, stations->size() - 1);
->>>>>>> T-HMI-WS_C5
 
       // Don't copy, don't set - just add the station index directly
       access_points->get(ap_index).stations->add(stations->size() - 1);
@@ -11071,7 +11047,7 @@ bool WiFiScan::filterActive() {
     // Do the touch stuff
     #ifdef HAS_ILI9341
       pressed = display_obj.updateTouch(&t_x, &t_y);
-      if (pressed
+      if (pressed)
         this->press_time = millis();
     #endif
 
@@ -12979,6 +12955,11 @@ void WiFiScan::main(uint32_t currentTime)
     if (currentTime - initTime >= this->channel_hop_delay * HOP_DELAY) {
       initTime = millis();
       channelHop();
+      if ( this->set_channel == 1 || this->set_channel == 6 || this->set_channel == 11) {
+        this->channel_hop_delay = 3;
+      } else {
+        this->channel_hop_delay = 1;
+      }
     }
     if ((currentScanMode == WIFI_SCAN_AP) || 
         (currentScanMode == WIFI_SCAN_PROBE) ||
@@ -13015,11 +12996,6 @@ void WiFiScan::main(uint32_t currentTime)
         }
       #endif
       channelHop();
-      if ( this->set_channel == 1 || this->set_channel == 6 || this->set_channel == 11) {
-        this->channel_hop_delay = 2;
-      } else {
-        this->channel_hop_delay = 1;
-      }
     }
 
     if (currentTime - this->last_ui_update >= 1000) {

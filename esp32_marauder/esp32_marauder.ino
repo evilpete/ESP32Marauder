@@ -22,13 +22,13 @@ https://www.online-utility.org/image/convert/to/XBM
 
 #if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_DFS_INIT_AUTO))
   #include "esp_log.h"
-  #include "pm_comfig.hpp"
+  // #include "pm_comfig.hpp"
 #endif
 
-#if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
+// #if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
   // o#include "ESP32_PinDebug.h"    // prints pin configuration
-  #include "debug_func.hpp"
-#endif
+//   #include "debug_func.hpp"
+// #endif
 
 #include <stdio.h>
 
@@ -312,7 +312,6 @@ void setup() {
 //  #endif
 
   Serial.begin(115200);  // 115200);
-
 
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
@@ -654,7 +653,7 @@ void loop()
     #endif
   #endif
 
-  #if  defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING)
+  #if  defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING) && (defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1)
     if ((currentTime >> 18 & 0x01) != show_dump) {
       show_dump = (currentTime >> 18 & 0x01);
       pm_dump_locks();
@@ -736,11 +735,11 @@ void loop()
   #endif
 
   #ifdef HAS_SCREEN
-    if (wifi_scan_obj.currentScanMode) {
-      delay(10);
-      // Serial.print("."); Serial.flush();
-    } else
-      delay(2);
+    if (wifi_scan_obj.currentScanMode == 0 && (currentTime - menu_function_obj.last_touch) > 10000) {
+      delay(15);
+    } else {
+      delay(1);
+   }
   #else
     delay(50);
   #endif
