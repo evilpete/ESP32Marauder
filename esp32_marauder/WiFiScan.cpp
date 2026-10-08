@@ -2987,6 +2987,7 @@ void WiFiScan::startWiFiAttacks(uint8_t scan_mode, uint16_t color, const char* t
   this->wifi_initialized = true;
   this->setLEDMode(MODE_ATTACK);
   initTime = millis();
+  this->press_time = initTime;
 }
 
 bool WiFiScan::shutdownWiFi() {
@@ -5148,6 +5149,8 @@ void WiFiScan::RunInfo() {
     #endif
     // p_info(buffer);
   #endif
+
+  p_info("App partition: " + app_partition)
 
   #ifdef CONFIG_IDF_TARGET
     snprintf(buffer, sizeof(buffer), "IDF_TARGET: %s", CONFIG_IDF_TARGET);
@@ -10784,6 +10787,8 @@ bool WiFiScan::filterActive() {
     // Do the touch stuff
     #ifdef HAS_ILI9341
       pressed = display_obj.updateTouch(&t_x, &t_y);
+      if (pressed
+        this->press_time = millis();
     #endif
 
     if (pressed) {
@@ -12726,6 +12731,11 @@ void WiFiScan::main(uint32_t currentTime)
         }
       #endif
       channelHop();
+      if ( this->set_channel == 1 || this->set_channel == 6 || this->set_channel == 11) {
+        this->channel_hop_delay = 2;
+      } else {
+        this->channel_hop_delay = 1;
+      }
     }
 
     if (currentTime - this->last_ui_update >= 1000) {

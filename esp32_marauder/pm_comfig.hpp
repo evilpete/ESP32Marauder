@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef PowerMgmt_hpp
-#define PowerMgmt_hpp
+#ifndef _PM_CONFIG_
+#define _PM_CONFIG_
 
 // CPU frequency / Dynamic Frequency Scaling helpers.
 //
@@ -18,11 +18,6 @@
 #include <Arduino.h>
 #include "configs.h"
 #include "esp_idf_version.h"
-
-#if ( defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1) || defined(DEVELOPER)
-  #include "debug_func.hpp"
-#endif
-
 
 #include "esp_pm.h"
 
@@ -44,37 +39,156 @@
     #define PM_MAX_FREQ 240
   #endif
   #ifndef PM_MIN_FREQ
-    #define PM_MIN_FREQ 160
+    #define PM_MIN_FREQ 80
   #endif
   #if PM_MIN_FREQ < 80
     #define PM_MIN_FREQ 80
   #endif
 
+// Adjust based on your calibration
+#define TP_THRESHOLD = 40;
+#ifdef XPT2046_IRQ
+    #define TP_INT XPT2046_IRQ
+#endif
+
+inline void int_callback() {
+  // Optional interrupt callback
+  }
+i
+
 inline esp_err_t enable_pm() {
 
-#ifdef CONFIG_PM_ENABLE
+  esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
+  esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
 
-  #ifdef USE_PM
+
+#ifdef CONFIG_PM_ENABLE
+  log_d("CONFIG_PM_ENABLE Set");
+
+  #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(TP_INT) && TFT_INT != -1
+    // Initialize touch interrupt
+    touchAttachInterrupt(TP_INT, callback, TP_THRESHOLD);
+
+    // Enable touch pad as light/deep sleep wake source
+    esp_sleep_enable_touchpad_wakeup();
+  #endif
+
+
+  #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
+    log_d("CONFIG_FREERTOS_USE_TICKLESS_IDLE Set");
+  #else
+    log_d("CONFIG_FREERTOS_USE_TICKLESS_IDLE NOT Set");
+  #endif
+
+  #ifdef CORE_DEBUG_LEVEL
+    log_d("CORE_DEBUG_LEVEL Set = %d", CORE_DEBUG_LEVEL);
+  #else
+    log_d("CORE_DEBUG_LEVEL NOT Set");
+  #endif
+
+  #ifdef DEVELOPER
+    log_d("DEVELOPER Set");
+  #else
+    log_d("DEVELOPER NOT Set");
+  #endif
+
+  #ifdef HAS_PWR_MGMT
+    log_d("HAS_PWR_MGMT Set");
+  #else
+    log_d("HAS_PWR_MGMT NOT Set");
+  #endif
+
+  #ifdef HAS_PM
+    log_d("HAS_PM Set");
+  #else
+    log_d("HAS_PM NOT Set");
+  #endif
+
+  #ifdef CONFIG_PM_RETAIN_PERIPH_IN_LIGHT_SLEEP
+    log_d("CONFIG_PM_RETAIN_PERIPH_IN_LIGHT_SLEEP = %d", CONFIG_PM_RETAIN_PERIPH_IN_LIGHT_SLEEP);
+  #else
+    log_d("CONFIG_PM_RETAIN_PERIPH_IN_LIGHT_SLEEP NOT Set");
+  #endif
+
+  #ifdef CONFIG_USJ_NO_AUTO_LS_ON_CONNECTION
+    log_d("CONFIG_USJ_NO_AUTO_LS_ON_CONNECTION = %d", CONFIG_USJ_NO_AUTO_LS_ON_CONNECTION);
+  #else
+    log_d("CONFIG_USJ_NO_AUTO_LS_ON_CONNECTION NOT Set");
+  #endif
+
+  #ifdef CONFIG_RTC_CLOCK_BBPLL_POWER_ON_WITH_USB
+    log_d("CONFIG_RTC_CLOCK_BBPLL_POWER_ON_WITH_USB = %d", CONFIG_RTC_CLOCK_BBPLL_POWER_ON_WITH_USB);
+  #else
+    log_d("CONFIG_RTC_CLOCK_BBPLL_POWER_ON_WITH_USB NOT Set");
+  #endif
+
+  #ifdef CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
+    log_d("CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP = %d", CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP);
+  #else
+    log_d("CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP NOT Set");
+  #endif
+
+  #ifdef CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP
+    log_d("CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP = %d", CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP);
+  #else
+    log_d("CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP NOT Set");
+  #endif
+
+  // Force RTC peripherals to stay powered on during sleep
+  esp_err_t err = esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+  if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+
+  // Force the main internal BBPLL clock source to stay active 
+  // This prevents the system clock tree from switching down to slower RC/XTAL oscillators
+  err = esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_ON); 
+  if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+
+  // Force the XTAL oscillator to stay ON during sleep 
+  // (Useful if peripherals like LEDC or ADC require it as a clock source)
+  err = esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_ON);
+  if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+
+  #if defined(HAS_PM) || defined(HAS_PWR_MGMT)
     PM_CONFIG_TYPE pm_config = {
-      .max_freq_mhz = PM_MAX_FREQ
+      .max_freq_mhz = PM_MAX_FREQ,
       .min_freq_mhz = PM_MIN_FREQ,
-    #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
-      .light_sleep_enable = true
-    #else
+     #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
+       .light_sleep_enable = true
+     #else
       .light_sleep_enable = false
-    #endif
+     #endif
     };
 
     log_d("esp_pm_configure max=%d min=%d sleep_enable=%s", pm_config.max_freq_mhz, pm_config.min_freq_mhz,
         pm_config.light_sleep_enable ? "true" : "false");
 
-    esp_err_t err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_pm_configure(&pm_config));
+    err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_pm_configure(&pm_config));
+
+    delay(50);
 
 
     return err;
-  #endif  // USE_PM
+  #endif  // HAS_PM
 #endif    //  CONFIG_PM_ENABLE
 
 }
 
-#endif // PowerMgmt_hpp
+#if  defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING)
+  // Print PM lock / frequency-mode statistics to the serial console.
+  inline void pm_dump_locks() {
+    #if defined(HAS_PM) && defined(CONFIG_PM_PROFILING)
+      fflush(stdout);
+      esp_pm_dump_locks(stdout);
+      fflush(stdout);
+    #elif defined(HAS_PM)
+      Serial.println(F("PM lock dump needs CONFIG_PM_PROFILING=y in the Arduino libs"));
+    #else
+      Serial.println(F("Power management not enabled in this build"));
+    #endif
+      Serial.print(F("CpuFrequency = "));
+      Serial.print(getCpuFrequencyMhz());
+      Serial.println(F(" Mhz"));
+    }
+#endif
+
+#endif // _PM_CONFIG_

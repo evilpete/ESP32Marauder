@@ -90,7 +90,7 @@ const char PROGMEM SETDATE_CMD[] = "setdate";
 const char PROGMEM SHUTDOWN_CMD[] = "shutdown";
 const char PROGMEM PROBE_I2C[] = "i2c";
 const char PROGMEM BLEEP[] = "bleep";
-const char PROGMEM PM_DUMP_CMD[] = "psdump";
+const char PROGMEM PM_DUMP_CMD[] = "pmdump";
 
 
 #ifdef HAS_SD
@@ -291,6 +291,7 @@ const char PROGMEM HELP_FOOT[] = "==================================";
 class CommandLine {
   private:
     String getSerialInput();
+    String readStringUntilEcho(char terminator);
     LinkedList<String> parseCommand(String input, char* delim);
     String toLowerCase(String str);
     void filterAccessPoints(String filter);

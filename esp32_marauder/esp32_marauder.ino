@@ -26,7 +26,6 @@ https://www.online-utility.org/image/convert/to/XBM
 #endif
 
 #if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 1
-
   // o#include "ESP32_PinDebug.h"    // prints pin configuration
   #include "debug_func.hpp"
 #endif
@@ -307,11 +306,6 @@ void setup() {
 
   Serial.begin(115200);  // 115200);
 
-  #if (defined(HAS_PM) && defined(CONFIG_PM_ENABLE)) or defined(CONFIG_PM_DFS_INIT_AUTO)
-      // if CONFIG_PM_DFS_INIT_AUTO is set then min freq is 80 and we want 160
-      // esp_err_t pp 
-      enable_pm();
-  #endif
 
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
@@ -322,6 +316,22 @@ void setup() {
     if (!CH32V003_obj.begin()) {
       Serial.println("CH32V003 not found - check wiring and I2C address");
     }
+  #endif
+
+  #if (defined(HAS_PM) && defined(CONFIG_PM_ENABLE)) or defined(CONFIG_PM_DFS_INIT_AUTO)
+      // if CONFIG_PM_DFS_INIT_AUTO is set then min freq is 80 and we want 160
+      // esp_err_t pp 
+      enable_pm();
+      // log_d("skipping enable_pm");
+  #else
+      log_d("enable_pm : Not Used  =======");
+    #if !defined(HAS_PM)
+      log_d("HAS_PM: Not Set");
+    #elif !defined(CONFIG_PM_ENABLE)
+      log_d("CONFIG_PM_ENABLE: Not Set");
+    #elif !defined(CONFIG_PM_DFS_INIT_AUTO)
+      log_d("CONFIG_PM_DFS_INIT_AUTO: Not Set");
+    #endif
   #endif
 
   #ifdef HAS_ACT_LED
@@ -367,6 +377,7 @@ void setup() {
   #ifdef HAS_SCREEN
     //backlightOff();
   #endif
+
 
   #if BATTERY_ANALOG_ON == 1
     pinMode(BATTERY_PIN, OUTPUT);
@@ -444,7 +455,9 @@ void setup() {
   #endif
 
   const esp_partition_t *run = esp_ota_get_running_partition();
-  Serial.printf("Running from %s @0x%lx\n", run->label, (unsigned long)run->address);
+  log_d( "Running from %s @0x%lx\n", run->label, (unsigned long)run->address);
+
+  log_d("Got HAS_PSRAM");
 
   #ifdef HAS_PSRAM
     if (!psramInit()) {
@@ -468,6 +481,7 @@ void setup() {
     CST3530_obj.begin(Wire);
   #endif
   */
+
 
   #ifdef HAS_SCREEN
     display_obj.RunSetup();
@@ -534,6 +548,8 @@ void setup() {
     stickc_led.RunSetup();
   #elif defined(HAS_NEOPIXEL_LED) || defined(HAS_T_DONGLE_LED)
     led_obj.RunSetup();
+  #else
+    log_d("No LED");
   #endif
 
   buffer_obj = Buffer();
@@ -611,10 +627,14 @@ void setup() {
       CH32V003_obj.printState();
     #endif
   #endif
+
+  pm_dump_locks();
+
   checkHeap("end setup");
 }
 
 
+uint8_t show_dump = 0;
 void loop()
 {
   currentTime = millis();
@@ -627,19 +647,11 @@ void loop()
     #endif
   #endif
 
-
-  #if defined(ADJ_CPUFREQ) & defined(SLOW_IDLE) && CONFIG_IDF_TARGET_ESP32 && defined(NEVER)
-  if (wifi_scan_obj.currentScanMode != prevScanMode) {
-    prevScanMode = wifi_scan_obj.currentScanMode;
-    if (wifi_scan_obj.currentScanMode == WIFI_SCAN_OFF) {
-      setCpuFrequencyMhz(80);
-      log_d("setCpuFrequencyMhz = 80");
-      Serial.begin(115200);  // 115200);
-    } else {
-      log_d("setCpuFrequencyMhz = 240");
-      Serial.begin(115200);  // 115200);
+  #if  defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING)
+    if ((currentTime >> 18 & 0x01) != show_dump) {
+      show_dump = (currentTime >> 18 & 0x01);
+      pm_dump_locks();
     }
-  }
   #endif
 
   #if (defined(HAS_ILI9341) && !defined(MARAUDER_CYD_2USB))
@@ -661,8 +673,10 @@ void loop()
   checkHeap("cli_obj.main");
   // Update all of our objects
   cli_obj.main(currentTime);
+
   checkHeap("wifi_scan_obj.main");
   wifi_scan_obj.main(currentTime);
+
   checkHeap("recon_obj.main");
   recon_obj.main(currentTime);
 
@@ -693,7 +707,9 @@ void loop()
       menu_function_obj.main(currentTime);
     #endif
   }
+
   checkHeap("led");
+
   #ifdef HAS_FLIPPER_LED
     flipper_led.main();
   #elif defined(XIAO_ESP32_S3)
@@ -709,11 +725,11 @@ void loop()
   #endif
 
   #ifdef HAS_SCREEN
-    if (wifi_scan_obj.currentScanMode == 0 && (currentTime - menu_function_obj.last_touch) > 5000) {
+    if (wifi_scan_obj.currentScanMode) {
       delay(10);
       // Serial.print("."); Serial.flush();
     } else
-      delay(1);
+      delay(2);
   #else
     delay(50);
   #endif

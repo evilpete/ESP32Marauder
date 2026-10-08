@@ -82,11 +82,50 @@ void CommandLine::RunSetup() {
   Serial.flush();
 }
 
+
+
+String CommandLine::readStringUntilEcho(char terminator) {
+  String inputBuffer = "";
+  
+  while (true) {
+    if (Serial.available() > 0) {
+      char c = Serial.read();
+
+      // Check for terminator
+      if (c == terminator) {
+        Serial.println(); // Move to a new line on echo terminal
+        break;
+      }
+
+      // Handle Backspace (ASCII 8 or 127)
+      if (c == '\b' || c == 127) {
+        if (inputBuffer.length() > 0) {
+          inputBuffer.remove(inputBuffer.length() - 1);
+          // Erase character from the serial monitor visual output
+          Serial.print("\b \b"); 
+        }
+      } 
+      // Handle printable characters
+      else if (isPrintable(c)) {
+        inputBuffer += c;
+        Serial.print(c); // Echo character back
+      }
+    }
+    // Yield to prevent triggering the ESP32 Watchdog Timer (WDT)
+    vTaskDelay(1); 
+  }
+  
+  return inputBuffer;
+}
+
+
+
 String CommandLine::getSerialInput() {
   String input = "";
 
   if (Serial.available() > 0)
-    input = Serial.readStringUntil('\n');
+    // input = Serial.readStringUntil('\n');
+    input = this->readStringUntilEcho('\n');
 
   input.trim();
   return input;
@@ -894,7 +933,7 @@ void CommandLine::runCommand(String input) {
   #endif  // ADJ_CPUFREQ
 
 
-  else if (cmd_args.get(0) == PM_DUMP_CMD) {
+  else if (cmd_args.get(0) == PM_DUMP_CMD || cmd_args.get(0) == "psdump")  {
        #ifdef HAS_PM && ESP_IDF_VERSION_MAJOR < 5
          pm_dump_locks();
       #else

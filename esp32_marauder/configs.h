@@ -591,6 +591,7 @@
       #define PWR_EN_PIN  10
       #define PWR_ON_PIN  14
     #define HAS_PM
+    #define HAS_PWR_MGMT
   #endif  // MARAUDER_CYD_HMI
 
     /*
@@ -2428,6 +2429,9 @@
       #define TFT_BL 45
       //#define TOUCH_CS 21
       #define SD_CS 10
+      #define SD_MISO 37
+      #define SD_MOSI 35
+      #define SD_SCLK 36
 
       #define I2C_SCL 4
       #define I2C_SDA 3
@@ -3333,12 +3337,19 @@
 
     #elif defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_2USB) || defined(MARAUDER_CYD_3_5_INCH) || defined(MARAUDER_CYD_GUITION)
       #define SD_CS 5
+      #define SD_IRQ  36
+      #define SD_MOSI 32
+      #define SD_MISO 39
+      #define SD_CLK  25
 
     #elif defined(MARAUDER_MINI) || defined(MARAUDER_V7)  || defined(MARAUDER_V7_1)
       #define SD_CS 4
 
     #elif defined(MARAUDER_REV_FEATHER)
       #define SD_CS 10
+      #define SD_MISO 37
+      #define SD_MOSI 35
+      #define SD_SCLK 36
 
     #elif defined(MARAUDER_M5STICKC)
       #define SD_CS -1
@@ -3370,6 +3381,9 @@
 
     #elif defined(MARAUDER_T_DONGLE_C5)
       #define SD_CS 23
+      #define SD_MISO 7
+      #define SD_MOSI 2
+      #define SD_SCK  6
 
     #elif defined(MARAUDER_PANCAKE)
       #define SD_CS 7
@@ -3385,11 +3399,18 @@
     #endif
 
     #if defined(MARAUDER_JC2432W328C)
-      #define SD_CS 5
+      #define SD_MISO      19
+      #define SD_MOSI      23
+      #define SD_SCK       18
+      #define SD_CS         5
     #endif
 
     #if defined(MARAUDER_CYD_24)
       #define SD_CS 5
+      #define SD_MISO      19
+      #define SD_MOSI      23
+      #define SD_SCK       18
+      #define SD_CS         5
     #endif
 
   #endif
@@ -3994,15 +4015,28 @@
       #define XPT2046_CLK  1
       #define XPT2046_CS   2
 
+
     #elif defined(MARAUDER_JC2432W328C)
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
+      #define SD_CS         5
 
     #elif defined(MARAUDER_CYD_24)
+      #define XPT2046_IRQ  36
+      #define XPT2046_MOSI 23
+      #define XPT2046_MISO 19
+      #define XPT2046_CLK  18
+      #define XPT2046_CS   33
+
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
+      #define SD_CS         5
+    #endif
+
+    #ifdef XPT2046_IRQ
+      #define TP_INT XPT2046_IRQ
     #endif
 
   #endif // STUPID CYD STUFF

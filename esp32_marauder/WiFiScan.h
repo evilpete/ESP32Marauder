@@ -871,6 +871,7 @@ enum class MacSortMode : uint8_t {
 
     FoxHuntTarget fox_hunt_target;
 
+    unsigned long press_time = 0;
     volatile bool bt_cb_busy = false;
     volatile bool bt_pending_clear = false;
 

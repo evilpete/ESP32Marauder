@@ -30,6 +30,11 @@ extern void checkHeap(const char *where);
   #include "shutdown.hpp"
 #endif
 
+#if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_DFS_INIT_AUTO))
+  #include "esp_log.h"
+  #include "pm_comfig.hpp"
+#endif
+
 extern const unsigned char menu_icons[][66];
 extern LinkedList<AccessPoint>* access_points;
 extern LinkedList<Station>* stations;
@@ -4104,7 +4109,6 @@ void MenuFunctions::RunSetup()
   });
 
 
-
   #if defined(HAS_SD) || defined(USE_SD)
     //  So you won't have to reboot And lose your data  inserting an SD card
     this->addNodes(&adminMenu, "Rescan SD", TFTPINK, SD_UPDATE, [this]() {
@@ -4305,6 +4309,17 @@ void MenuFunctions::RunSetup()
       }); */
 
   #endif  // ADJ_CPUFREQ
+
+      this->addNodes(&adminMenu, "PS_Dump", TFTGREENYEL, SETTINGS, [this]() {
+         Serial.println(F("psdump"));
+      #if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_DFS_INIT_AUTO))
+          #include "pm_comfig.hpp"
+         pm_dump_locks();
+      #else
+        log_d("CONFIG_PM / pm_dump_locks not configured");
+      #endif
+        this->changeMenu(&adminMenu, true);
+      });
 
   // Show reason for last reboot...
   this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
