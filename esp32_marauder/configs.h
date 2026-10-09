@@ -561,7 +561,7 @@
 
   #if defined(MARAUDER_CYD_HMI)
     #define HAS_TEMP_SENSOR
-      #define USE_CPU_TEMP
+      #define HAS_CPU_TEMP
     #define HAS_BT
       #define HAS_NIMBLE_2
     #define HAS_BATTERY
@@ -595,6 +595,7 @@
       #define PWR_ON_PIN  14
     #define HAS_PM
     #define HAS_PWR_MGMT
+    #define ALLOW_LIGHTSLEEP
   #endif  // MARAUDER_CYD_HMI
 
     /*
@@ -746,6 +747,8 @@
     #define DEEPSLEEP
     #define ADJ_CPUFREQ 1
     #define ALLOW_LIGHTSLEEP
+    #define HAS_TEMP_SENSOR
+      #define HAS_CPU_TEMP
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
@@ -774,6 +777,8 @@
     #define SLOW_IDLE 1
     #define HAS_SOUND
       #define CYD_SOUND
+    #define HAS_TEMP_SENSOR
+      #define HAS_CPU_TEMP
   #endif   // MARAUDER_CYD_24
 
 
@@ -823,6 +828,7 @@
       #define CH32V003_I2C_ADDR 0x24
     #define HAS_TEMP_SENSOR
       #define HAS_SHTC3
+      #define HAS_CPU_TEMP 1
     // Platform capabilities
     #define HAS_PSRAM
       #define BOARD_HAS_PSRAM
@@ -841,7 +847,7 @@
     #define HAS_SOUND
       #define HAS_ES8311
     #define HAS_PM
-    // define ALLOW_LIGHTSLEEP
+      #define ALLOW_LIGHTSLEEP
   #endif     // MARAUDER_WS_C5_28
 
   #ifdef MARAUDER_POOM
@@ -3418,6 +3424,9 @@
 
     #elif defined(MARAUDER_V6_1)
       #define SD_CS 14
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
 
     #elif defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_2USB) || defined(MARAUDER_CYD_3_5_INCH) || defined(MARAUDER_CYD_GUITION)
       #define SD_CS 5
@@ -3426,8 +3435,23 @@
       #define SD_MISO 39
       #define SD_CLK  25
 
-    #elif defined(MARAUDER_MINI) || defined(MARAUDER_V7)  || defined(MARAUDER_V7_1)
+    #elif defined(MARAUDER_V7)  || defined(MARAUDER_V7_1)
       #define SD_CS 4
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
+
+    #elif defined(MARAUDER_MINI)
+      #define SD_CS 4
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
+
+    #elif defined(MARAUDER_FLIPPER)
+      #define SD_CS 10
+
+    #elif defined(MARAUDER_MULTIBOARD_S3)
+      #define SD_CS 10
 
     #elif defined(MARAUDER_REV_FEATHER)
       #define SD_CS 10
@@ -3445,20 +3469,21 @@
       #define SD_MISO 39
       #define SD_MOSI 14
 
-    #elif defined(MARAUDER_FLIPPER)
-      #define SD_CS 10
-
-    #elif defined(MARAUDER_MULTIBOARD_S3)
-      #define SD_CS 10
 
     #elif defined(ESP32_LDDB)
       #define SD_CS 4
+      #define SD_SCK  18
+      #define SD_MISO 19
+      #define SD_MOSI 23
 
     #elif defined(MARAUDER_DEV_BOARD_PRO)
       #define SD_CS 4
 
     #elif defined(XIAO_ESP32_S3)
       #define SD_CS 3
+      #define SD_MOSI 5
+      #define SD_MISO 4
+      #define SD_SCK  3
 
     #elif defined(MARAUDER_C5) || defined(MARAUDER_V8) || defined(MARAUDER_MINI_V3)
       #define SD_CS 10
@@ -4072,6 +4097,7 @@
       #define SD_SCK  TFT_SCLK
 
     #elif (MARAUDER_V6_1)
+      #define SD_CS 14
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
@@ -4095,6 +4121,7 @@
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
+      #define SD_CS 10
 
     #elif defined(MARAUDER_CYD_HMI)
       #define XPT2046_IRQ  9
@@ -4239,29 +4266,19 @@
       #define I2C_ADDR_SHTC3  0x70 // NOT 0x1A : CST3530 differs from CST820
     #endif
 
-    // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
-    #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
-          (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) \
-          || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) \
-          || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2) )
-      #define HAS_CPU_TEMP
-    #else
-      #undef HAS_CPU_TEMP
-    #endif
-
-    //do we have a SENSOR?
-    #if !( defined(USE_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
-      #warning "HAS_TEMP_SENSOR set without source device HAS_SHTC3 or USE_CPU_TEMP"
-      #undef HAS_TEMP_SENSOR
-    #endif
+    /*
+//    // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
+//    #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
+//          (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) \
+//          || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) \
+//          || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2) )
+//      #define HAS_CPU_TEMP
+//    #else
+//      #undef HAS_CPU_TEMP
+//    #endif
+    */
 
   #endif  // HAS_TEMP_SENSOR
-
-  //do we have a SENSOR?
-  #if !( defined(USE_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20) )
-    #warning "HAS_TEMP_SENSOR set without source device HAS_SHTC3 or USE_CPU_TEMP"
-    #undef HAS_TEMP_SENSOR
-  #endif
 
 
   #ifdef HAS_CAP_TOUCH
@@ -4284,15 +4301,17 @@
       #define I2C_SCL 10
       #define TP_SDA I2C_SDA
       #define TP_SCL I2C_SCL
+      #define TP_INT 25
       #define TP_RST 8
-      #define I2C_FT6336_ADDR      0x38
+
+      #define I2C_ADDR_FT6336      0x38
 
     #elif defined(MARAUDER_LCDWIKI_28)
       #define HAS_FT6336
       #define TP_SDA 16
       #define TP_SCL 15
       #define TP_RST 18
-      #define I2C_FT6336_ADDR      0x38
+      #define I2C_ADDR_FT6336      0x38
 
     #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
       #define HAS_CST3530 1      // distinguish from CST820
@@ -4313,12 +4332,6 @@
       #define TP_RST 25
       #define I2C_ADDR_GT911 0x38
 
-    #elif defined(MARAUDER_LCDWIKI_28)
-      #define HAS_FT6336
-      #define TP_SDA 16
-      #define TP_SCL 15
-      #define TP_RST 18
-      #define I2C_FT6336_ADDR      0x38
 
     #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
       #define HAS_CST3530 1      // distinguish from CST820
@@ -4363,6 +4376,12 @@
   #if defined(HAS_PM) && __has_include("sdkconfig.h")
     #include "sdkconfig.h"
   #endif
+
+  // Power Management
+  #if defined(ALLOW_LIGHTSLEEP) && !defined(CONFIG_PM_ENABLE)
+    #warning "ALLOW_LIGHTSLEEP defined but Arduino libs built without CONFIG_PM_ENABLE, power management disabled"
+  #endif
+
   #if defined(HAS_PM) && !defined(CONFIG_PM_ENABLE)
     #warning "HAS_PM defined but Arduino libs built without CONFIG_PM_ENABLE, power management disabled"
   #endif
@@ -4372,59 +4391,38 @@
     // #undef HAS_SOUND
   #endif
 
-  #if defined(HAS_NIMBLE_2) && !defined(HAS_BT)
-    #warning "HAS_NIMBLE_2 defined without HAS_BT, check 'BOARD FEATURES' section"
-    #define HAS_BT 1
-  #endif
-
-  // Screen Stuff
-  #if defined(HAS_FULL_SCREEN) && !defined(HAS_SCREEN)
-    #warning "HAS_FULL_SCREEN defined without HAS_SCREEN, check 'BOARD FEATURES' section"
-    #define HAS_SCREEN 1
-  #endif
-
-  #if defined(HAS_MINI_SCREEN) && !defined(HAS_SCREEN)
-    #warning "HAS_MINI_SCREEN defined without HAS_SCREEN, check 'BOARD FEATURES' section"
-    #define HAS_SCREEN 1
-  #endif
-
-  // I2C based GPS
-  #if defined(HAS_GPSI2C) && !defined(HAS_GPS)
-    #define HAS_GPS
-  #endif
-
-  // UART based GPS
-  #if !defined(HAS_GPSI2C)
-    #if defined(HAS_GPS) && ( !defined(GPS_TX) || !defined(GPS_SERIAL_INDEX) )
-      #warning "HAS_GPS defined without serial port, check 'GPS STUFF' section"
+    // BT Stuff
+    #if defined(HAS_NIMBLE_2) && !defined(HAS_BT)
+      #warning "HAS_NIMBLE_2 defined without HAS_BT, check 'BOARD FEATURES' section"
+      #define HAS_BT 1
     #endif
-  #endif
 
-  // SD Stuff
-  #if defined(USE_SD) && !defined(SD_CS)
-    #warning "USE_SD defined without SD_CS, check 'SD DEFINITIONS' section"
-  #endif
+    // I2C based GPS needs HAS_GPS defined
+    #if defined(HAS_GPSI2C) && !defined(HAS_GPS)
+      #define HAS_GPS
+    #endif
 
-  #if defined(HAS_C5_SD) && ( !defined(USE_SD) || !defined(HAS_SD) )
-    #warning "HAS_C5_SD defined without USE_SD/HAS_SD, check 'BOARD FEATURES' section"
-    #define HAS_SD
-    #define USE_SD
-  #endif
+    // UART based GPS
+    #if !defined(HAS_GPSI2C)
+      #if defined(HAS_GPS) && ( !defined(GPS_TX) || !defined(GPS_SERIAL_INDEX) )
+        #warning "HAS_GPS defined without serial port, check 'GPS STUFF' section"
+      #endif
+    #endif
 
-  // LED Stuff
-  #if defined(HAS_FLIPPER_LED) && (!defined(B_PIN) || !defined(G_PIN) || !defined(R_PIN) )
-    #warning "HAS_FLIPPER_LED has no LED PINS defined"
-    #undef HAS_FLIPPER_LED
-  #endif
+    // SD Stuff
+    #if defined(USE_SD) && !defined(SD_CS)
+      #warning "USE_SD defined without SD_CS, check 'SD DEFINITIONS' section"
+    #endif
 
-
-  #ifdef HAS_TEMP_SENSOR
-
-
-  #endif   // HAS_TEMP_SENSOR
-
-
-
+    #if defined(HAS_C5_SD) && ( !defined(USE_SD) || !defined(HAS_SD) )
+      #warning "HAS_C5_SD defined without USE_SD/HAS_SD, check 'BOARD FEATURES' section"
+      #define HAS_SD
+      #define USE_SD
+    #elif defined(HAS_SDMMC) && ( !defined(USE_SD) || !defined(HAS_SD) )
+      #warning "HAS_C5_SD defined without USE_SD/HAS_SD, check 'BOARD FEATURES' section"
+      #define HAS_SD
+      #define USE_SD
+    #endif
 
     //  I2C Touch Screens
     #if defined(HAS_CST820) || defined(HAS_AXS5106L) || defined(HAS_FT6336) || defined(HAS_CST3530)
@@ -4432,11 +4430,7 @@
     #endif
 
 
-    #if defined(HAS_NIMBLE_2) && !defined(HAS_BT)
-      #warning "HAS_NIMBLE_2 defined without HAS_BT, check 'BOARD FEATURES' section"
-      #define HAS_BT 1
-    #endif
-
+    // Screen Stuff
     #if defined(HAS_FULL_SCREEN) && !defined(HAS_SCREEN)
       #warning "HAS_FULL_SCREEN defined without HAS_SCREEN, check 'BOARD FEATURES' section"
       #define HAS_SCREEN 1
@@ -4447,6 +4441,11 @@
       #define HAS_SCREEN 1
     #endif
 
+    // LED Stuff
+    #if defined(HAS_FLIPPER_LED) && (!defined(B_PIN) || !defined(G_PIN) || !defined(R_PIN) )
+      #warning "HAS_FLIPPER_LED has no LED PINS defined"
+      #undef HAS_FLIPPER_LED
+    #endif
 
     #if defined(HAS_FLIPPER_LED) || defined(XIAO_ESP32_S3) || defined(HAS_XIAO_LED) \
       || defined(HAS_STICKC_LED) || defined(HAS_NEOPIXEL_LED)
@@ -4454,8 +4453,16 @@
     #endif
 
 
-  #pragma GCC diagnostic pop
 
+  //  Some Consolidated definitions to make later code blocks easier
+  #if (defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5)) \
+    || defined(CONFIG_IDF_TARGET_ESP32C6) 
+    #define USES_C_SERIES 1
+  #elif (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3))
+    #define USES_S_SERIES 1
+  #elif defined(CONFIG_IDF_TARGET_ESP32)
+    #define USES_LEGACY_SERIES 1
+  #endif
 
     // END CONFIG LOGIC
 

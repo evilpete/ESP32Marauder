@@ -5264,6 +5264,9 @@ static void p_info(const char *text, bool newline = true) {
 
 static inline void p_info(const String &s, bool newline = true) { p_info(s.c_str(), newline); }
 
+  #if defined(HAS_CPU_TEMP)
+      #include "cpu_temp_sensor.hpp"
+  #endif   // HAS_CPU_TEMP
 
 void WiFiScan::RunInfo() {
   uint8_t sta_mac[6];
@@ -5347,7 +5350,7 @@ void WiFiScan::RunInfo() {
     p_info("PSRAM Size: 0");
   #endif
 
-  snprintf(buffer, sizeof(buffer), "CpuFrequency = %luMhz", getCpuFrequencyMhz());
+  snprintf(buffer, sizeof(buffer), "CpuFrequency: %luMhz", getCpuFrequencyMhz());
   p_info(buffer);
 
 
@@ -5365,13 +5368,17 @@ void WiFiScan::RunInfo() {
       snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1024));
       p_info(buffer);
 
-      p_info(text_table4[28]);
-      snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1048576));
+      // p_info(text_table4[28]);
+      // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
+      // p_info(buffer);
+      // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
+      // p_info(buffer);
+      snprintf(buffer, sizeof(buffer), "%s %s", text_table4[29], sd_obj.card_sz);
       p_info(buffer);
 
 
-      Serial.print("sd_obj.cardSizeMB: ");
-      Serial.println(sd_obj.cardSizeMB);
+      // Serial.print("sd_obj.cardSizeMB: ");
+      // Serial.println(sd_obj.cardSizeMB);
       Serial.print("sd_obj.card_sz: ");
       Serial.println(sd_obj.card_sz);
 
@@ -5400,8 +5407,17 @@ void WiFiScan::RunInfo() {
         snprintf(buffer, sizeof(buffer), "CPU temperature:  %.1fC", TempSensor_obj.cpu_temperature());
         p_info(buffer);
       }
+    #else
+      p_info("no HAS_TEMP_SENSOR");
     #endif   // HAS_CPU_TEMP
+  #else
+    p_info("temp_sensor_hpp");
   #endif   // temp_sensor_hpp
+
+  #if defined(HAS_CPU_TEMP)
+        snprintf(buffer, sizeof(buffer), "CPU temp:  %.1fC", read_sys_temp);
+        p_info(buffer);
+  #endif   // HAS_CPU_TEMP
 
   p_info("Uptime: " + uptimeString());  // wraps after about 49 days because it uses
 

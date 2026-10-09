@@ -1,4 +1,9 @@
 /*
+ *
+ *
+ * The CH32V003 is an ultra-low-cost, 32-bit general-purpose microcontroller 
+ * used here by Waveshare as an I2C gpio port expander
+ *
  * CH32V003_IOExpander - Arduino/PlatformIO library (single-header, ESP32)
  * Converted from Waveshare ESP-IDF component (Apache-2.0)
  * Original: https://github.com/waveshareteam/Waveshare-ESP32-components

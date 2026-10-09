@@ -1,6 +1,10 @@
 /*
- * SHTC3.hpp - minimal Sensirion SHTC3 temperature / humidity driver for ESP32
+ * SHTC3.hpp - minimal Sensirion SHTC3 driver for ESP32
  * (single-header, ESP32)
+ *
+ * The SHTC3 is a digital humidity and temperature sensor made by
+ * Sensirion, designed for ultra-low power and compact consumer or
+ * IoT device
  *
  *   SHTC3 sht;
  *   sht.begin(0, 1);              // SDA, SCL

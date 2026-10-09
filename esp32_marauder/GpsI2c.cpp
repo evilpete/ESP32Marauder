@@ -1,5 +1,16 @@
 
 #include "GpsI2c.h"
+// 
+// Gravity: GNSS GPS BeiDou Receiver Module
+// Supports I2C or UART Communications
+// switchable with a hardware switch on the board
+//
+// Pin
+//  1   D/T I2C data line SDA/UART Data Transmitting- TX
+//  2   C/R I2C clock line SCL/UART Data Receiving- RX
+
+
+
 // #include <format>
 // #include "ESP32_PinDebug.h"
 

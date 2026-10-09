@@ -1,5 +1,6 @@
 /*
- * CST820 - Arduino/PlatformIO library (single-header, ESP32)
+ * CST820 is a high-performance self-capacitive touch controller
+ * manufactured by Hynitron
  *
  * MIT License
  * Copyright (c) 2026 Peter Shipley

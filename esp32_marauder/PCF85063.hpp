@@ -1,6 +1,9 @@
 /*
- * PCF85063 - Arduino/PlatformIO RTC library
- * NXP PCF85063A/TP, I2C address 0x51
+ *
+ * The PCF85063 is a low-power CMOS Real-Time Clock (RTC) and calendar
+ * integrated circuit (IC) manufactured by NXP Semiconductors. 
+ *
+ *  I2C address 0x51
  * RTClib RTC_PCF8523-compatible interface
  * Register map from Waveshare BSP PCF85063Constants.h
  *

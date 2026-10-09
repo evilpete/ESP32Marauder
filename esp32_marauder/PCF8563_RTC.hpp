@@ -1,6 +1,9 @@
 /*!
  * @file PCF8563_RTC.hpp
  *
+ * The PCF8563 is a low-power, CMOS Real-Time Clock (RTC) and calendar chip manufactured by NXP Semiconductors
+ * it is also known as the BM8563 FH8563 or AT8563)
+ *
  * Header-only, Adafruit RTClib compatible driver for the NXP PCF8563 /
  * HYM8563 real time clock.
  *

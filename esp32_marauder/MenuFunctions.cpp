@@ -18,6 +18,9 @@ extern void checkHeap(const char *where);
 
 #include "BackLight.hpp"
 
+#define HAS_TEMP_SENSOR 1
+#define HAS_CPU_TEMP 1
+
 // future use
 #ifdef HAS_TEMP_SENSOR
   #include "temp_sensor.hpp"
@@ -4474,8 +4477,10 @@ void MenuFunctions::RunSetup()
 
       this->addNodes(&adminMenu, "PS_Dump", TFTGREENYEL, SETTINGS, [this]() {
          Serial.println(F("psdump"));
-      #if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_DFS_INIT_AUTO))
-          #include "pm_comfig.hpp"
+      #if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING))
+          // #include "pm_comfig.hpp"
+          extern inline void pm_dump_locks();
+
          pm_dump_locks();
       #else
         log_d("CONFIG_PM / pm_dump_locks not configured");
@@ -5800,7 +5805,7 @@ void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
     display_obj.init();
 
     #ifdef HAS_ILI9341
-      // extern void backlightOn();
+      extern void backlightOn();
           backlightOn();
     #endif
   }

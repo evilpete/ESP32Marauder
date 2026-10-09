@@ -44,12 +44,13 @@
   #ifndef PM_MAX_FREQ
     #if defined(CONFIG_IDF_TARGET_ESP32C2) // ESP-IDF 4.4 + ESP32-C3
       #define PM_MAX_FREQ 120
-    #if defined(CONFIG_IDF_TARGET_ESP32C3) // ESP-IDF 4.4 + ESP32-C3
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3) // ESP-IDF 4.4 + ESP32-C3
       #define PM_MAX_FREQ 160
     #else
       #define PM_MAX_FREQ 240
     #endif
   #endif
+
   #ifndef PM_MIN_FREQ
     #define PM_MIN_FREQ 80
   #endif
@@ -72,7 +73,7 @@ inline esp_err_t enable_pm() {
   esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
   esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
 
-   esp_backtrace_print(4);
+   // esp_backtrace_print(4);
 
 
 #ifdef CONFIG_PM_ENABLE
@@ -159,7 +160,7 @@ inline esp_err_t enable_pm() {
     PM_CONFIG_TYPE pm_config = {
       .max_freq_mhz = PM_MAX_FREQ,
       .min_freq_mhz = PM_MIN_FREQ,
-     #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
+   #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
        .light_sleep_enable = true
      #else
       .light_sleep_enable = false
@@ -170,6 +171,12 @@ inline esp_err_t enable_pm() {
         pm_config.light_sleep_enable ? "true" : "false");
 
     err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_pm_configure(&pm_config));
+
+    #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
+      log_d("Auto LIGHT_SLEEP enabled");
+    #else
+      log_d("Auto LIGHT_SLEEP Disabld");
+    #endif
 
     delay(50);
     if (err == ESP_OK)

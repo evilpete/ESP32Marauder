@@ -1,4 +1,4 @@
-#include "configs.h"
+// #include "configs.h"
 
 #pragma once
 
@@ -11,21 +11,26 @@
 #warning "HAS_CPU_TEMP SET"
 #endif
 
+#define HAS_CPU_TEMP 2
 
+  /*
   // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
   #if (defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)) && \
         (defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3) \
         || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) \
+        || defined(CONFIG_IDF_TARGET_ESP3) \
         || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2))
       #define HAS_CPU_TEMP
   #else
     #undef HAS_CPU_TEMP
   #endif
+  */
 
 //do we have a SENSOR?
 #if defined(HAS_TEMP_SENSOR) && \
     !(defined(HAS_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20))
   #undef HAS_TEMP_SENSOR
+  #error here
 #endif
 
 
@@ -42,9 +47,7 @@
     #include "cpu_temp_sensor.hpp"
 #endif
 
-
   class TempSensor {
-
    public:
        ~TempSensor() {
          #if defined(HAS_CPU_TEMP)
@@ -66,12 +69,20 @@
 #if !defined(HAS_SHTC3) && !defined(HAS_CPU_TEMP)
   inline void TempSensor::RunSetup(TwoWire *wireInstance) { log_d("!! TempSensor::RunSetup"); }
   inline float TempSensor::temperature() { return 0.0; }
+
+
+  #if defined(HAS_CPU_TEMP)
+    log_d("HAS_CPU_TEMP is true");
+  #else
+    log_d("HAS_CPU_TEMP is false");
+  #endif
+
 #else
 
   inline void TempSensor::RunSetup(TwoWire *wireInstance) {
-   if ( supported ) {
-     log_d("TempSensor already started");
-   }
+    if ( supported ) {
+      log_d("TempSensor already started");
+    }
 
     if (wireInstance == nullptr)
       _wire = &Wire;
@@ -121,7 +132,7 @@
 
   inline float TempSensor::cpu_temperature() {
     #if defined(HAS_CPU_TEMP)
-      if (this->cpu_supported) 
+      if (this->cpu_supported)
         return read_sys_temp();
     #endif
       return 0.0;
@@ -133,6 +144,8 @@ inline TempSensor TempSensor_obj;
 
 #endif  //  !HAS_SHTC3  !HAS_CPU_TEMP
 
+#else
+  #error Also
 #endif    // HAS_TEMP_SENSOR
 
 #endif    // temp_sensor_hpp

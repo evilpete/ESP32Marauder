@@ -359,9 +359,11 @@ void setup() {
     while(!Serial && millis() < 2000) {
       delay(500);
     }
-    #if ESP_ARDUINO_VERSION_MAJOR >= 3
-      log_d("setting setTxTimeoutMs()");
-      Serial.setTxTimeoutMs(0);
+    #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C5)
+      #if ESP_ARDUINO_VERSION_MAJOR >= 3 && (defined(ARDUINO_USB_CDC_ON_BOOT) &&  ARDUINO_USB_CDC_ON_BOOT==1)
+	log_d("setting setTxTimeoutMs()");
+	Serial.setTxTimeoutMs(0);
+      #endif
     #endif
 
   init_system_time();
@@ -583,7 +585,7 @@ void setup() {
     battery_obj.battery_level = battery_obj.getBatteryLevel();
   #endif
 
-  if (!settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
+  if (settings_obj.loadSetting<bool>("Probe GPS at Boot")) {    // faster Boot
       #if defined(HAS_GPSI2C)
           gps_obj.begin();
       #elif defined(HAS_GPS)

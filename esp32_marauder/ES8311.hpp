@@ -1,5 +1,9 @@
 #pragma once
 
+// the ES8311 as a low-power mono audio codec featuring an integrated
+// analog-to-digital converter (ADC) and digital-to-analog converter
+// (DAC), optimized for voice and audio applications in embedded systems
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <driver/i2s_std.h>

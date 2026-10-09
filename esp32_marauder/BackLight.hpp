@@ -1,5 +1,5 @@
-#include <Preferences.h>
 
+#include <Preferences.h>
 #include "configs.h"
 
 #ifndef __BACKlIGHT_HPP__
@@ -79,6 +79,7 @@
       if (bl_level_idx < 3) {
         bl_level_idx = 3;
       }
+
       brightnessSet(bl_level_idx);
     }
 

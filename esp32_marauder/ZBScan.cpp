@@ -10,6 +10,11 @@
   extern Display display_obj;
 #endif
 
+// we don't need the constructors called for every WiFiScan.cpp.h include
+#ifdef HAS_SOUND
+  #include "Sound.hpp"
+#endif
+
 // Global node list, defined here (declared extern in ZBScan.h), mirroring the
 // way WiFiScan.cpp owns the global `access_points` list.
 LinkedList<ZigbeeNode>* zigbee_nodes = new LinkedList<ZigbeeNode>();
@@ -232,6 +237,9 @@ void ZBScan::zbPrintFrame(const ZbFrameInfo &info) {
                   String(func) + " " + String(src) + ">" + String(dst);
     display_obj.display_buffer->add(line);
   #endif
+  #ifdef HAS_SOUND
+    sound_obj.tick();
+  #endif
 }
 
 // ---------------------------------------------------------------------------
@@ -304,7 +312,7 @@ bool ZBScan::zbRadioInit(uint8_t channel) {
   esp_ieee802154_set_channel(this->zb_channel);
 
   this->zb_initialized = true;
-  Serial.printf("[ZBScan] 802.15.4 radio initialised on channel %u\n", this->zb_channel);
+  log_d("[ZBScan] 802.15.4 radio initialised on channel %u\n", this->zb_channel);
   return true;
 }
 

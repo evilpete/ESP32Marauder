@@ -936,12 +936,16 @@ void CommandLine::runCommand(String input) {
 
 
   else if (cmd_args.get(0) == PM_DUMP_CMD || cmd_args.get(0) == "psdump")  {
-       #ifdef HAS_PM && ESP_IDF_VERSION_MAJOR < 5
-         pm_dump_locks();
-      #else
-        Serial.print(PM_DUMP_CMD);
-        Serial.println(": Not Supported");
-      #endif
+   // #ifdef HAS_PM && ESP_IDF_VERSION_MAJOR < 5
+
+        #if defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING)
+           pm_dump_locks();
+        #else
+          Serial.print(PM_DUMP_CMD);
+          Serial.println(": Not Supported");
+        #endif
+
+    // #endif
   }
 
   else if (cmd_args.get(0) == REBOOT_CMD)

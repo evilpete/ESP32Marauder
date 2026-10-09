@@ -1,5 +1,11 @@
 #pragma once
 
+//
+// The FT6336 (including variants like the FT6336U) is a single-chip
+// capacitive touch panel controller IC manufactured by FocalTech
+// Systems
+//
+
 #ifndef ft6336_h
 #define ft6336_h
 
@@ -28,6 +34,14 @@ static bool _ft6336_read(uint8_t reg, uint8_t *buf, uint8_t len) {
     for (uint8_t i = 0; i < len; i++)
         buf[i] = Wire.available() ? Wire.read() : 0;
     return true;
+}
+
+
+static bool int8_t _ft6336_write(uint8_t addr, uint8_t data) {
+    Wire.beginTransmission(FT6336_ADDR);
+    Wire.write(addr);
+    Wire.write(data);
+    return Wire.endTransmission(true);
 }
 
 static void ft6336_init() {

@@ -1,9 +1,10 @@
 /*
- * CST3530 - Arduino/PlatformIO library (single-header, ESP32)
- * Converted from Waveshare ESP-IDF component (Apache-2.0)
- * Original: https://github.com/waveshareteam/Waveshare-ESP32-components
  *
- * CST3530 capacitive touch controller - I2C address 0x58
+ * The CST3530 is a capacitive touch screen controller integrated
+ * circuit (IC) used to process touch input on small TFT and IPS LCD
+ * displays
+
+ * I2C address 0x58
  * Uses 32-bit register addresses (4-byte address phase over I2C)
  * Supports up to 5 simultaneous touch points
  *
