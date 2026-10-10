@@ -595,7 +595,7 @@
       #define PWR_ON_PIN  14
     #define HAS_PM
     #define HAS_PWR_MGMT
-    #define ALLOW_LIGHTSLEEP
+    // #define ALLOW_LIGHTSLEEP
   #endif  // MARAUDER_CYD_HMI
 
     /*
@@ -745,10 +745,11 @@
       #define HAS_CYD_SOUND
       #define SOUND_PIN 26
     #define DEEPSLEEP
-    #define ADJ_CPUFREQ 1
-    #define ALLOW_LIGHTSLEEP
-    #define HAS_TEMP_SENSOR
-      #define HAS_CPU_TEMP
+    #define HAS_PM
+    // #define ADJ_CPUFREQ 1
+    // #define ALLOW_LIGHTSLEEP
+    //#define HAS_TEMP_SENSOR
+      //#define HAS_CPU_TEMP
     // // #define HAS_CYD_PORTRAIT
   #endif  // MARAUDER_JC2432W328C
 
@@ -773,12 +774,13 @@
       #define HAS_CYD_SOUND
       #define SOUND_PIN 26
     #define DEEPSLEEP
-    #define ADJ_CPUFREQ 1
-    #define SLOW_IDLE 1
+    //#define ADJ_CPUFREQ 1
+    #define HAS_PM
+      // #define ALLOW_LIGHTSLEEP
     #define HAS_SOUND
       #define CYD_SOUND
-    #define HAS_TEMP_SENSOR
-      #define HAS_CPU_TEMP
+    // #define HAS_TEMP_SENSOR
+    //   #define HAS_CPU_TEMP
   #endif   // MARAUDER_CYD_24
 
 
@@ -847,7 +849,7 @@
     #define HAS_SOUND
       #define HAS_ES8311
     #define HAS_PM
-      #define ALLOW_LIGHTSLEEP
+      // #define ALLOW_LIGHTSLEEP
   #endif     // MARAUDER_WS_C5_28
 
   #ifdef MARAUDER_POOM

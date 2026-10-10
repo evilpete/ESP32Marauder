@@ -57,6 +57,9 @@ class Settings {
   #ifdef HAS_SOUND
       bool  EnableSND   = true;
   #endif
+  #ifdef CONFIG_PM_ENABLE
+      bool  EnablePM   = true;
+  #endif
       bool  ProbeGPS     = false;
       String ClientSSID = "";
       String ClientPW   = "";

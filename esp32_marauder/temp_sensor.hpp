@@ -5,13 +5,10 @@
 #ifndef temp_sensor_hpp
 #define temp_sensor_hpp
 
+#if defined(HAS_TEMP_SENSOR)
+
 #pragma GCC diagnostic warning "-Wcpp"
 
-#ifdef HAS_CPU_TEMP
-#warning "HAS_CPU_TEMP SET"
-#endif
-
-#define HAS_CPU_TEMP 2
 
   /*
   // ESP_IDF_VERSION_MAJOR ESP_ARDUINO_VERSION_MAJOR
@@ -34,7 +31,6 @@
 #endif
 
 
-#if defined(HAS_TEMP_SENSOR)
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -144,8 +140,6 @@ inline TempSensor TempSensor_obj;
 
 #endif  //  !HAS_SHTC3  !HAS_CPU_TEMP
 
-#else
-  #error Also
 #endif    // HAS_TEMP_SENSOR
 
 #endif    // temp_sensor_hpp

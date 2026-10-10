@@ -1,4 +1,4 @@
-#include "MenuFunctions.h"
+include "MenuFunctions.h"
 #include "MenuMarquee.h"
 #include "CommandLine.h"
 #include "OwnedListLifecycle.h"
@@ -18,9 +18,6 @@ extern void checkHeap(const char *where);
 
 #include "BackLight.hpp"
 
-#define HAS_TEMP_SENSOR 1
-#define HAS_CPU_TEMP 1
-
 // future use
 #ifdef HAS_TEMP_SENSOR
   #include "temp_sensor.hpp"
@@ -33,7 +30,7 @@ extern void checkHeap(const char *where);
   #include "shutdown.hpp"
 #endif
 
-#if defined(HAS_PM)  || (defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_DFS_INIT_AUTO))
+#if defined(HAS_PM)  || defined(CONFIG_PM_ENABLE) 
   #include "esp_log.h"
   #include "pm_comfig.hpp"
 #endif
@@ -4418,7 +4415,37 @@ void MenuFunctions::RunSetup()
     do_menu_sync_ntp();
   });
 
-  #if defined(ADJ_CPUFREQ) && defined(CONFIG_IDF_TARGET_ESP32)
+  #if defined(CONFIG_PM_ENABLE)
+      this->addNodes(&adminMenu, "Enable PM", TFTGREEN, SETTINGS, [this]() {
+        this->changeMenu(&adminSubMenu, true);
+
+          checkHeap("Enable PM");
+          Serial.println(F("Enable Power Management"));
+          display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+          display_obj.tft.drawCentreString("Power Mgt On", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          settings_obj.saveSetting<bool>("EnablePM", true);
+          enable_pm(true);
+          checkHeap("Enable PM done");
+          delay(500)
+          this->changeMenu(&adminMenu, true);
+      });
+
+      this->addNodes(&adminMenu, "Disable PM", TFTGREEN, SETTINGS, [this]() {
+        this->changeMenu(&adminSubMenu, true);
+
+          checkHeap("Disable PM");
+          Serial.println(F("Disable Power Management"));
+          display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
+          display_obj.tft.drawCentreString("Power Mgt OFF", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+          settings_obj.saveSetting<bool>("EnablePM", false);
+          enable_pm(false);
+          delay(500)
+          checkHeap("Disable PM done");
+        this->changeMenu(&adminMenu, true);
+      });
+
+  #endif   // CONFIG_PM_ENABLE
+  #if defined(ADJ_CPUFREQ) && defined(CONFIG_IDF_TARGET_ESP32) && !defined(CONFIG_PM_ENABLE)
   // && !defined(CONFIG_PM_ENABLE) && !defined(HAS_PM)
       this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);

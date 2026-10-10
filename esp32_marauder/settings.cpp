@@ -106,6 +106,10 @@ void Settings::_buildCache() {
     else if (strcmp(name, "EnableSND") == 0)
       _cache.EnableSND = json["Settings"][i]["value"].as<bool>();
 #endif
+#ifdef CONFIG_PM_ENABLE
+    else if (strcmp(name, "EnablePM") == 0)
+      _cache.EnablePM = json["Settings"][i]["value"].as<bool>();
+#endif
 
   }
 }
@@ -284,6 +288,10 @@ template <> bool Settings::loadSetting<bool>(const char* key) {
 #endif
   if (strcmp(key, "Probe GPS at Boot") == 0)
     return _cache.ProbeGPS;
+#ifdef CONFIG_PM_ENABLE
+  if (strcmp(key, "EnablePM") == 0)
+    return _cache.EnablePM;
+#endif
 
   // Unknown bool key: fall back to JSON so the setting can be auto-created.
   DynamicJsonDocument json(JSON_SETTING_SIZE);
@@ -337,6 +345,10 @@ template <> uint8_t Settings::loadSetting<uint8_t>(const char* key) {
 #ifdef HAS_SOUND
   if (strcmp(key, "EnableSND") == 0)
     return (uint8_t)_cache.EnableSND;
+#endif
+#ifdef CONFIG_PM_ENABLE
+  if (strcmp(key, "EnablePM") == 0)
+    return (uint8_t)_cache.EnablePM;
 #endif
 
   DynamicJsonDocument json(JSON_SETTING_SIZE);
@@ -407,6 +419,10 @@ template <> bool Settings::saveSetting<bool>(const char* key, bool value) {
 #ifdef HAS_SOUND
       else if (strcmp(key, "EnableSND") == 0)
         _cache.EnableSND = value;
+#endif
+#ifdef CONFIG_PM_ENABLE
+      else if (strcmp(key, "EnablePM") == 0)
+        _cache.EnablePM = value;
 #endif
 
       this->printJsonSettings(settings_string);
@@ -562,6 +578,8 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
     return false;
   }
 
+  log_d("create Default Settings");
+
   String settings_string;
 
   if (!spec) {
@@ -619,6 +637,14 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
 
 #ifdef HAS_SOUND
     jsonBuffer["Settings"][++x]["name"] = "EnableSND";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = true;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
+#endif
+
+#ifdef CONFIG_PM_ENABLE
+    jsonBuffer["Settings"][++x]["name"] = "EnablePM";
     jsonBuffer["Settings"][x]["type"] = "bool";
     jsonBuffer["Settings"][x]["value"] = true;
     jsonBuffer["Settings"][x]["range"]["min"] = false;

@@ -30,6 +30,8 @@
 inline float _celsius = 0.0;
 inline bool already_inited = false;
 
+inline float read_sys_temp();
+
   inline bool init_sys_temp() {
     esp_err_t x = 0;
     float y = 0.0;
@@ -49,34 +51,33 @@ inline bool already_inited = false;
         // Install and enable the internal sensor
         x = ESP_ERROR_CHECK_WITHOUT_ABORT(temperature_sensor_install(&temp_sensor_config, &temp_handle));
 
-        log_d("cpu_temp_sensor: x = %d", x);
+        log_d("temperature_sensor_install: x = %d", x);
         // ESP_ERR_INVALID_STATE implies The framework already allocated it!
         // thus  can safely proceed knowing it is up and running.
         if (x != ESP_OK && x != ESP_ERR_INVALID_STATE) return false;
 
         x = ESP_ERROR_CHECK_WITHOUT_ABORT(temperature_sensor_enable(temp_handle));
 
-        log_d("cpu_temp_sensor: x = %d", x);
+        log_d("temperature_sensor_enable: x = %d", x);
       #else
         // Default range is -10°C to 80°C (TSENS_DAC_L2)
         temp_sensor_config_t config = TSENS_CONFIG_DEFAULT();
 
         x = ESP_ERROR_CHECK_WITHOUT_ABORT(temp_sensor_set_config(config));
-        log_d("cpu_temp_sensor: x = %d", x);
+        log_d("temp_sensor_set_config: x = %d", x);
         if (x != ESP_OK) return false;
 
         x = ESP_ERROR_CHECK_WITHOUT_ABORT(temp_sensor_start());
 
+         log_d("temp_sensor_start = %d", _celsius);
          // temp_sensor_read_celsius(&_celsius);
-         // log_d("get_celsius = %0.1f", _celsius);
 
+        if (x != ESP_OK) return false;
       #endif
 
-       // y  = temprature_sens_read();
-       // log_d("temprature_sens_read = %0.1f", y);
+       log_d("temprature read = %0.1f", read_sys_temp());
 
 
-      if (x == ESP_OK) return false;
 
       already_inited = true;
 

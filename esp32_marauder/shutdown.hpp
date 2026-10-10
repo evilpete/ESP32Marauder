@@ -33,31 +33,45 @@
 
   // should this be in a separate .cpp file
   inline void DeepSleep(int8_t wakeup_but = -1) {
+    esp_err_t x = 0;
+
+    #ifdef HAS_SCREEN
+      display_obj.tft.fillScreen(TFT_BLACK);
+      display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
+      display_obj.tft.drawCentreString("DeepSleep", TFT_WIDTH / 2, TFT_HEIGHT / 2, 5);
+      delay(1200);
+    #endif
 
     // 1. Disconnect from the network gracefully
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
-    esp_wifi_stop();
+    // esp_wifi_stop();
+    // ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_stop());
+    delay(200);
+    Serial.flush();
+
 
     #ifdef HAS_BT
       // This handles stopping and deinitializing BT gracefully
       // esp_bluedroid_disable();
-      esp_bt_controller_disable();
-      esp_bt_controller_deinit();
+      ESP_ERROR_CHECK_WITHOUT_ABORT(esp_bt_controller_disable());
+      ESP_ERROR_CHECK_WITHOUT_ABORT(esp_bt_controller_deinit());
+      delay(200);
     #endif
 
     #ifdef HAS_ZIGBEE
       // wifi_scan_obj>StopZigbeeScan();
-        esp_ieee802154_sleep();
-        esp_ieee802154_disable();
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_ieee802154_sleep());
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_ieee802154_disable());
         // esp_zigbee_deinit();
-        ESP-IDF
     #endif
+        delay(200);
 
     #if defined(MARAUDER_WS_C5_28)
       CH32V003_obj.SetAudio(0);
       CH32V003_obj.setPWM(0);
-
+    #endif
+      delay(200);
 
     #if defined(HAS_SCREEN)  && defined(ST7789_DRIVER)
 
@@ -88,11 +102,11 @@
     // #ifdef CONFIG_IDF_TARGET_ESP32
     // rtc_gpio_isolate(GPIO_NUM_12);
     // 18 19 5 23 10 33 32 16 17 20 
-    esp_sleep_config_gpio_isolate();
+    esp_sleep_config_gpio_isolate(); // Void Value
     
     // Start clean: no timer/touch/ULP/GPIO wake sources left over from elsewhere.
     // With no wake source enabled the chip stays "off" until reset or power cycle.
-    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
 
     if (wakeup_but >= 0) {
     #if SOC_PM_SUPPORT_EXT0_WAKEUP || SOC_PM_SUPPORT_EXT_WAKEUP
@@ -102,7 +116,7 @@
         pinMode(wakeup_but, INPUT_PULLUP);
         while (digitalRead(wakeup_but) == LOW) delay(10);   // don't wake on the press that got us here
         delay(50);
-        esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0); // 0 means LOW
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_sleep_enable_ext0_wakeup((gpio_num_t)wakeup_but, 0)); // 0 means LOW
       } else {
         Serial.printf("GPIO%d cannot wake from deep sleep, no wake source\n", wakeup_but);
       }
@@ -114,7 +128,7 @@
         pinMode(wakeup_but, INPUT_PULLUP);
         while (digitalRead(wakeup_but) == LOW) delay(10);
         delay(50);
-        esp_deep_sleep_enable_gpio_wakeup((1ULL << wakeup_but), ESP_GPIO_WAKEUP_GPIO_LOW);
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_deep_sleep_enable_gpio_wakeup((1ULL << wakeup_but), ESP_GPIO_WAKEUP_GPIO_LOW));
       } else {
         Serial.printf("GPIO%d cannot wake from deep sleep, no wake source\n", wakeup_but);
       }

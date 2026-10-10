@@ -4,7 +4,7 @@
 
 void flipperLED::RunSetup() {
 
-  log_d("flipperLED R==%d G=%d B=%d", R_PIN, G_PIN, B_PIN);
+  log_d("flipperLED R=%d G=%d B=%d", R_PIN, G_PIN, B_PIN);
 
   pinMode(B_PIN, OUTPUT);
   pinMode(G_PIN, OUTPUT);

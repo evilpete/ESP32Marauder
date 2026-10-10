@@ -42,12 +42,22 @@
   #endif
 
   #ifndef PM_MAX_FREQ
-    #if defined(CONFIG_IDF_TARGET_ESP32C2) // ESP-IDF 4.4 + ESP32-C3
-      #define PM_MAX_FREQ 120
-    #elif defined(CONFIG_IDF_TARGET_ESP32C3) // ESP-IDF 4.4 + ESP32-C3
-      #define PM_MAX_FREQ 160
+    #ifdef CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
+      #define PM_MAX_FREQ CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
     #else
-      #define PM_MAX_FREQ 240
+      #if defined(CONFIG_IDF_TARGET_ESP32) // ESP-IDF 4.4 + ESP32-C3
+        #define PM_MAX_FREQ 240
+      #elif defined(CONFIG_IDF_TARGET_ESP32C2) // ESP-IDF 4.4 + ESP32-C3
+        #define PM_MAX_FREQ 120
+      #elif defined(CONFIG_IDF_TARGET_ESP32C3) // ESP-IDF 4.4 + ESP32-C3
+        #define PM_MAX_FREQ 160
+      #elif defined(CONFIG_IDF_TARGET_ESP32C6) | defined(CONFIG_IDF_TARGET_ESP32C61) // ESP-IDF 4.4 + ESP32-C3
+        #define PM_MAX_FREQ 160
+      #elif defined(CONFIG_IDF_TARGET_ESP32H2) | defined(CONFIG_IDF_TARGET_ESP32CH4) // ESP-IDF 4.4 + ESP32-C3
+        #define PM_MAX_FREQ 96
+      #else
+        #define PM_MAX_FREQ 240
+      #endif
     #endif
   #endif
 
@@ -59,28 +69,35 @@
   #endif
 
 
+inline void pm_config() {
 
-bool pm_configured = false;
+  #ifdef PM_MAX_FREQ
+    log_d("MIN=%d MAX=%d", PM_MIN_FREQ, PM_MAX_FREQ);
+  #endif
 
-inline esp_err_t enable_pm() {
-  log_d("enable_pm Start");
+  #ifdef CONFIG_PM_DFS_INIT_AUTO
+    log_d("CONFIG_PM_DFS_INIT_AUTO SET");
+  #else
+    log_d("CONFIG_PM_DFS_INIT_AUTO NOT Set");
+  #endif
 
-  if (pm_configured) {
-    log_d("enable_pm already configured");
-    return ESP_OK;
-  }
+  #ifdef CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
+    log_d("CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ %d", CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ);
+  #else
+    log_d("CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ NOT Set");
+  #endif
 
-  esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
-  esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
+  #ifdef CONFIG_PM_PROFILING
+    log_d("CCONFIG_PM_PROFILING Set");
+  #else
+    log_d("CONFIG_PM_PROFILING NOT Set");
+  #endif
 
-   // esp_backtrace_print(4);
-
-
-#ifdef CONFIG_PM_ENABLE
-
-  log_d("CONFIG_PM_ENABLE Set");
-
-
+  #ifdef CONFIG_PM_ENABLE
+    log_d("CONFIG_PM_ENABLE Set");
+  #else
+    log_d("CONFIG_PM_ENABLE NOT Set");
+  #endif
 
   #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
     log_d("CONFIG_FREERTOS_USE_TICKLESS_IDLE Set");
@@ -141,27 +158,67 @@ inline esp_err_t enable_pm() {
   #else
     log_d("CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP NOT Set");
   #endif
+}
 
-  // Force RTC peripherals to stay powered on during sleep
-  esp_err_t err = esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
-  if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
 
-  // Force the main internal BBPLL clock source to stay active 
-  // This prevents the system clock tree from switching down to slower RC/XTAL oscillators
-  err = esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_ON); 
-  if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+bool pm_configured = false;
 
-  // Force the XTAL oscillator to stay ON during sleep 
-  // (Useful if peripherals like LEDC or ADC require it as a clock source)
-  err = esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_ON);
-  if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+inline esp_err_t enable_pm(bool pm = true) {
+  log_d("enable_pm Start");
+  esp_err_t err;
+
+  if (pm_configured) {
+    log_d("enable_pm already configured");
+    return ESP_OK;
+  }
+
+
+  pm_config();
+
+#ifdef CONFIG_PM_ENABLE
+
+  log_d("CONFIG_PM_ENABLE Set");
+
+  esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
+  esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
+
+
+  if (pm) {
+    // Force RTC peripherals to stay powered on during sleep
+    err = esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+    if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+
+    // Force the main internal BBPLL clock source to stay active
+    // This prevents the system clock tree from switching down to slower RC/XTAL oscillators
+    err = esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_ON);
+    if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+
+    // Force the XTAL oscillator to stay ON during sleep
+    // (Useful if peripherals like LEDC or ADC require it as a clock source)
+    err = esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_ON);
+    if (err) ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+  }
+
+  int max_freq = PM_MAX_FREQ;
+  int min_freq = PM_MIN_FREQ;
+  #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
+    int lte_sleep = true;
+  #else
+    int lte_sleep = false;;
+  #endif
+
+  if (pm == false) {
+    min_freq = max_freq;
+    lte_sleep = false;
+  }
+
 
   #if defined(HAS_PM) || defined(HAS_PWR_MGMT)
     PM_CONFIG_TYPE pm_config = {
-      .max_freq_mhz = PM_MAX_FREQ,
-      .min_freq_mhz = PM_MIN_FREQ,
+      .max_freq_mhz = max_freq,
+      .min_freq_mhz = min_freq,
    #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
-       .light_sleep_enable = true
+       .light_sleep_enable = lte_sleep
      #else
       .light_sleep_enable = false
      #endif
@@ -182,12 +239,18 @@ inline esp_err_t enable_pm() {
     if (err == ESP_OK)
       pm_configured = true;
 
+//    if {pm == fale) {
+//    esp_pm_lock_handle_t pm_lock;
+//    esp_pm_lock_create(ESP_PM_CPU_FREQ_MAX, 0, "critical_task", &pm_lock);
+//    esp_pm_lock_acquire(pm_lock); // DFS is disabled while lock is held
+//    // ... perform timing-critical work ...
+//    esp_pm_lock_release(pm_lock); // DFS is allowed again
 
     return err;
   #endif  // HAS_PM
 #endif    //  CONFIG_PM_ENABLE
-
 }
+
 
 #if  defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING)
   // Print PM lock / frequency-mode statistics to the serial console.
@@ -204,10 +267,11 @@ inline esp_err_t enable_pm() {
       Serial.print(F("CpuFrequency = "));
       Serial.print(getCpuFrequencyMhz());
       Serial.println(F(" Mhz"));
+      Serial.println("\n\n");
     }
-#endif
+#endif   // CONFIG_PM_ENABLE && CONFIG_PM_PROFILING
 
-#endif // _PM_CONFIG_
+#endif   // _PM_CONFIG_
 
 
 #ifdef NEVER

@@ -324,21 +324,6 @@ void setup() {
     }
   #endif
 
-  #if (defined(HAS_PM) && defined(CONFIG_PM_ENABLE)) or defined(CONFIG_PM_DFS_INIT_AUTO)
-      // if CONFIG_PM_DFS_INIT_AUTO is set then min freq is 80 and we want 160
-      // esp_err_t pp 
-      enable_pm();
-      // log_d("skipping enable_pm");
-  #else
-      log_d("enable_pm : Not Used  =======");
-    #if !defined(HAS_PM)
-      log_d("HAS_PM: Not Set");
-    #elif !defined(CONFIG_PM_ENABLE)
-      log_d("CONFIG_PM_ENABLE: Not Set");
-    #elif !defined(CONFIG_PM_DFS_INIT_AUTO)
-      log_d("CONFIG_PM_DFS_INIT_AUTO: Not Set");
-    #endif
-  #endif
 
   #ifdef HAS_ACT_LED
     pinMode(ACT_LED_PIN, OUTPUT);
@@ -435,6 +420,26 @@ void setup() {
     delay(10);
   #endif
 
+
+  settings_obj.begin();
+
+  const char* type = settings_obj.getSettingType("EnablePM");
+
+  if (type == nullptr || type[0] == '\0') {
+    Serial.println(F("Current settings format not supported. Installing new default settings..."));
+    settings_obj.createDefaultSettings(SPIFFS);
+  }
+
+  #if (defined(HAS_PM) && defined(CONFIG_PM_ENABLE)) or defined(CONFIG_PM_DFS_INIT_AUTO)
+      // if CONFIG_PM_DFS_INIT_AUTO is set then min freq is 80 and we want 160
+      // esp_err_t pp 
+    if (settings_obj.loadSetting<bool>("EnablePM")) {   
+      enable_pm();
+    } else {
+      log_d("EnablePM setting false, PM not started");
+      pm_config();  //  prints CONFIG_ values
+    }
+  #endif
   //Serial.begin(115200);
 
   //while(!Serial)
@@ -536,15 +541,6 @@ void setup() {
       }
     #endif
   #endif
-
-  settings_obj.begin();
-
-  const char* type = settings_obj.getSettingType("wu");
-
-  if (type == nullptr || type[0] == '\0') {
-    Serial.println(F("Current settings format not supported. Installing new default settings..."));
-    settings_obj.createDefaultSettings(SPIFFS);
-  }
 
   // Do some LED stuff
   // has to follow settings
