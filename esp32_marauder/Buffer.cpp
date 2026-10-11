@@ -7,69 +7,32 @@ Buffer::Buffer(){
   bufB = (uint8_t*)malloc(BUF_SIZE);
 }
 
-#ifdef NO_USE
-void Buffer::createFile(const char* name, bool is_pcap, bool is_gpx){
-  int i=0;
-  String prefix = directory ? String(directory) + "/" : "/";
-  if (is_pcap) {
-    do{
-      fileName = prefix+String(name)+"_"+(String)i+".pcap";
-      i++;
-    } while(fs->exists(fileName));
-  }
-  else if ((!is_pcap) && (!is_gpx)) {
-    do{
-      fileName = prefix+String(name)+"_"+(String)i+".log";
-      i++;
-    } while(fs->exists(fileName));
-  }
-  else {
-    do{
-      fileName = prefix+String(name)+"_"+(String)i+".gpx";
-      i++;
-    } while(fs->exists(fileName));
-  }
-
-  Serial.println(fileName);
-  
-  file = fs->open(fileName, FILE_WRITE);
-  file.close();
-}
-#endif
-
 //  If we know what time it is, we might as well timestamp the files
 void Buffer::createFile(const char* name, bool is_pcap, bool is_gpx) {
   int i = 0;
-  char buf[64];   // LFN can be up to 255 chars on FatFs
+  String prefix = directory ? String(directory) + "/" : "/";
+  const char* ext = is_pcap ? ".pcap" : (is_gpx ? ".gpx" : ".log");
 
-  // With timestamp if system time is set:
-  if (system_time_set) {
+  // Only pcaps get a timestamp: saved lists (APs_0.log etc.) are loaded back
+  // by fixed name.
+  String stamp = "";
+  if (is_pcap && system_time_set && settings_obj.loadSetting<bool>("Timestamp PCAP files")) {
     struct tm timeinfo;
-    getLocalTime(&timeinfo);
-    if (is_pcap) {
-      do {
-        snprintf(buf, sizeof(buf), "/%s_%04d%02d%02d_%02d%02d%02d_%d.pcap",
-          name,
-          timeinfo.tm_year + 1900,
-          timeinfo.tm_mon + 1,
-          timeinfo.tm_mday,
-          timeinfo.tm_hour,
-          timeinfo.tm_min,
-          timeinfo.tm_sec,
-          i++);
-      } while (fs->exists(buf));
-    }
-    // similar for log/gpx...
-  } else {
-    // fallback to existing numeric scheme
-    if (is_pcap) {
-      do {
-        snprintf(buf, sizeof(buf), "/%s_%d.pcap", name, i++);
-      } while (fs->exists(buf));
+    if (getLocalTime(&timeinfo, 0)) {
+      char buf[20];
+      // strftime(buf, sizeof(buf), "_%Y%m%d_%H%M%S", &timeinfo);
+      snprintf(buf, sizeof(buf), "_%04d%02d%02d_%02d%02d%02d",
+        timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+        timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      stamp = buf;
     }
   }
 
-  fileName = String(buf);
+  do {
+    fileName = prefix + String(name) + stamp + "_" + String(i) + ext;
+    i++;
+  } while (fs->exists(fileName));
+
   Serial.println(fileName);
   file = fs->open(fileName, FILE_WRITE);
   file.close();

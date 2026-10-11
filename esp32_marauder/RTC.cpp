@@ -184,8 +184,8 @@ void RTC::adjust_rtc(const char *time_str) {
 
 void RTC::adjust_rtc(struct tm ti) {
   log_d("RTC::adjust_rtc struct tm: %d", ti.tm_year, ti.tm_year + 1900);
-  Serial.print("RTC::adjust_rtc ");
-  Serial.println(&ti, "%F %T");
+  // Serial.print("RTC::adjust_rtc ");
+  // print_datetime(ti);
 
   rtclock.adjust(DateTime(
     (uint16_t)(ti.tm_year) + 1900,

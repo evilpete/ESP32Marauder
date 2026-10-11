@@ -6,6 +6,10 @@
 #include "configs.h"
 #include "pm_comfig.hpp"
 
+#ifndef CLI_MAX_LINE
+  #define CLI_MAX_LINE 1024   // longest serial command line kept
+#endif
+
 #ifdef HAS_SCREEN
   #include "MenuFunctions.h"
   #include "Display.h"
@@ -294,6 +298,7 @@ class CommandLine {
   private:
     String getSerialInput();
     String readStringUntilEcho(char terminator);
+    String line_buffer = "";   // partial serial line between main() calls
     LinkedList<String> parseCommand(String input, char* delim);
     String toLowerCase(String str);
     void filterAccessPoints(String filter);

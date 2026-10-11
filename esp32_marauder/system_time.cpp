@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "time_fmt.h"
 #include <time.h>
 
 // should this be a .hpp ??
@@ -47,7 +48,6 @@ void init_system_time() {
   // no need for this at first boot...
   //   struct tm timeinfo;
   //   if (getLocalTime(&timeinfo)) {
-  //     Serial.println(&timeinfo, "%F %T");
   //     system_time_set = true;
   //   } else {
   //     log_w("System Time Not Set");
@@ -94,7 +94,8 @@ bool set_system_time(const String& time_str, bool setrtc = false) {
   log_d("set_system_time time_str"); delay(5);
     struct tm tm_info = {0};
     // log_d("set_system_time: '%s'", time_str.c_str());
-    if (strptime(time_str.c_str(), "%F %T", &tm_info) != NULL) {
+    //if (strptime(time_str.c_str(), "%F %T", &tm_info) != NULL) 
+    if (parse_datetime(time_str.c_str(), &tm_info)) {
         return set_system_time(tm_info, setrtc);
     }
     log_d("set_system_time: invalid time_str '%s'", time_str.c_str());
@@ -124,7 +125,8 @@ bool sync_ntp(const char *ntpServer = nullptr) {
     return false;
   }
   system_time_set = true;
-  Serial.println(&timeinfo, "%F %T");  //  "%A, %B %d %Y %H:%M:%S");
+  // Serial.println(&timeinfo, "%F %T");  //  "%A, %B %d %Y %H:%M:%S");
+  print_datetime(timeinfo);  //  "%A, %B %d %Y %H:%M:%S");
   Serial.println(F("System time set via NTP"));
 
   #ifdef HAS_RTC

@@ -23,12 +23,8 @@
   #endif
   */
 
-//do we have a SENSOR?
-#if defined(HAS_TEMP_SENSOR) && \
-    !(defined(HAS_CPU_TEMP) || defined(HAS_SHTC3) || defined(HAS_AHT20))
-  #undef HAS_TEMP_SENSOR
-  #error here
-#endif
+// Older boards define HAS_TEMP_SENSOR with no sensor type. They get the
+// stub TempSensor below (supported == false) instead of a build error.
 
 
 
@@ -65,13 +61,7 @@
 #if !defined(HAS_SHTC3) && !defined(HAS_CPU_TEMP)
   inline void TempSensor::RunSetup(TwoWire *wireInstance) { log_d("!! TempSensor::RunSetup"); }
   inline float TempSensor::temperature() { return 0.0; }
-
-
-  #if defined(HAS_CPU_TEMP)
-    log_d("HAS_CPU_TEMP is true");
-  #else
-    log_d("HAS_CPU_TEMP is false");
-  #endif
+  inline float TempSensor::cpu_temperature() { return 0.0; }
 
 #else
 
@@ -135,10 +125,9 @@
   }
 
 
+#endif  //  !HAS_SHTC3  !HAS_CPU_TEMP
 
 inline TempSensor TempSensor_obj;
-
-#endif  //  !HAS_SHTC3  !HAS_CPU_TEMP
 
 #endif    // HAS_TEMP_SENSOR
 

@@ -84,48 +84,50 @@ void CommandLine::RunSetup() {
 
 
 
+// Non-blocking line reader. Collects whatever is in the serial buffer into
+// this->line_buffer and returns the line once CR or LF arrives, so a partial
+// line (or a terminal that only sends CR) never stalls loop().
+// Define CLI_NO_ECHO to turn off the character echo (e.g. for Flipper UART).
 String CommandLine::readStringUntilEcho(char terminator) {
-  String inputBuffer = "";
-  
-  while (true) {
-    if (Serial.available() > 0) {
-      char c = Serial.read();
+  while (Serial.available() > 0) {
+    char c = Serial.read();
 
-      // Check for terminator
-      if (c == terminator) {
+    if (c == terminator || c == '\r' || c == '\n') {
+      // Swallow the LF of a CRLF pair (and blank lines)
+      if (this->line_buffer.length() == 0)
+        continue;
+      #ifndef CLI_NO_ECHO
         Serial.println(); // Move to a new line on echo terminal
-        break;
-      }
+      #endif
+      String line = this->line_buffer;
+      this->line_buffer = "";
+      return line;
+    }
 
-      // Handle Backspace (ASCII 8 or 127)
-      if (c == '\b' || c == 127) {
-        if (inputBuffer.length() > 0) {
-          inputBuffer.remove(inputBuffer.length() - 1);
-          // Erase character from the serial monitor visual output
-          Serial.print("\b \b"); 
-        }
-      } 
-      // Handle printable characters
-      else if (isPrintable(c)) {
-        inputBuffer += c;
-        Serial.print(c); // Echo character back
+    // Handle Backspace (ASCII 8 or 127)
+    if (c == '\b' || c == 127) {
+      if (this->line_buffer.length() > 0) {
+        this->line_buffer.remove(this->line_buffer.length() - 1);
+        #ifndef CLI_NO_ECHO
+          Serial.print("\b \b");
+        #endif
       }
     }
-    // Yield to prevent triggering the ESP32 Watchdog Timer (WDT)
-    vTaskDelay(1); 
+    else if (isPrintable(c) && this->line_buffer.length() < CLI_MAX_LINE) {
+      this->line_buffer += c;
+      #ifndef CLI_NO_ECHO
+        Serial.print(c); // Echo character back
+      #endif
+    }
   }
-  
-  return inputBuffer;
+
+  return "";
 }
 
 
 
 String CommandLine::getSerialInput() {
-  String input = "";
-
-  if (Serial.available() > 0)
-    // input = Serial.readStringUntil('\n');
-    input = this->readStringUntilEcho('\n');
+  String input = this->readStringUntilEcho('\n');
 
   input.trim();
   return input;

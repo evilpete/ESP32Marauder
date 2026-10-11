@@ -151,18 +151,24 @@ public:
     /*!
         @brief  update data obj
     */
-    inline void read_touch() {
+    inline bool read_touch() {
         byte data_raw[8];
-        int8_t x;
-        do {
+        int8_t x = -1;
+        // Bounded retry: the chip NACKs while asleep, an endless loop here
+        // hangs the UI.
+        for (uint8_t tries = 0; tries < 3 && x; tries++)
             x = i2c_read_continuous(0x01, data_raw, 6);  // -1 = err, 0 = good
-        } while (x);
+        if (x) {
+            data.points = 0;
+            return false;
+        }
 
         data.gestureID = data_raw[0] & 0x0F;   // Gesture
         data.points    = data_raw[1];          // number of touch points
         data.event     = data_raw[2] >> 6;      // Event (0 = Down, 1 = Up, 2 = Contact)
         data.x         = ((data_raw[2] & 0xF) << 8) + data_raw[3];
         data.y         = ((data_raw[4] & 0xF) << 8) + data_raw[5];
+        return true;
     }
 
     /*
@@ -182,7 +188,8 @@ public:
         test for input
     */
     inline bool available() {
-        read_touch();
+        if (!read_touch())
+            return false;
         return static_cast<bool>(data.points);
     }
 
@@ -260,13 +267,16 @@ private:
 
     inline uint8_t i2c_read(uint8_t addr) {
         uint8_t rdData = 0;
-        uint8_t rdDataCount;
-        do {
+        uint8_t rdDataCount = 0;
+        // Bounded retry: chip may be asleep or absent, don't hang boot
+        for (uint8_t tries = 0; tries < 5 && rdDataCount == 0; tries++) {
             _wire->beginTransmission(I2C_ADDR_CST820);
             _wire->write(addr);
             _wire->endTransmission(false);  // Restart
             rdDataCount = _wire->requestFrom(I2C_ADDR_CST820, 1);
-        } while (rdDataCount == 0);
+            if (rdDataCount == 0)
+                delay(2);
+        }
         while (_wire->available()) {
             rdData = _wire->read();
         }
@@ -278,7 +288,8 @@ private:
         _wire->write(addr);
         if (_wire->endTransmission(true))
             return -1;
-        _wire->requestFrom(I2C_ADDR_CST820, length);
+        if (_wire->requestFrom(I2C_ADDR_CST820, length) < length)
+            return -1;
         for (uint32_t i = 0; i < length; i++) {
             *data++ = _wire->read();
         }

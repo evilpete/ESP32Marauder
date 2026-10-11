@@ -23,6 +23,8 @@
 #ifdef HAS_GPSI2C
 
 #include <Arduino.h>
+#include <time_fmt.h>
+
 
 #ifndef HAS_GPSI2C_ADDR
   #define HAS_GPSI2C_ADDR 0x20
@@ -254,7 +256,8 @@ void GpsI2c::setGPSInfo() {
     // Serial.print("datetime");  Serial.println(this->datetime);
     log_d("set_system_time(GetTimeInfo())");
     struct tm timeInfo = GetTimeInfo();
-    Serial.println(&timeInfo, "%F %T");
+    // Serial.println(&timeInfo, "%F %T");
+    print_datetime(timeInfo);
     set_system_time(timeInfo);
   }
 

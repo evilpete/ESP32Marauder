@@ -158,7 +158,6 @@ public:
         t.tm_min  = _minute;
         t.tm_sec  = _second;
         log_d("Datetime unixtime:  tm_y=%d _y=%d: ", t.tm_year, _year);
-        Serial.println(&t, "%F %T");
         return static_cast<uint32_t>(mktime(&t));
     }
 
@@ -173,7 +172,6 @@ public:
         t.tm_sec  = _second;
         t.tm_wday = dayOfTheWeek();
         log_d("Datetime toTm tm_y=%d _y=%d: ", t.tm_year, _year);
-        Serial.println(&t, "%F %T");
         return t;
     }
 

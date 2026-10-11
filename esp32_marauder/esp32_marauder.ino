@@ -10,6 +10,7 @@ https://www.online-utility.org/image/convert/to/XBM
 #include "esp_ota_ops.h"
 
 
+
 #ifdef I2C_SDA
   #include "Wire.h"
 #endif
@@ -632,7 +633,9 @@ void setup() {
     #endif
   #endif
 
-  pm_dump_locks();
+  #if defined(CONFIG_PM_ENABLE) && defined(CONFIG_PM_PROFILING)
+    pm_dump_locks();
+  #endif
 
   checkHeap("end setup");
 }

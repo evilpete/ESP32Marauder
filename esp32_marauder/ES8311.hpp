@@ -164,7 +164,7 @@ class ES8311 {
     void beep2(float frequencyHz = BEEP_FREQ, float freq2 = 0.0f, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000,
                TickType_t timeout = portMAX_DELAY) {
         if (!supported) return;
-        log_d("beep freq1=%d freq2=%d", frequencyHz, freq2);
+        log_d("beep freq1=%.0f freq2=%.0f", frequencyHz, freq2);
 
         size_t remaining = (_sampleRate * durationMs) / 1000;
         log_d("remaining = %d", remaining);

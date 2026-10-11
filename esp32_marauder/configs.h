@@ -3423,6 +3423,9 @@
 
     #if defined(MARAUDER_V4) || defined(MARAUDER_V6) || defined(MARAUDER_KIT)
       #define SD_CS 12
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
 
     #elif defined(MARAUDER_V6_1)
       #define SD_CS 14
@@ -3487,8 +3490,23 @@
       #define SD_MISO 4
       #define SD_SCK  3
 
-    #elif defined(MARAUDER_C5) || defined(MARAUDER_V8) || defined(MARAUDER_MINI_V3)
+    #elif defined(MARAUDER_MINI_V3)
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
       #define SD_CS 10
+
+    #elif defined(MARAUDER_V8)
+      #define SD_CS 10
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
+
+    #elif defined(MARAUDER_C5) 
+      #define SD_CS 10
+      #define SD_MISO 2
+      #define SD_MOSI 7
+      #define SD_SCK  6
 
     #elif defined(MARAUDER_T_DONGLE_C5)
       #define SD_CS 23
@@ -3858,6 +3876,10 @@
       #define GPS_SERIAL_INDEX 1
       #define GPS_TX 15         // Gover 1
       #define GPS_RX 16
+    #elif defined(MARAUDER_CYD_HMI)
+      #define GPS_SERIAL_INDEX 1
+      #define GPS_TX 12
+      #define GPS_RX 11
     #endif
   #else
     #ifndef mac_history_len
@@ -4056,6 +4078,7 @@
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
+      #define SD_CS 5
 
     #elif defined(MARAUDER_CYD_2USB)
       #define XPT2046_IRQ  36
@@ -4067,59 +4090,67 @@
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
+      #define SD_CS 5
 
     #elif defined(MARAUDER_CYD_3_5_INCH)
       #define SD_MISO      19
       #define SD_MOSI      23
       #define SD_SCK       18
+      #define SD_CS 5
 
     #elif defined(MARAUDER_C5)
       #define SD_MISO 2
       #define SD_MOSI 7
       #define SD_SCK  6
+      #define SD_CS 10
 
     #elif defined(MARAUDER_T_DONGLE_C5)
       #define SD_MISO 7
       #define SD_MOSI 2
       #define SD_SCK  6
+      #define SD_CS 23
 
 
     #elif defined(MARAUDER_V8)
-      #define SD_MOSI TFT_MOSI
-      #define SD_SCK  TFT_SCLK
-
-    #elif (MARAUDER_V4)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
 
-    #elif (MARAUDER_V6)
+    #elif defined(MARAUDER_V4)
+      #define SD_CS 12
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
 
-    #elif (MARAUDER_V6_1)
+    #elif defined(MARAUDER_V6)
+      #define SD_CS 12
+      #define SD_MISO TFT_MISO
+      #define SD_MOSI TFT_MOSI
+      #define SD_SCK  TFT_SCLK
+
+    #elif defined(MARAUDER_V6_1)
       #define SD_CS 14
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
 
-    #elif (MARAUDER_KIT)
+    #elif defined(MARAUDER_KIT)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
 
-    #elif (MARAUDER_MINI)
+    #elif defined(MARAUDER_MINI)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
 
-    #elif (MARAUDER_V7)
+    #elif defined(MARAUDER_V7)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
+      #define SD_CS 4
 
-    #elif (MARAUDER_MINI_V3)
+    #elif defined(MARAUDER_MINI_V3)
       #define SD_MISO TFT_MISO
       #define SD_MOSI TFT_MOSI
       #define SD_SCK  TFT_SCLK
@@ -4191,27 +4222,27 @@
       #define G_PIN 5
       #define R_PIN 6
 
-    #elif (MARAUDER_MULTIBOARD_S3)
+    #elif defined(MARAUDER_MULTIBOARD_S3)
       #define B_PIN 4
       #define G_PIN 5
       #define R_PIN 6
 
-    #elif (MARAUDER_CYD_MICRO)
+    #elif defined(MARAUDER_CYD_MICRO)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
 
-    #elif (MARAUDER_CYD_2USB)
+    #elif defined(MARAUDER_CYD_2USB)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4
 
-    #elif (MARAUDER_CYD_3_5_INCH)
+    #elif defined(MARAUDER_CYD_3_5_INCH)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 22
 
-    #elif (MARAUDER_CYD_GUITION)
+    #elif defined(MARAUDER_CYD_GUITION)
       #define B_PIN 17
       #define G_PIN 16
       #define R_PIN 4

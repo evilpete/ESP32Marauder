@@ -47,7 +47,7 @@ class NullSound {
     void beep(uint32_t = 0, uint32_t = 0) {}
     void click() {}
     void tick() {}
-    void titk() {}
+    void tit() {}
     void click2(uint16_t mod1 = 2, uint16_t mod2 = 4) {}
 };
 
@@ -100,15 +100,14 @@ class Sound {
     }
 
     bool supported() { return sound_dev.supported; }
+    // click/tick are called from WiFi/BLE/Zigbee callbacks: rate-limit them
+    // so a busy channel can't keep the radio task busy with audio.
+    void click()  { if (enabled() && ready()) sound_dev.click(); }
+    void tick()   { if (enabled() && ready()) sound_dev.tick(); }
+    void tit()    { if (enabled() && ready()) sound_dev.tit(); }
 
-    void click()  { if (enabled()) {sound_dev.click(); log_d("click");}}
-    void tick()   { if (enabled()) {sound_dev.tick(); log_d("tick");}}
-    void tit()   { if (enabled()) {sound_dev.tit(); log_d("tit");}}
-    // void click2() { if (enabled()) {sound_dev.click2(); log_d("click2");}}
-    // std::function<void()> click2 = sound_dev.click2;
-    // void (&click2)() = sound_dev.click2;
     void click2(uint16_t mod1, uint16_t mod2) {
-      sound_dev.click2(mod1, mod2);
+      if (enabled() && ready()) sound_dev.click2(mod1, mod2);
     }
 
 
@@ -128,6 +127,19 @@ class Sound {
     int32_t getVolume()         { return sound_dev.getVolume(); }
 
   private:
+
+
+    static constexpr uint32_t MIN_CLICK_GAP_MS = 30;
+    volatile uint32_t last_click_ms = 0;
+
+    bool ready() {
+      uint32_t now = millis();
+      if (now - last_click_ms < MIN_CLICK_GAP_MS)
+        return false;
+      last_click_ms = now;
+      return true;
+    }
+
     bool enabled() {
       #ifdef HAS_SOUND
         return settings_obj.loadSetting<bool>("EnableSND");

@@ -7,6 +7,7 @@
 #include "UploadStreamBuffer.h"
 #include "lang_var.h"
 #include <esp_ota_ops.h>
+#include "time_fmt.h"
 
 // we don't need the constructors called for every WiFiScan.cpp.h include
 #ifdef HAS_SOUND
@@ -5299,7 +5300,8 @@ void WiFiScan::RunInfo() {
   if (system_time_set) {
     struct tm timeinfo;
     if(getLocalTime(&timeinfo)) {
-      strftime(buffer, sizeof(buffer), "%F %T", &timeinfo);
+      // strftime(buffer, sizeof(buffer), "%F %T", &timeinfo);
+      fmt_datetime(buffer, sizeof(buffer), timeinfo);
       p_info(buffer);
     }
   } 
@@ -8207,11 +8209,13 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
     #endif
 
     if (station_retained) {
+      // ap.stations is a pointer shared with the list entry, so one add is
+      // enough and there's no need to set() the copy back.
       AccessPoint ap = access_points->get(ap_index);
       marauder::memoryGuardedAdd(ap.stations, stations->size() - 1);
 
       // Don't copy, don't set - just add the station index directly
-      access_points->get(ap_index).stations->add(stations->size() - 1);
+      // access_points->get(ap_index).stations->add(stations->size() - 1);
     }
 
     buffer_obj.append(snifferPacket, len);

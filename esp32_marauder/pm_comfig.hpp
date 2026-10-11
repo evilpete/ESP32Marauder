@@ -161,7 +161,7 @@ inline void pm_config() {
 }
 
 
-bool pm_configured = false;
+inline bool pm_configured = false;
 
 inline esp_err_t enable_pm(bool pm = true) {
   log_d("enable_pm Start");
@@ -249,6 +249,8 @@ inline esp_err_t enable_pm(bool pm = true) {
     return err;
   #endif  // HAS_PM
 #endif    //  CONFIG_PM_ENABLE
+  (void)pm;
+  return ESP_ERR_NOT_SUPPORTED;
 }
 
 
