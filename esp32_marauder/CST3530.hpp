@@ -241,6 +241,8 @@ public:
     inline uint8_t getTouch(uint16_t *x, uint16_t *y, uint16_t *strength = nullptr) {
         if (!x || !y || _pointCount == 0) return 0;
         for (uint8_t i = 0; i < _pointCount; i++) {
+            if (_points[i].event == CST3530Event::UP)
+              continue;
             if (_points[i].event == CST3530Event::DOWN) {         // Finger Down Event
                 *x = _points[i].x;
                 *y = _points[i].y;
@@ -249,6 +251,7 @@ public:
                 return _pointCount;
             }
         }
+
 
         // would returning an avg be better ?
         if (_pointCount) {

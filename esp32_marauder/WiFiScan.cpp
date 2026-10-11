@@ -1942,7 +1942,9 @@ void WiFiScan::RunSetup() {
   else
     this->wsl_bypass_enabled = false;
 
-  checkHeap("WiFiScan::RunSetup");
+  #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
+    checkHeap("WiFiScan::RunSetup");
+  #endif
 
   #ifdef HAS_PSRAM
     ssids = new (ps_malloc(sizeof(LinkedList<ssid>))) LinkedList<ssid>();
@@ -2056,7 +2058,9 @@ void WiFiScan::RunSetup() {
   for (int i = 0; i < mac_history_len_half; i++)
     mac_entry_state[i] = 0;
 
-  checkHeap("WiFiScan::BT Setup");
+  #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
+    checkHeap("WiFiScan::BT Setup");
+  #endif
 
   #ifdef HAS_BT
     watch_models = new WatchModel[17] {
@@ -2107,9 +2111,10 @@ void WiFiScan::RunSetup() {
     this->shutdownWiFi();
   #endif
 
-  checkHeap("WiFiScan::Wifi Setup");
   this->initWiFi(1);
-  checkHeap("WiFiScan::RunSetup Done");
+  #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
+    checkHeap("WiFiScan::RunSetup Done");
+  #endif
 }
 
 bool WiFiScan::isMetaIdentifier(uint16_t id) {
@@ -2124,7 +2129,7 @@ bool WiFiScan::isBlockedIdentifier(uint16_t id) {
     if(BLOCKED_IDENTIFIERS[i] == id) return true;
   }
   return false;
-}
+  }
 
 #ifdef HAS_BT
 String WiFiScan::classifyBLEDevice(MarauderBLEAdvertisedDevice* advertised_device) { // GCOVR_EXCL_LINE -- requires NimBLE hardware data.
@@ -4104,9 +4109,9 @@ void WiFiScan::RunSaveAll() {
 }
 
 void WiFiScan::RunLoadAll() {
-    RunSaveATList();
-    RunSaveAPList();
-    RunSaveSSIDList();
+    RunLoadATList();
+    RunLoadAPList();
+    RunLoadSSIDList();
 }
 
 

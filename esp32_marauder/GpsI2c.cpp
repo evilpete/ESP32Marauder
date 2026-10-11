@@ -245,7 +245,7 @@ void GpsI2c::setGPSInfo() {
   this->lon_int = static_cast<int32_t>(lon_dat.lonitudeDegree * 1000000);
 
   this->lat = String(lat_dat.latitudeDegree, 6);
-  this->lon = String(lat_dat.latitudeDegree, 6);
+  this->lon = String(lat_dat.lonitudeDegree, 6);
 
   this->altf = static_cast<float>(gnss.getAlt());
 

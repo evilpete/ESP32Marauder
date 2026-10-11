@@ -1,4 +1,4 @@
-include "MenuFunctions.h"
+#include "MenuFunctions.h"
 #include "MenuMarquee.h"
 #include "CommandLine.h"
 #include "OwnedListLifecycle.h"
@@ -2227,7 +2227,9 @@ void MenuFunctions::buildBluetoothFoxHuntMenu() {
 
 
 void do_menu_sync_ntp() {
-    checkHeap("do_menu_sync_ntp");
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
+      checkHeap("do_menu_sync_ntp");
+    #endif
     display_obj.tft.setTextColor(TFT_CYAN, TFT_BLACK);
     bool sync_ntp(const char *ntpServer = nullptr);    // system_time.cpp
 
@@ -2246,7 +2248,9 @@ void do_menu_sync_ntp() {
    } else {
      log_d("Failed to obtain time from NTP");
    }
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
     checkHeap("do_menu_sync_ntp Done");
+        #endif
    return;
 }
 
@@ -4380,10 +4384,14 @@ void MenuFunctions::RunSetup()
   this->addNodes(&adminMenu, "WifiTx 20dBm (Default)", TFTLIME, WIFI, [this]() {
     // this->changeMenu(&adminSubMenu, true);
       // WIFI_POWER_20dB = 80
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
       checkHeap("adminMenu WifiTx 20dBm");
+        #endif
       wifi_power = 78;
       esp_wifi_set_max_tx_power(wifi_power);
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
       checkHeap("adminMenu WifiTx 20dBm Done");
+        #endif
      this->changeMenu(&adminMenu, true);
   });
 
@@ -4419,28 +4427,36 @@ void MenuFunctions::RunSetup()
       this->addNodes(&adminMenu, "Enable PM", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Enable PM");
+        #endif
           Serial.println(F("Enable Power Management"));
           display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
           display_obj.tft.drawCentreString("Power Mgt On", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
           settings_obj.saveSetting<bool>("EnablePM", true);
           enable_pm(true);
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Enable PM done");
-          delay(500)
+        #endif
+          delay(500);
           this->changeMenu(&adminMenu, true);
       });
 
       this->addNodes(&adminMenu, "Disable PM", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Disable PM");
+        #endif
           Serial.println(F("Disable Power Management"));
           display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
           display_obj.tft.drawCentreString("Power Mgt OFF", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
           settings_obj.saveSetting<bool>("EnablePM", false);
           enable_pm(false);
-          delay(500)
+          delay(500);
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Disable PM done");
+        #endif
         this->changeMenu(&adminMenu, true);
       });
 
@@ -4450,20 +4466,26 @@ void MenuFunctions::RunSetup()
       this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Menu 240Mhz");
+        #endif
           Serial.println(F("Set CPU to 240Mhz"));
           // pm_set_cpu_freq(240);
           setCpuFrequencyMhz(240); // 1. Throttle CPU Save Batt
           display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
           display_obj.tft.drawCentreString("Set CPU 240Mhz", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Menu 240Mhz done");
+        #endif
 
       });
 
       this->addNodes(&adminMenu, "Throttle CPU 160Mhz", TFTGREENYEL, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);
 
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
         checkHeap("Menu 160Mhz done");
+        #endif
         Serial.println(F("Set CPU 160Mhz"));
         // pm_set_cpu_freq(160); 
         setCpuFrequencyMhz(160); // 1. Throttle CPU Save Batt
@@ -4479,7 +4501,9 @@ void MenuFunctions::RunSetup()
         };
         esp_task_wdt_reconfigure(&wdt_config);
         #endif
+        #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
           checkHeap("Menu 160Mhz done");
+        #endif
 
       });
 
@@ -4518,12 +4542,16 @@ void MenuFunctions::RunSetup()
   // Show reason for last reboot...
   this->addNodes(&adminMenu, "Reset Reasion", TFTMAGENTA, SETTINGS, [this]() {
     this->changeMenu(&adminSubMenu, true);
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
       checkHeap("Menu Reset Reasion");
+    #endif
       display_obj.tft.setTextColor(TFT_SKYBLUE, TFT_BLACK);
       display_obj.tft.drawCentreString(resetReasonName(), TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
       print_reset_reason();
       delay(1500);
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
       checkHeap("Menu Reset Reasion Done");
+    #endif
       this->changeMenu(&adminMenu, true);
   });
 
@@ -5821,7 +5849,9 @@ uint16_t MenuFunctions::getColor(uint16_t color) {
 
 // Function to change menu
 void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
   checkHeap("MenuFunctions::changeMenu");
+  #endif
   #ifdef HAS_SD
     const bool leaving_sd_browser = current_menu == &sdDeleteMenu && menu != &sdDeleteMenu;
   #endif
@@ -5856,7 +5886,9 @@ void MenuFunctions::changeMenu(Menu* menu, bool simple_change) {
   //#ifdef MARAUDER_V8
   //  digitalWrite(TFT_BL, HIGH);
   //#endif
+    #ifdef CORE_DEBUG_LEVEL && CORE_DEBUG_LEVEL > 1
   checkHeap("MenuFunctions::changeMenu Done");
+  #endif
 }
 
 void MenuFunctions::buildButtons(Menu *menu, int starting_index, const char* button_name) {

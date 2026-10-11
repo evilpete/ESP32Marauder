@@ -9,7 +9,6 @@
 
 #include <Wire.h>
 #include "DFRobot_GNSS.h"
-// #define GPS_I2C_ADDR 0x75
 #include <time.h>
 
 #if !defined(GPS_SDA) && defined(I2C_SDA)
