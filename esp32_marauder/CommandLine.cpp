@@ -321,7 +321,9 @@ void CommandLine::startScanFromCLI(int scan_mode, uint16_t color, const char* sc
 void CommandLine::runCommand(String input) {
   if (input == "") return;
 
-  menu_function_obj.last_touch = millis();
+  #ifdef HAS_SCREEN
+    menu_function_obj.last_touch = millis();
+  #endif
   if(wifi_scan_obj.scanning() && wifi_scan_obj.currentScanMode == WIFI_SCAN_GPS_NMEA){
     if(input != STOPSCAN_CMD) return;    
   }

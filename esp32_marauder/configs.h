@@ -579,11 +579,11 @@
       #define HAS_CYD_TOUCH
       #define HAS_XPT2046
     #define HAS_PSRAM
-    /// #define HAS_GPS
-    /// #define HAS_GPSI2C
-    ///   #define I2C_SDA 17   // Grove 2
-    ///   #define I2C_SCL 18
-    ///   #define HAS_GPSI2C_ADDR 0x20
+    // #define HAS_GPS
+    // #define HAS_GPSI2C
+    //   #define I2C_SDA 17   // Grove 2
+    //   #define I2C_SCL 18
+    //   #define HAS_GPSI2C_ADDR 0x20
     // #define HAS_CYD_PORTRAIT
     #define HAS_IDF_3
     #define MSC_SHARE
@@ -3405,6 +3405,7 @@
   #endif
   //// END MENU DEFINITIONS
 
+  //// SD DEFINITIONS
   #if defined(HAS_SDMMC)
     #define USE_SD
     #define HAS_SD
@@ -3730,6 +3731,7 @@
     #define mac_history_len_half (mac_history_len / 2)
   #endif
 
+  //// HAS_GPSI2C
   #if defined(HAS_GPSI2C)
 
     #if defined(MARAUDER_M5STICKCP2)
@@ -3777,6 +3779,7 @@
     #endif
 
   #endif  // HAS_GPSI2C
+  //// END HAS_GPSI2C
 
   #if defined(HAS_GPS) && !defined(HAS_GPSI2C)
 
@@ -4214,7 +4217,6 @@
   // #endif
 
   //// FUNNY FLIPPER LED STUFF
-
   #ifdef HAS_FLIPPER_LED
 
     #if defined(MARAUDER_FLIPPER)
@@ -4262,6 +4264,7 @@
   //// END FUNNY FLIPPER LED STUFF
 
 
+  //// HAS_RTC
   #ifdef HAS_RTC
 
     #if defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
@@ -4288,8 +4291,10 @@
       #define I2C_ADDR_PCF8563 0x51
     #endif
 
-  #endif   // HAS_RTC
+  #endif  
+  //// END HAS_RTC
 
+  //// HAS_TEMP_SENSOR
   #ifdef HAS_TEMP_SENSOR
 
     #if defined(MARAUDER_WS_C5_28)
@@ -4311,9 +4316,11 @@
 //    #endif
     */
 
-  #endif  // HAS_TEMP_SENSOR
+  #endif 
+  //// END HAS_TEMP_SENSOR
 
 
+  ////  HAS_CAP_TOUCH
   #ifdef HAS_CAP_TOUCH
 
     #if defined(MARAUDER_JC2432W328C)
@@ -4376,11 +4383,10 @@
       #define TP_RST           -1   // CH32V003 EXIO0
       #define TP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
       #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
-
     #endif
 
-
-  #endif  // HAS_CAP_TOUCH
+  #endif
+  //// END HAS_CAP_TOUCH
 
 
   //// WIFI STUFF
@@ -4400,7 +4406,7 @@
 
   #endif
 
-  // CONFIG LOGIC
+  //// CONFIG LOGIC
 
 // #pragma GCC diagnostic push
 // #pragma GCC diagnostic warning "-Wcpp"
@@ -4497,6 +4503,6 @@
     #define USES_LEGACY_SERIES 1
   #endif
 
-    // END CONFIG LOGIC
+      //// END CONFIG LOGIC
 
 #endif

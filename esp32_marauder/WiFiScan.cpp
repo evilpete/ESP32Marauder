@@ -5296,11 +5296,9 @@ void WiFiScan::RunInfo() {
     display_obj.tft.setTextColor(TFT_CYAN);
   #endif
 
-
   if (system_time_set) {
     struct tm timeinfo;
     if(getLocalTime(&timeinfo)) {
-      // strftime(buffer, sizeof(buffer), "%F %T", &timeinfo);
       fmt_datetime(buffer, sizeof(buffer), timeinfo);
       p_info(buffer);
     }
@@ -5313,7 +5311,6 @@ void WiFiScan::RunInfo() {
     p_info(text_table4[21] + display_obj.version_number);
   #endif
 
-  //snprintf(buffer, sizeof(buffer), "Build Date: %s %s", __DATE__, __TIME__);
   p_info("Build Date: " __DATE__ " " __TIME__);
 
   #ifdef GIT_BRANCH
@@ -5360,7 +5357,6 @@ void WiFiScan::RunInfo() {
   snprintf(buffer, sizeof(buffer), "CpuFrequency: %luMhz", getCpuFrequencyMhz());
   p_info(buffer);
 
-
 //  extern const esp_partition_t *run;
 //  snprintf(buffer, sizeof(buffer), "Running from %s @0x%lx", run->label, (unsigned long)run->address);
 //  p_info(buffer);
@@ -5380,9 +5376,8 @@ void WiFiScan::RunInfo() {
       // p_info(buffer);
       // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
       // p_info(buffer);
-      snprintf(buffer, sizeof(buffer), "%s %s", text_table4[29], sd_obj.card_sz);
+      snprintf(buffer, sizeof(buffer), "%s %s", text_table4[29], sd_obj.card_sz.c_str);
       p_info(buffer);
-
 
       // Serial.print("sd_obj.cardSizeMB: ");
       // Serial.println(sd_obj.cardSizeMB);
@@ -5407,18 +5402,13 @@ void WiFiScan::RunInfo() {
     }
   #endif  // HAS_BATTERY
 
-
   #ifdef temp_sensor_hpp
     #if defined(HAS_TEMP_SENSOR)
       if (TempSensor_obj->cpu_supported) {
         snprintf(buffer, sizeof(buffer), "CPU temperature:  %.1fC", TempSensor_obj.cpu_temperature());
         p_info(buffer);
       }
-    #else
-      p_info("no HAS_TEMP_SENSOR");
     #endif   // HAS_CPU_TEMP
-  #else
-    p_info("temp_sensor_hpp");
   #endif   // temp_sensor_hpp
 
   #if defined(HAS_CPU_TEMP)
@@ -5427,7 +5417,6 @@ void WiFiScan::RunInfo() {
   #endif   // HAS_CPU_TEMP
 
   p_info("Uptime: " + uptimeString());  // wraps after about 49 days because it uses
-
 
   if (this->wifi_connected)
       showNetworkInfo();
