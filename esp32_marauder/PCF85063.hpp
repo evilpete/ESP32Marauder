@@ -46,7 +46,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <stdint.h>
-#include <time.h>
+#include <time_fmt.h>
+
 
 // -- DateTime - mirrors RTClib -------------------------------------------------
 class DateTime {
@@ -93,7 +94,8 @@ public:
         _minute = (uint8_t)  ti->tm_min;
         _second = (uint8_t)  ti->tm_sec;
         log_d("Class::DateTime unix_epoch: tm=%d _year=%d", ti->tm_year, _year);
-        Serial.println(ti, "%F %T");
+        // Serial.println(ti, "%F %T");
+        print_datetime(*ti);
     }
 
     // DateTime(struct tm*)
@@ -105,7 +107,8 @@ public:
         _minute = (uint8_t)  ti->tm_min;
         _second = (uint8_t)  ti->tm_sec;
         log_d("Class::DateTime struct tm: tm=%d _year=%d", ti->tm_year, _year);
-        Serial.println(ti, "%F %T");
+        // Serial.println(ti, "%F %T");
+        print_datetime(*ti);
     }
 
     // DateTime from ISO8601 string "2026-10-11 13:24:43" or T separator

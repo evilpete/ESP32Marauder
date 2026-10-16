@@ -1,4 +1,5 @@
 #include "CommandLine.h"
+#include "time_fmt.h"
 
 #ifdef HAS_SCREEN
   #include "BackLight.hpp"
@@ -2442,10 +2443,8 @@ void CommandLine::runCommand(String input) {
 
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
-        char timeBuffer[64];
         system_time_set = true;
-        strftime(timeBuffer, sizeof(timeBuffer), "%F %T", &timeinfo);
-        Serial.println(&timeinfo, "%F %T");
+        print_datetime(timeinfo);
     } else {
         log_w("getLocalTime Fail");
         perror("getLocalTime");
@@ -2457,8 +2456,8 @@ void CommandLine::runCommand(String input) {
     struct tm timeinfo;
 
     Serial.print(F("system_time_set: ")); Serial.println(system_time_set);
-    if (getLocalTime(&timeinfo)) {
-      Serial.println(&timeinfo, "%F %T");
+    if (getLocalTime(&timeinfo, 0)) {
+      print_datetime(timeinfo);
     } else {
       log_w("getLocalTime Fail: system time not set");
     }
@@ -2470,9 +2469,7 @@ void CommandLine::runCommand(String input) {
 
     log_d("SETDATE_CMD: %s %s", cmd_args.get(1).c_str(), cmd_args.get(2).c_str());
     if ( cmd_args.size() == 3 &&
-         strptime(cmd_args.get(1).c_str(), "%F", &tm_info) &&
-         strptime(cmd_args.get(2).c_str(), "%T", &tm_info) ) {
-
+         parse_datetime(cmd_args.get(1).c_str(), cmd_args.get(2).c_str(), &tm_info) ) {
       set_system_time(tm_info, true);
 
     } else {

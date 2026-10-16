@@ -156,6 +156,17 @@ class ES8311 {
       // Playback APIs
     int16_t peak = 0;   // debug: largest sample of the last beep
 
+
+    // was tempted to replace args with var args
+    void beep(float frequencyHz = BEEP_FREQ, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000) {
+        // No Beep
+    }
+    void beep2(float frequencyHz = BEEP_FREQ, float freq2 = 0.0f, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000,
+               TickType_t timeout = portMAX_DELAY) {
+      // No Beep
+    }
+
+    /*  No Beep
     void beep(float frequencyHz = BEEP_FREQ, uint32_t durationMs = BEEP_DURATION_MS, int16_t amplitude = 10000) {
         beep2(frequencyHz, 0.0f, durationMs, amplitude);
     }
@@ -205,6 +216,7 @@ class ES8311 {
         }
         log_d("beep peak = %d", peak);
     }
+    */
 
 // Pattern Samples Period  Fundamental Duty (high) DC offset
 // i % 2 == 0  + − 2       8000 Hz 50% 0
@@ -215,8 +227,12 @@ class ES8311 {
 //  mod 8 gives            2000 Hz.
 // 20 samples is 1.25 ms, and 1 / 1.25 ms = 800 Hz. For
 
-      // Clicks are called from scan callbacks: never block for long
-    void tick() {
+    void tick()   { post(SND_TICK); }
+    void tit()    { post(SND_TIT); }
+    void click()  { post(SND_CLICK); }
+
+      // Clicks run in the Sound task (see Sound.hpp), never in radio callbacks
+    void _tick() {
         if (!supported) return;
         log_d("tick vol=%d", getVolume());
         int16_t buf[150] = {0};
@@ -231,7 +247,7 @@ class ES8311 {
         write(buf, sizeof(buf), CLICK_TIMEOUT);
     }
 
-    void tit() {
+    void _tit() {
         if (!supported) return;
         log_d("click vol=%d", getVolume());
         int16_t buf[150] = {0};
@@ -243,7 +259,7 @@ class ES8311 {
         write(buf, sizeof(buf), CLICK_TIMEOUT);
     }
 
-    void click() {
+    void _click() {
         if (!supported) return;
         log_d("click vol=%d", getVolume());
         int16_t buf[150] = {0};
@@ -257,6 +273,7 @@ class ES8311 {
 
       // Short dual tone. Placeholder values: tune f1 / f2 / durationMs
       // until it sounds right as the "station" geiger click.
+    // for testing not for Queue
     void click2(uint16_t mod1 = 2, uint16_t mod2 = 4) {
         if (!supported) return;
         log_d("tick vol=%d", getVolume());
@@ -275,6 +292,8 @@ class ES8311 {
       // Drop anything still queued in the DMA buffers
     void stop() {
         if (!supported) return;
+        if (_queue != nullptr) 
+          xQueueReset(_queue);
         i2s_channel_disable(_txHandle);
         i2s_channel_enable(_txHandle);
     }
@@ -286,7 +305,9 @@ class ES8311 {
     i2s_chan_handle_t _txHandle = nullptr;
     bool _useMclk = true;
 
-    static constexpr TickType_t CLICK_TIMEOUT = pdMS_TO_TICKS(20);
+    // Clicks are played from the Sound task (Sound.hpp), not from radio
+    // callbacks, so waiting for DMA space here only delays that task.
+    static constexpr TickType_t CLICK_TIMEOUT = pdMS_TO_TICKS(100);
 
     bool write(const int16_t *buf, size_t bytes, TickType_t timeout) {
         size_t bytes_written = 0;
@@ -415,6 +436,75 @@ class ES8311 {
             _txHandle = nullptr;
         }
         supported = false;
+    }
+
+    enum snd_cmd_t : uint8_t {
+      SND_TICK, SND_CLICK, SND_TIT, SND_CLICK2, SND_BEEP, SND_STOP
+    };
+
+    struct snd_msg_t {
+      snd_cmd_t cmd;
+      uint32_t  a;      // freq / mod1
+      uint32_t  b;      // duration ms / mod2
+    };
+
+    // Short queue on purpose: a click is only worth playing now. A long
+    // backlog would keep clicking for seconds after the traffic stopped.
+    #ifndef ES8311_QUEUE_LEN
+      #define ES8311_QUEUE_LEN 4
+    #endif
+    // Below the WiFi/BT tasks; the device writes block, so the task yields.
+    #ifndef ES8311_TASK_PRIORITY
+      #define ES8311_TASK_PRIORITY 2
+    #endif
+    #ifndef ES8311_TASK_STACK
+      #define ES8311_TASK_STACK 4096
+    #endif
+
+    QueueHandle_t _queue = nullptr;
+    TaskHandle_t  _task  = nullptr;
+
+    // Create the queue and task once, from setup() context (never lazily
+    // from a radio callback).
+    void startTask() {
+      if (_task)
+        return;
+      _queue = xQueueCreate(ES8311_QUEUE_LEN, sizeof(snd_msg_t));
+      if (!_queue) {
+        log_e("ES8311: could not create queue");
+        return;
+      }
+      if (xTaskCreate(taskMain, "ES8311", ES8311_TASK_STACK, this,
+                      ES8311_TASK_PRIORITY, &_task) != pdPASS) {
+        log_e("ES8311: could not create task");
+        vQueueDelete(_queue);
+        _queue = nullptr;
+        _task = nullptr;
+      }
+    }
+
+    void post(snd_cmd_t cmd, uint32_t a = 0, uint32_t b = 0) {
+      if (!_queue )   //  _txHandle != nullptr to test if enabled ?
+        return;
+      snd_msg_t m = {cmd, a, b};
+      xQueueSend(_queue, &m, 0);        // full -> drop, never block the caller
+    }
+
+    static void taskMain(void *arg) {
+      ES8311 *self = static_cast<ES8311 *>(arg);
+      snd_msg_t m;
+      for (;;) {
+        if (xQueueReceive(self->_queue, &m, portMAX_DELAY) != pdTRUE)
+          continue;
+        // Blocking device calls are fine here: only this task waits.
+        switch (m.cmd) {
+          case SND_TICK:   self->_tick();  break;
+          case SND_CLICK:  self->_click(); break;
+          case SND_TIT:    self->_tit();   break;
+          // case SND_BEEP:   .beep(m.a, m.b); break;
+          // case SND_STOP:   this->_stop();  break;
+        }
+      }
     }
 };
 
