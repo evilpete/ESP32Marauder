@@ -23,7 +23,7 @@
 #ifdef HAS_GPSI2C
 
 #include <Arduino.h>
-#include <time_fmt.h>
+#include "time_fmt.h"
 
 
 #ifndef HAS_GPSI2C_ADDR
