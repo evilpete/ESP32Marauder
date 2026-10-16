@@ -133,6 +133,7 @@ class ES8311 {
         }
 
         supported = true;
+        startTask();      // queue + task that plays the clicks
         return true;
     }
 
@@ -289,13 +290,16 @@ class ES8311 {
         write(buf, sizeof(buf), CLICK_TIMEOUT);
     }
 
-      // Drop anything still queued in the DMA buffers
+      // Drop anything still queued, then flush the DMA buffers. With the
+      // task running the flush happens there, so it can't race a write.
     void stop() {
         if (!supported) return;
-        if (_queue != nullptr) 
+        if (_queue != nullptr) {
           xQueueReset(_queue);
-        i2s_channel_disable(_txHandle);
-        i2s_channel_enable(_txHandle);
+          post(SND_STOP);
+          return;
+        }
+        _stop();
     }
 
  private:
@@ -308,6 +312,11 @@ class ES8311 {
     // Clicks are played from the Sound task (Sound.hpp), not from radio
     // callbacks, so waiting for DMA space here only delays that task.
     static constexpr TickType_t CLICK_TIMEOUT = pdMS_TO_TICKS(100);
+
+    void _stop() {
+        i2s_channel_disable(_txHandle);
+        i2s_channel_enable(_txHandle);
+    }
 
     bool write(const int16_t *buf, size_t bytes, TickType_t timeout) {
         size_t bytes_written = 0;
@@ -502,7 +511,8 @@ class ES8311 {
           case SND_CLICK:  self->_click(); break;
           case SND_TIT:    self->_tit();   break;
           // case SND_BEEP:   .beep(m.a, m.b); break;
-          // case SND_STOP:   this->_stop();  break;
+          case SND_STOP:   self->_stop();  break;
+          default:                         break;
         }
       }
     }

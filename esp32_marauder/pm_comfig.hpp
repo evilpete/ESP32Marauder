@@ -217,11 +217,7 @@ inline esp_err_t enable_pm(bool pm = true) {
     PM_CONFIG_TYPE pm_config = {
       .max_freq_mhz = max_freq,
       .min_freq_mhz = min_freq,
-   #if defined(CONFIG_FREERTOS_USE_TICKLESS_IDLE) && defined(ALLOW_LIGHTSLEEP)
        .light_sleep_enable = lte_sleep
-     #else
-      .light_sleep_enable = false
-     #endif
     };
 
     log_d("esp_pm_configure max=%d min=%d sleep_enable=%s", pm_config.max_freq_mhz, pm_config.min_freq_mhz,
@@ -239,7 +235,7 @@ inline esp_err_t enable_pm(bool pm = true) {
     if (err == ESP_OK)
       pm_configured = true;
 
-//    if {pm == fale) {
+//    if (pm == fale) 9
 //    esp_pm_lock_handle_t pm_lock;
 //    esp_pm_lock_create(ESP_PM_CPU_FREQ_MAX, 0, "critical_task", &pm_lock);
 //    esp_pm_lock_acquire(pm_lock); // DFS is disabled while lock is held
