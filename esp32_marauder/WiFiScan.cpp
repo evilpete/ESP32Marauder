@@ -5282,7 +5282,7 @@ void WiFiScan::RunInfo() {
   this->getMAC(true, sta_mac);
   this->getMAC(false, ap_mac);
   const esp_partition_t* running_partition = esp_ota_get_running_partition();
-  const String app_partition = running_partition ? String(running_partition->label) : String("unknown");
+  //  const String app_partition = running_partition ? String(running_partition->label) : String("unknown");
 
   char buffer[64];
 
@@ -5307,21 +5307,26 @@ void WiFiScan::RunInfo() {
 
   p_info(text_table4[20]);
 
-  #ifdef HAS_SCREEN
-    p_info(text_table4[21] + display_obj.version_number);
-  #endif
+  p_info(text_table4[21] + display_obj.version_number);
+  p_info("Hardware: " + (String)HARDWARE_NAME);
+  if (running_partition) {
+    snprintf(buffer, sizeof(buffer), "App partition:: %s 0x%lx 0x%lx", running_partition->label, running_partition->address, running_partition->size);
+    p_info(buffer);
+  } else {
+    p_info("App partition: unknown");
+  }
+p_info(text_table4[22] + (String)esp_get_idf_version());
+//  p_info("Flash Size: " + (String)flashSize);
+//  p_info("PSRAM Size: " + (String) psramtat);
+//  p_info("CpuFrequency = " + (String)getCpuFrequencyMhz() + " Mhz");
 
   p_info("Build Date: " __DATE__ " " __TIME__);
-
   #ifdef GIT_BRANCH
     #ifdef GIT_REV
-      // snprintf(buffer, sizeof(buffer), "GIT BRANCH:: %s %s", GIT_BRANCH, GIT_REV);
       p_info("GIT BRANCH: " GIT_BRANCH " " GIT_REV);
     #else
       p_info("GIT BRANCH: " GIT_BRANCH);
-      // snprintf(buffer, sizeof(buffer), "GIT BRANCH:: %s", GIT_BRANCH);
     #endif
-    // p_info(buffer);
   #endif
 
   // p_info("App partition: " + app_partition)
@@ -5331,11 +5336,7 @@ void WiFiScan::RunInfo() {
     p_info(buffer);
   #endif
 
-  snprintf(buffer, sizeof(buffer), "Hardware: %s", HARDWARE_NAME);
-  p_info(buffer);
-
-  snprintf(buffer, sizeof(buffer), "%s: %s", text_table4[22],  esp_get_idf_version());
-  p_info(buffer);
+  // snprintf(buffer, sizeof(buffer), "%s: %s", text_table4[22],  esp_get_idf_version()); p_info(buffer);
 
   #ifdef ESP_ARDUINO_VERSION_STR
     p_info("Arduino ESP32 Core Version: ", 0); p_info(ESP_ARDUINO_VERSION_STR);
@@ -5368,21 +5369,21 @@ void WiFiScan::RunInfo() {
     if (sd_obj.supported) {
       p_info(text_table4[28]);
 
-      snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1024));
-      p_info(buffer);
+      // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1024));
+      // p_info(buffer);
 
       // p_info(text_table4[28]);
       // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
       // p_info(buffer);
       // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
       // p_info(buffer);
-      snprintf(buffer, sizeof(buffer), "%s %s", text_table4[29], sd_obj.card_sz.c_str);
+      snprintf(buffer, sizeof(buffer), "%s %s", text_table4[29], sd_obj.card_sz.c_str());
       p_info(buffer);
 
       // Serial.print("sd_obj.cardSizeMB: ");
       // Serial.println(sd_obj.cardSizeMB);
-      Serial.print("sd_obj.card_sz: ");
-      Serial.println(sd_obj.card_sz);
+      // Serial.print("sd_obj.card_sz: ");
+      // Serial.println(sd_obj.card_sz);
 
     } else {
       p_info(text_table4[30]);

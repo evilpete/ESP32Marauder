@@ -4204,7 +4204,7 @@
 
   #ifdef PLATFORMIO_NOT
     #if defined(HAS_IDF_3)
-      #if defined(SOC_USB_OTG_SUPPORTED) && (defined(HAS_SD) || defined(HAS_SDMMC))
+      #if defined(SOC_USB_OTG_SUPPORTED) && (defined(HAS_SD) || defined(HAS_SDMMC)) && (defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 1)
         #define MSC_SHARE
       #endif
     #else

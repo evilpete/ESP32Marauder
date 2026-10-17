@@ -42,7 +42,10 @@
   #endif
 
   #ifndef PM_MAX_FREQ
-    #ifdef CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
+
+    #if defined(F_CPU)
+      #define PM_MAX_FREQ F_CPU / 1000000L
+    #elif defined(CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ)
       #define PM_MAX_FREQ CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ
     #else
       #if defined(CONFIG_IDF_TARGET_ESP32) // ESP-IDF 4.4 + ESP32-C3

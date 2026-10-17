@@ -4299,6 +4299,8 @@ void MenuFunctions::RunSetup()
         MSC_Share_obj.RunSetup();
         display_obj.tft.drawCentreString("USB Share Started", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
         Serial.println(F("USB Share Started")); Serial.flush();
+        delay(250);
+        this->changeMenu(&adminMenu, true);
     });
 
     this->addNodes(&adminMenu, "Pause SD Share", TFTSKYBLUE, SD_UPDATE, [this]() {
@@ -4326,6 +4328,8 @@ void MenuFunctions::RunSetup()
         #endif
         display_obj.tft.drawCentreString("USB Share Pause", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
         Serial.println(F("USB Share Paused")); Serial.flush();
+        delay(250);
+        this->changeMenu(&adminMenu, true);
     });
 
     this->addNodes(&adminMenu, "Resume SD Share", TFTSKYBLUE, SD_UPDATE, [this]() {
@@ -4338,6 +4342,8 @@ void MenuFunctions::RunSetup()
         MSC_Share_obj.msc_start();
         display_obj.tft.drawCentreString("USB Share Resume", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
         Serial.println(F("USB Share UnPaused")); Serial.flush();
+        delay(250);
+        this->changeMenu(&adminMenu, true);
     });
 
     this->addNodes(&adminMenu, "Stop SD Share", TFTSKYBLUE, SD_UPDATE, [this]() {
@@ -4366,6 +4372,8 @@ void MenuFunctions::RunSetup()
         #endif
 
         display_obj.tft.drawCentreString("USB Share Stop", TFT_WIDTH/2, TFT_HEIGHT * 0.33, 4);
+        delay(250);
+        this->changeMenu(&adminMenu, true);
     });
 
   #endif // MSC_SHARE

@@ -22,3 +22,12 @@
 [submodule "esp32_marauder/libraries/SwitchLib"]
 	path = esp32_marauder/libraries/SwitchLib
 	url = https://github.com/justcallmekoko/SwitchLib.git
+[submodule "esp32_marauder/libraries/DFRobot_GNSS"]
+	path = esp32_marauder/libraries/DFRobot_GNSS
+	url = https://github.com/dfrobot/DFRobot_GNSS
+[submodule "esp32_marauder/libraries/RTClib"]
+	path = esp32_marauder/libraries/RTClib
+	url = https://github.com/adafruit/RTClib
+[submodule "esp32_marauder/libraries/Adafruit_MAX1704X"]
+	path = esp32_marauder/libraries/Adafruit_MAX1704X
+	url = https://github.com/adafruit/Adafruit_MAX1704X
