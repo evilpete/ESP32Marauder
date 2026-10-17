@@ -5315,7 +5315,15 @@ void WiFiScan::RunInfo() {
   } else {
     p_info("App partition: unknown");
   }
-p_info(text_table4[22] + (String)esp_get_idf_version());
+  p_info(text_table4[22] + (String)esp_get_idf_version());
+
+  #ifdef ESP_ARDUINO_VERSION_STR
+    p_info("Arduino ESP32 Core Version: ", 0); p_info(ESP_ARDUINO_VERSION_STR);
+  #elif defined(ESP_ARDUINO_VERSION)
+    snprintf(buffer, sizeof(buffer), "ESP Arduino: %d.%d.%d", ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
+    p_info(buffer);
+  #endif
+
 //  p_info("Flash Size: " + (String)flashSize);
 //  p_info("PSRAM Size: " + (String) psramtat);
 //  p_info("CpuFrequency = " + (String)getCpuFrequencyMhz() + " Mhz");
@@ -5338,12 +5346,6 @@ p_info(text_table4[22] + (String)esp_get_idf_version());
 
   // snprintf(buffer, sizeof(buffer), "%s: %s", text_table4[22],  esp_get_idf_version()); p_info(buffer);
 
-  #ifdef ESP_ARDUINO_VERSION_STR
-    p_info("Arduino ESP32 Core Version: ", 0); p_info(ESP_ARDUINO_VERSION_STR);
-  #elif defined(ESP_ARDUINO_VERSION)
-    snprintf(buffer, sizeof(buffer), "ESP Arduino: %d.%d.%d",ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
-    p_info(buffer);
-  #endif
 
   snprintf(buffer, sizeof(buffer), "Flash Size:  %luMB", ESP.getFlashChipSize() / (1024 * 1024));
   p_info(buffer);
@@ -5369,21 +5371,8 @@ p_info(text_table4[22] + (String)esp_get_idf_version());
     if (sd_obj.supported) {
       p_info(text_table4[28]);
 
-      // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.cardSizeMB/1024));
-      // p_info(buffer);
-
-      // p_info(text_table4[28]);
-      // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
-      // p_info(buffer);
-      // snprintf(buffer, sizeof(buffer), "%s %d", text_table4[29], (uint32_t)(sd_obj.card_s/1048576));
-      // p_info(buffer);
       snprintf(buffer, sizeof(buffer), "%s %s", text_table4[29], sd_obj.card_sz.c_str());
       p_info(buffer);
-
-      // Serial.print("sd_obj.cardSizeMB: ");
-      // Serial.println(sd_obj.cardSizeMB);
-      // Serial.print("sd_obj.card_sz: ");
-      // Serial.println(sd_obj.card_sz);
 
     } else {
       p_info(text_table4[30]);
@@ -5413,7 +5402,7 @@ p_info(text_table4[22] + (String)esp_get_idf_version());
   #endif   // temp_sensor_hpp
 
   #if defined(HAS_CPU_TEMP)
-        snprintf(buffer, sizeof(buffer), "CPU temp:  %.1fC", read_sys_temp);
+        snprintf(buffer, sizeof(buffer), "CPU temp:  %.1fC", read_sys_temp());
         p_info(buffer);
   #endif   // HAS_CPU_TEMP
 
