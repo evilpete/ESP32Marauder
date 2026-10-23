@@ -1288,6 +1288,15 @@ void MenuFunctions::RamStuff(bool update)  {
  if ((wifi_scan_obj.free_ram != wifi_scan_obj.old_free_ram) || (update)) {
     wifi_scan_obj.old_free_ram = wifi_scan_obj.free_ram;
     display_obj.tft.fillRect(100, 0, 60, STATUS_BAR_WIDTH, STATUSBAR_COLOR);
+
+    uint16_t memColor = TFT_WHITE;   // or whatever the status bar normally uses
+    if (marauder::RuntimeMemoryGuard::instance().paused())
+      memColor = TFT_RED;            // guard refusing adds
+    else if (ESP.getFreeHeap() < 22 * 1024 ||
+             heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT) < 8 * 1024)
+      memColor = TFT_YELLOW;         // close to the guard's limits
+    display_obj.tft.setTextColor(memColor, STATUSBAR_COLOR);
+
     #ifdef HAS_FULL_SCREEN
       #ifndef HAS_PSRAM
         display_obj.tft.drawString("D:" + String(getDRAMUsagePercent()) + "%", SB_MEM_X, 0, 2);
@@ -1309,6 +1318,8 @@ void MenuFunctions::RamStuff(bool update)  {
           display_obj.tft.drawString("P:" + String(getPSRAMUsagePercent()) + "%", TFT_WIDTH/1.75, 0, 1);
       #endif
     #endif
+
+    display_obj.tft.setTextColor(TFT_WHITE, STATUSBAR_COLOR);   // restore
   }
 }
 

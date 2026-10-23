@@ -91,7 +91,7 @@ inline void pm_config() {
   #endif
 
   #ifdef CONFIG_PM_PROFILING
-    log_d("CCONFIG_PM_PROFILING Set");
+    log_d("CONFIG_PM_PROFILING Set");
   #else
     log_d("CONFIG_PM_PROFILING NOT Set");
   #endif

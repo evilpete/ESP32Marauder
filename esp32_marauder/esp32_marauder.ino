@@ -737,7 +737,7 @@ void loop()
 
   #ifdef HAS_SCREEN
     if (wifi_scan_obj.currentScanMode == 0 && (currentTime - menu_function_obj.last_touch) > 10000) {
-      delay(15);
+      delay(25);
     } else {
       delay(1);
    }

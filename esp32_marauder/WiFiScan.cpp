@@ -7930,7 +7930,25 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
       }
 
       if (in_list < 0) {
-      
+        // If the memory guard won't let us keep this AP it never enters the
+        // list, so every later beacon from it lands here again. Don't
+        // re-list it on serial/screen for every beacon; say why, at most
+        // once a second.
+        if (!wifi_scan_obj.checkMem(
+                sizeof(AccessPoint) + sizeof(LinkedList<uint16_t>) + 128)) {
+          static uint32_t last_guard_log = 0;
+          if (millis() - last_guard_log > 1000) {
+            last_guard_log = millis();
+            const uint32_t caps = MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT;
+            log_d("[memguard] AP not added: free=%u largest=%u rejected=%u aps=%d",
+                          (unsigned)heap_caps_get_free_size(caps),
+                          (unsigned)heap_caps_get_largest_free_block(caps),
+                          (unsigned)marauder::RuntimeMemoryGuard::instance().rejectedAllocations(),
+                          access_points->size());
+          }
+          return;
+        }
+
         Serial.print(snifferPacket->rx_ctrl.rssi);
         Serial.print(F(" Ch: "));
         Serial.print((String)snifferPacket->rx_ctrl.channel + " ");
@@ -8023,13 +8041,20 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
           ap.man = "";
           ap.last_seen_ms = millis();
 
-          if (!marauder::memoryGuardedAdd(access_points, ap))
+          if (marauder::memoryGuardedAdd(access_points, ap)) {
+            #ifdef HAS_SOUND
+              sound_obj.tick();   // click for a new AP
+            #endif
+          } else {
+            log_d("[memguard] AP add refused: free=%u largest=%u aps=%d",
+                  (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+                  (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+                  access_points->size());
             delete ap.stations;
+          }
         }
-
-        #ifdef HAS_SOUND
-          sound_obj.tick();   // click for AP
-        #endif
+        // No tick when the memory guard refused the AP: it isn't in the list,
+        // so every later beacon from it lands here again and would tick.
 
         Serial.println();
 
@@ -8164,7 +8189,8 @@ void WiFiScan::apSnifferCallbackFull(void* buf, wifi_promiscuous_pkt_type_t type
     }
 
     #ifdef HAS_SOUND
-      sound_obj.click();  // differnt click for stations
+      if (station_retained)
+        sound_obj.click();  // different click for a new station
     #endif
 
     //display_string.concat(replaceOUIWithManufacturer(sta_addr));

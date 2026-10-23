@@ -230,10 +230,12 @@ bool SDInterface::initSD() {
       }
 
       if (!SD.exists("/SCRIPTS")) {
-
         SD.mkdir("/SCRIPTS");
       }
 
+      if (!SD.exists("/PCAP")) {
+        SD.mkdir("/PCAP");
+      }
       this->sd_files = new LinkedList<String>();
     
       return true;

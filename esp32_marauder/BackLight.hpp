@@ -267,7 +267,7 @@
     }
 
     inline void brightnessSet(uint8_t level) {
-    log_d("brightnessSet lodc");
+    log_d("brightnessSet ledc");
       if (level >= BL_NUM_LEVELS) {
         level = BL_NUM_LEVELS - 1;
         bl_level_idx = level;
@@ -285,7 +285,7 @@
     }
 
     inline void brightnessSave(uint8_t level) {
-      log_d("brightnessSave lodc");
+      log_d("brightnessSave ledc");
       if (level >= BL_NUM_LEVELS) level = BL_NUM_LEVELS - 1;
       bl_level_idx = level;
       BL_SET(BL_LEVELS[bl_level_idx]);
@@ -297,7 +297,7 @@
     }
 
     inline void backlightOn() {
-      log_d("backlightOn lodc");
+      log_d("backlightOn ledc");
       if (bl_level_idx < 3)
         bl_level_idx = 3;
       // Serial.println("BL brightnessOn");

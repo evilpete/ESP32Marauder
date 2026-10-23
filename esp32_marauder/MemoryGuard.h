@@ -52,6 +52,8 @@ class RuntimeMemoryGuard {
   uint32_t rejectedAllocations() const;
 
  private:
+  RuntimeMemoryGuard();
+
   MemoryGuardState state_;
   uint32_t rejected_allocations_ = 0;
   mutable portMUX_TYPE mux_ = portMUX_INITIALIZER_UNLOCKED;

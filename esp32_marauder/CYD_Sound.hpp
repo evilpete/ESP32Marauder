@@ -58,6 +58,7 @@ class CYD_Sound {
 
         // UI / menu click
       void click() {   // Arg not used
+          if (!ready()) return;
           // log_d("click");
           // tone(SOUND_PIN, 400, 8);
           tone(SOUND_PIN, 150, 10);
@@ -65,6 +66,7 @@ class CYD_Sound {
 
         // Geiger tick, low (APs)
       void tick(bool x = 1) { // Arg not used
+          if (!ready()) return;
           // log_d("tick");
              tone(SOUND_PIN, 250, 10);
             // Tone(SOUND_PIN,150, 20);
@@ -73,6 +75,7 @@ class CYD_Sound {
 
         // Geiger tick, low (APs)
       void tit(bool x = 1) { // Arg not used
+          if (!ready()) return;
           // log_d("tit");
              tone(SOUND_PIN, 400, 8);
             // Tone(SOUND_PIN,150, 20);
@@ -81,6 +84,7 @@ class CYD_Sound {
 
         // Geiger tick, high (stations)
       void click2(uint16_t mod1 = 2, uint16_t mod2 = 4) {
+          if (!ready()) return;
           // log_d("click2");
           if (mod1 < 50) mod2 *= 100;
           if (mod2 < 50) mod1 *= 100;
@@ -100,6 +104,22 @@ class CYD_Sound {
       // void s_ready_2() { tone(SOUND_PIN,784,80); delay(50); tone(SOUND_PIN,1046,100); }            // Ready
       // void s_error() { tone(SOUND_PIN,523,150); delay(50); tone(SOUND_PIN,330,180); }            // Error
       // void s_error_2() { for(int i=0;i<3;i++){ tone(SOUND_PIN,300,150); delay(50);} }
+
+  private:
+      // Arduino's tone() queues into a 128-entry queue with portMAX_DELAY and
+      // the tone task plays each 10ms click with delay(), so it drains ~100/s.
+      // Clicks come from the WiFi/BLE callbacks: above that rate the queue
+      // fills and tone() blocks the radio task. Keep clicks well below it.
+      static constexpr uint32_t MIN_CLICK_GAP_MS = 30;
+      volatile uint32_t last_click_ms = 0;
+
+      bool ready() {
+        uint32_t now = millis();
+        if (now - last_click_ms < MIN_CLICK_GAP_MS)
+          return false;
+        last_click_ms = now;
+        return true;
+      }
 };
 
 inline CYD_Sound CYD_Sound_obj;

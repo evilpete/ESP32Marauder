@@ -10,7 +10,10 @@ Buffer::Buffer(){
 //  If we know what time it is, we might as well timestamp the files
 void Buffer::createFile(const char* name, bool is_pcap, bool is_gpx) {
   int i = 0;
-  String prefix = directory ? String(directory) + "/" : "/";
+  if (is_pcap)
+    String prefix = String("/PCAP/");
+  else
+    String prefix = directory ? String(directory) + "/" : "/";
   const char* ext = is_pcap ? ".pcap" : (is_gpx ? ".gpx" : ".log");
 
   // Only pcaps get a timestamp: saved lists (APs_0.log etc.) are loaded back
