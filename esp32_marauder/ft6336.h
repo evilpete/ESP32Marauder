@@ -17,13 +17,13 @@
 #define FT6336_TD_STATUS 0x02
 #define FT6336_T1_XH     0x03
 
-#ifndef TP_SDA
-  #define TP_SDA I2C_SDA
-  #define TP_SSL I2C_SSL
+#ifndef CTP_SDA
+  #define CTP_SDA I2C_SDA
+  #define CTP_SSL I2C_SSL
 #endif
 
-#ifndef TP_FREQ
-  #define TP_FREQ 400000U
+#ifndef CTP_FREQ
+  #define CTP_FREQ 400000U
 #endif
 
 static bool _ft6336_read(uint8_t reg, uint8_t *buf, uint8_t len) {
@@ -46,12 +46,12 @@ static bool int8_t _ft6336_write(uint8_t addr, uint8_t data) {
 
 static void ft6336_init() {
     log_d("ft6336 init");
-    pinMode(TP_RST, OUTPUT);
-    digitalWrite(TP_RST, LOW);
+    pinMode(CTP_RST, OUTPUT);
+    digitalWrite(CTP_RST, LOW);
     delay(10);
-    digitalWrite(TP_RST, HIGH);
+    digitalWrite(CTP_RST, HIGH);
     delay(300);
-    Wire.begin(TP_SDA, TP_SCL, 400000U);
+    Wire.begin(CTP_SDA, CTP_SCL, 400000U);
 
     uint8_t chipId = 0;
     Wire.beginTransmission(FT6336_ADDR);
