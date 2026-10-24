@@ -2786,12 +2786,8 @@ void MenuFunctions::RunSetup()
     this->changeMenu(loadATsMenu.parentMenu, true);
   });
 
-  // Admin Menu
-  // TFT_GREENYELLOW
-  this->addNodes(&deviceMenu, "Admin Tools", TFTPINK, SD_UPDATE, [this]() {
-    this->changeMenu(&adminMenu, true);
-  });
-
+  // Admin Menu (the "Admin Tools" launcher lives in the DEVICE_ROOT lazy
+  // build case, since deviceMenu is populated on demand)
   adminMenu.parentMenu = &deviceMenu;
   this->addNodes(&adminMenu, text09, TFTLIGHTGREY, 0, [this]() {
     this->changeMenu(adminMenu.parentMenu, true);
@@ -5823,6 +5819,9 @@ void MenuFunctions::buildLazyMenu(Menu* menu)
           });
         }
       #endif
+      this->addNodes(menu, "Admin Tools", TFTPINK, SD_UPDATE, [this]() {
+        this->changeMenu(&adminMenu, true);
+      });
       break;
 
     #ifdef HAS_GPS
