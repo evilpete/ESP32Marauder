@@ -22,6 +22,9 @@
 #endif
 #include "settings.h"
 #include "ReconMission.h"
+#if defined(HAS_CSI_MOTION)
+  #include "CsiMotionMonitor.h"
+#endif
 #if defined(HAS_NEOPIXEL_LED)
   #include "LedInterface.h"
 #endif
@@ -44,6 +47,9 @@ extern WiFiScan wifi_scan_obj;
 #endif
 extern Settings settings_obj;
 extern ReconMission recon_obj;
+#if defined(HAS_CSI_MOTION)
+  extern CsiMotionMonitor csi_motion_obj;
+#endif
 #if defined(HAS_NEOPIXEL_LED)
   extern LedInterface led_obj;
 #endif
@@ -134,6 +140,7 @@ const char PROGMEM ARP_SCAN_CMD[] = "arpscan";
 const char PROGMEM MAC_TRACK_CMD[] = "mactrack";
 const char PROGMEM SNIFF_SAE_CMD[] = "sniffsae";
 const char PROGMEM REMOTE_ID_CMD[] = "remoteid";
+const char PROGMEM CSI_MOTION_CMD[] = "csimotion";
 
 // WiFi attack
 const char PROGMEM ATTACK_CMD[] = "attack";
@@ -240,6 +247,7 @@ const char PROGMEM HELP_ARP_SCAN_CMD[] = "arpscan [-f]";
 const char PROGMEM HELP_MAC_TRACK_CMD[] = "mactrack";
 const char PROGMEM HELP_SNIFF_SAE_CMD[] = "sniffsae";
 const char PROGMEM HELP_REMOTE_ID_CMD[] = "remoteid <scan/list/track/clear> [index]";
+const char PROGMEM HELP_CSI_MOTION_CMD[] = "csimotion start <AP index>/recalibrate/status (stop with stopscan)";
 
 // WiFi attack
 const char PROGMEM HELP_ATTACK_CMD[] = "attack -t <quiet/csa/sae/beacon [-l/-r/-a]/deauth [-c]/[-s <src mac>] [-d <dst mac>]/probe/rickroll/badmsg [-c]/sleep [-c]>";
