@@ -39,8 +39,8 @@
 #endif
 
 // #ifdef MARAUDER_WS_C5_28
-//   #include <CH32V003_IOExpander.hpp>
-//   extern CH32V003_IOExpander CH32V003_obj;
+//   #include <CH32V00X_IOExpander.hpp>
+//   extern CH32V00X_IOExpander CH32V00X_obj;
 // #endif
 
 

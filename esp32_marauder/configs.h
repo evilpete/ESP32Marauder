@@ -889,10 +889,10 @@
   #endif
 
     // Waveshare ESP32-C5-Touch-LCD-2.8
-    // ESP32-C5, ST7789 240x320, CST3530 capacitive touch, CH32V003 IO expander
+    // ESP32-C5, ST7789 240x320, CST3530 capacitive touch, CH32V00X IO expander
     // 32MB flash, 8MB PSRAM, dual-band WiFi, BLE5, SD card, audio
 
-    // I2C bus (shared by touch CST3530, CH32V003, QMI8658, SHTC3, PCF85063A)
+    // I2C bus (shared by touch CST3530, CH32V00X, QMI8658, SHTC3, PCF85063A)
   #if defined(MARAUDER_WS_C5_28)
     #define HAS_TOUCH
       #define HAS_CAP_TOUCH
@@ -911,8 +911,8 @@
       #define HAS_C5_SD
     #define I2C_SDA           0
     #define I2C_SCL           1
-    #define HAS_CH32V003         // CH32V003 IO expander
-      #define CH32V003_I2C_ADDR 0x24
+    #define HAS_CH32V00X         // CH32V00X IO expander
+      #define CH32V00X_I2C_ADDR 0x24
     #define HAS_TEMP_SENSOR
       #define HAS_SHTC3
       #define HAS_CPU_TEMP 1
@@ -921,7 +921,7 @@
       #define BOARD_HAS_PSRAM
     #define HAS_DUAL_BAND     // C5 dual-band WiFi
     #define HAS_BATTERY    // ADC is through IO expander
-        #define BATTERY_ADC_PIN 0x06    // CH32V003 Reg Id
+        #define BATTERY_ADC_PIN 0x06    // CH32V00X Reg Id
     #define HAS_RTC
       #define HAS_PCF85063         // i2c real-time clock (RTC)
     #define HAS_GPS
@@ -3082,7 +3082,7 @@
       #define HAS_ILI9341
       #define HAS_ST7789
 
-      // I2C bus (shared by touch CST3530, CH32V003, QMI8658, SHTC3, PCF85063A)
+      // I2C bus (shared by touch CST3530, CH32V00X, QMI8658, SHTC3, PCF85063A)
       #define I2C_SDA           0
       #define I2C_SCL           1
       #define I2C_FREQ          100000
@@ -3099,15 +3099,15 @@
       #define TFT_MISO          8
       #define TFT_DC            9
       #define TFT_CS            10
-      #define TFT_RST           -1   // CH32V003 EXIO1
-      #define TFT_BL            -1   // CH32V003 PWM
+      #define TFT_RST           -1   // CH32V00X EXIO1
+      #define TFT_BL            -1   // CH32V00X PWM
 
 
       // Touch CST3530
       #define CTP_SDA           I2C_SDA
       #define CTP_SCL           I2C_SCL
       #define CTP_INT           5
-      #define CTP_RST           -1   // CH32V003 EXIO0
+      #define CTP_RST           -1   // CH32V00X EXIO0
       #define CTP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
       #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
 
@@ -4202,7 +4202,7 @@
     #endif
 
     //  If we know what we have, we can delete what we're not using
-    #if defined(BATTERY_ADC_PIN) || defined(HAS_CH32V003)
+    #if defined(BATTERY_ADC_PIN) || defined(HAS_CH32V00X)
       #undef HAS_AXP2101
       #undef HAS_IP5306
       #undef HAS_MAX1704X
@@ -4602,7 +4602,7 @@
       #define CTP_SDA           I2C_SDA
       #define CTP_SCL           I2C_SCL
       #define CTP_INT           5
-      #define CTP_RST           -1   // CH32V003 EXIO0
+      #define CTP_RST           -1   // CH32V00X EXIO0
       #define CTP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
       #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
 
@@ -4622,7 +4622,7 @@
       #define CTP_SDA           I2C_SDA
       #define CTP_SCL           I2C_SCL
       #define CTP_INT           5
-      #define CTP_RST           -1   // CH32V003 EXIO0
+      #define CTP_RST           -1   // CH32V00X EXIO0
       #define CTP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
       #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
     #endif

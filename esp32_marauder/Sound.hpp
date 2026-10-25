@@ -11,12 +11,12 @@
   One sound API for every board. Pick the hardware in configs.h:
 
     HAS_CYD_SOUND  : piezo on SOUND_PIN driven by tone()      (CYD_Sound.hpp)
-    HAS_ES8311     : ES8311 I2S codec, amp via CH32V003       (ES8311.hpp)
+    HAS_ES8311     : ES8311 I2S codec, amp via CH32V00X       (ES8311.hpp)
     neither        : NullSound, every call is an empty inline (compiles away)
 
   configs.h defines HAS_SOUND when either backend is present.
 
-    sound_obj.RunSetup();          // once, after Wire / CH32V003 are up
+    sound_obj.RunSetup();          // once, after Wire / CH32V00X are up
     sound_obj.click();             // UI / menu click
     sound_obj.geigerClick(i);      // scan hit: 0 = AP (low), 1 = station (high)
     sound_obj.tick();              // Short click / low geiger tick
@@ -54,8 +54,8 @@ class NullSound {
   // Pick the backend once; Sound forwards to sound_dev
 #if defined(HAS_ES8311)
   #include "ES8311.hpp"
-  #ifdef HAS_CH32V003
-    #include "CH32V003_IOExpander.hpp"   // drives the speaker amp enable
+  #ifdef HAS_CH32V00X
+    #include "CH32V00X_IOExpander.hpp"   // drives the speaker amp enable
   #endif
   using SoundDev = ES8311;
   inline SoundDev &sound_dev = ES8311_obj;
@@ -72,8 +72,8 @@ class Sound {
 
   public:
      Sound() = default;
-     #ifdef HAS_CH32V003
-       ~Sound() { CH32V003_obj.SetAudio(0); }    // Turn off output amp
+     #ifdef HAS_CH32V00X
+       ~Sound() { CH32V00X_obj.SetAudio(0); }    // Turn off output amp
      #endif
 
     bool RunSetup(TwoWire *mywire = nullptr) {
@@ -88,8 +88,8 @@ class Sound {
           log_e("ES8311 init failed");
           return false;
         }
-        #ifdef HAS_CH32V003
-          CH32V003_obj.SetAudio(1);    // Turn on output amp
+        #ifdef HAS_CH32V00X
+          CH32V00X_obj.SetAudio(1);    // Turn on output amp
         #endif
         ES8311_obj.setVolume(200);
         return sound_dev.supported;

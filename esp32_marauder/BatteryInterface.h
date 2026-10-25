@@ -23,12 +23,12 @@
   AXP192 axp192_obj;
 #endif
 
-#if !defined(BATTERY_ADC_PIN) && !defined(HAS_CH32V003)  // not 12c
+#if !defined(BATTERY_ADC_PIN) && !defined(HAS_CH32V00X)  // not 12c
   #include <Wire.h>
 #endif
 
-#ifdef HAS_CH32V003
-  #include <CH32V003_IOExpander.hpp>
+#ifdef HAS_CH32V00X
+  #include <CH32V00X_IOExpander.hpp>
 #endif
 
 #define IP5306_ADDR 0x75

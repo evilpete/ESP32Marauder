@@ -81,9 +81,9 @@ https://www.online-utility.org/image/convert/to/XBM
   #include "BatteryInterface.h"
 #endif
 
-#ifdef HAS_CH32V003
-    #include <CH32V003_IOExpander.hpp>
-    // CH32V003_IOExpander CH32V003_obj;
+#ifdef HAS_CH32V00X
+    #include <CH32V00X_IOExpander.hpp>
+    // CH32V00X_IOExpander CH32V00X_obj;
 #endif
 
 #ifdef MARAUDER_M5STACK_CORE2_AWS
@@ -373,9 +373,9 @@ void setup() {
     Wire.begin(I2C_SDA, I2C_SCL);
   #endif
 
-  #ifdef HAS_CH32V003
-    if (!CH32V003_obj.begin()) {
-      Serial.println("CH32V003 not found - check wiring and I2C address");
+  #ifdef HAS_CH32V00X
+    if (!CH32V00X_obj.begin()) {
+      Serial.println("CH32V00X not found - check wiring and I2C address");
     }
   #endif
 
@@ -444,15 +444,15 @@ void setup() {
 
   #ifdef MARAUDER_WS_C5_28
 
-    // Must happen before display init CH32V003 controls LCD_RST and backlight
+    // Must happen before display init CH32V00X controls LCD_RST and backlight
     log_d("Wire: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
 
-    CH32V003_obj.setPWM(0);      // Turn off LCD
-    CH32V003_obj.lcdReset();      // pulses LCD_RST via EXIO1
+    CH32V00X_obj.setPWM(0);      // Turn off LCD
+    CH32V00X_obj.lcdReset();      // pulses LCD_RST via EXIO1
 
-    // CH32V003_obj.setPWM(80); // 80% brightness
+    // CH32V00X_obj.setPWM(80); // 80% brightness
 
-    CH32V003_obj.touchReset();    // pulses Touch_RST via EXIO0
+    CH32V00X_obj.touchReset();    // pulses Touch_RST via EXIO0
 
     // CST3530 is init'ed in Display.cpp
 
@@ -463,8 +463,8 @@ void setup() {
   #if defined(HAS_SCREEN) && defined(TFT_CS) && TFT_CS != -1 && !defined(MARAUDER_POOM)
     digitalWrite(TFT_CS, HIGH);
   #endif
-  #ifdef HAS_CH32V003
-    log_d("CH32V003_obj.GetAudio=%d", CH32V003_obj.GetAudio());
+  #ifdef HAS_CH32V00X
+    log_d("CH32V00X_obj.GetAudio=%d", CH32V00X_obj.GetAudio());
   #endif
 
   #if defined(HAS_SD) && !defined(HAS_C5_SD) && !defined(HAS_SDMMC)
@@ -525,7 +525,7 @@ void setup() {
   #endif
 
   const esp_partition_t *run = esp_ota_get_running_partition();
-  log_d( "Running from %s @0x%lx\n", run->label, (unsigned long)run->address);
+  log_d( "Running from %s @0x%lx", run->label, (unsigned long)run->address);
 
   log_d("Got HAS_PSRAM");
 
@@ -691,9 +691,9 @@ void setup() {
   prevScanMode = wifi_scan_obj.currentScanMode;
 
   
-  #ifdef HAS_CH32V003
+  #ifdef HAS_CH32V00X
     #if defined(CORE_DEBUG_LEVEL) && CORE_DEBUG_LEVEL > 2
-      CH32V003_obj.printState();
+      CH32V00X_obj.printState();
     #endif
   #endif
 

@@ -9,7 +9,7 @@
 /*
   Four  #ifdef blocks defining brightnessInit() brightnessOn brightnessOff... etc...
 
-    ifdef HAS_CH32V003     :  IO Port Expander used by MARAUDER_WS_C5_28
+    ifdef HAS_CH32V00X     :  IO Port Expander used by MARAUDER_WS_C5_28
     elif HAS_AW9364        :  4-Channel 1-wire Dimming LED Driver used by MARAUDER_CYD_HMI / Lilygo-T-HMI
     elif ledcAttach        :  used by CYD and most others
     elif just digitalWrite
@@ -29,33 +29,33 @@
 
 */
 
-#if (defined(HAS_SCREEN) || defined(THAS_T_DONGLE_DISPLAY))  && ( !defined(TFT_BL) && !defined(HAS_CH32V003) )
+#if (defined(HAS_SCREEN) || defined(THAS_T_DONGLE_DISPLAY))  && ( !defined(TFT_BL) && !defined(HAS_CH32V00X) )
   #warning "HAS_SCREEN is defined and TFT_BL is undefined"
 #endif
 
-#if defined(HAS_SCREEN) && ( defined(TFT_BL) || defined(HAS_CH32V003) )
+#if defined(HAS_SCREEN) && ( defined(TFT_BL) || defined(HAS_CH32V00X) )
 
   inline Preferences bl_prefs;
   inline uint8_t bl_level_idx = 9; // default brightness
 
 
-// HAS_CH32V003 used by MARAUDER_WS_C5_28
-// CH32V003: IO Port Expander replaces TFT_BL Pin
-#ifdef HAS_CH32V003
-    #include <CH32V003_IOExpander.hpp>
-    // extern CH32V003_IOExpander CH32V003_obj;
+// HAS_CH32V00X used by MARAUDER_WS_C5_28
+// CH32V00X: IO Port Expander replaces TFT_BL Pin
+#ifdef HAS_CH32V00X
+    #include <CH32V00X_IOExpander.hpp>
+    // extern CH32V00X_IOExpander CH32V00X_obj;
 
     inline const uint8_t BL_LEVELS[] = {0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255};
 
     inline uint8_t BL_NUM_LEVELS = 16;
     // Dummy Functions, should never be called but are here just in case
 
-    inline void brightnessInit() { log_d("brightnessInit (CH32V003)"); }
+    inline void brightnessInit() { log_d("brightnessInit (CH32V00X)"); }
 
     inline void brightnessCycle() { }
 
     inline uint8_t getBrightnessLevel() {
-      log_d("HAS_CH32V003 getBrightnessLevel level =  %d ", bl_level_idx);
+      log_d("HAS_CH32V00X getBrightnessLevel level =  %d ", bl_level_idx);
       return bl_level_idx;
     }
 
@@ -65,11 +65,11 @@
         bl_level_idx = level;
       }
 
-      CH32V003_obj.setPWM(BL_LEVELS[bl_level_idx]);
+      CH32V00X_obj.setPWM(BL_LEVELS[bl_level_idx]);
     }
 
     inline void brightnessSave(uint8_t level) {
-      log_i("HAS_CH32V003 brightnessSave level = %d ", level);
+      log_i("HAS_CH32V00X brightnessSave level = %d ", level);
       bl_level_idx = level;
       brightnessSet(level);
       bl_prefs.putUChar("level", bl_level_idx);
@@ -84,8 +84,8 @@
     }
 
     inline void backlightOff() {
-    log_d("backlightOff CH32V003");
-      CH32V003_obj.setPWM(0);
+    log_d("backlightOff CH32V00X");
+      CH32V00X_obj.setPWM(0);
     }
 
     inline void backlight_PM_dim() {
