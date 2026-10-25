@@ -75,3 +75,41 @@ a8e1b1b  Fix ESP32-C5 SoftAP crash: disable 11ax on the AP interface
 - ✅ ESP32‑WROOM — works.
 - ⏳ ESP32‑C5 `MARAUDER_WS_C5_28` — boots; WiFi scan/AP was blocked by memguard. Memguard floor fix applied (Section 3) — **awaiting hardware re-flash to confirm / tune**.
 - Not yet reported: WS_C5_35, other C5 variants.
+
+## 7. Known failing `tools/` tests — merge regressions to triage (NEW, found late)
+During the original merge verification only 10 of the 17 `tools/test_*.py` were
+run; the full set revealed **3 pre-existing failures** (present since the merge,
+on `origin/new_merge`, NOT caused by the ws_c5/CH32V00X work). All three are
+master regression-guard tests that pin master's exact implementation
+form/location, while the merge kept new_merge's architecture (same behavior,
+implemented differently/elsewhere). Functionality appears preserved in each case
+but was not hardware-verified. Decide per case: update the test to the new
+architecture, or restore master's form.
+
+1. **`tools/test_m5stack_hardware.py`** — expects `#define AXP192_WIRE Wire`
+   (master's object-macro form). The merge adopted T-HMI-WS_C5's `AXP192.cpp`,
+   which uses pointer form `#define AXP192_WIRE &Wire` / `&Wire1` with
+   `_wire = AXP192_WIRE`. For Core2 it's functionally equivalent (both use Wire1
+   @ 21/22). → update the test to the pointer form, or re-reconcile AXP192.cpp.
+2. **`tools/test_brightness_restore.py`** — reads `esp32_marauder.ino` for an
+   inline `backlightOn()` doing `BL_SETUP()` before `BL_SET()` (master's
+   "preserve brightness after display reinit" fix). The merge kept new_merge's
+   `BackLight.hpp` (the functions live there, with BL_SETUP before BL_SET) and
+   dropped master's inline `.ino` copies, so the test can't find them in the
+   `.ino`. → point the test at BackLight.hpp, or confirm the behavior there.
+3. **`tools/test_battery_driver_macros.py`** — regex for a battery-driver
+   "cleanup section" in `configs.h`. The `#undef HAS_IP5306 / HAS_MAX1704X`
+   blocks ARE present (same as master), so this is almost certainly a
+   regex/structure mismatch from the merge's configs.h layout, not lost
+   function. → adjust the test regex or restore the exact section shape.
+
+Action for next session: run the FULL suite
+`for t in tools/test_*.py; do PYTHONPATH=tools python3 -m unittest "tools.$(basename $t .py)"; done`
+triage these 3, then re-run all 17 green.
+
+## 8. Latest commits this session (branch tip; `git log --oneline` for hashes)
+- `WS_C5_35: use CH32V00X_IOExpander driver instead of ws_c5_exio.h` (ws_c5_exio.h deleted; bring-up moved to ft6336.h via CH32V00X_obj; test updated)
+- `Document memguard low-internal-RAM threshold change in code`
+- `Fix ESP32-C5 memguard starvation: board-tunable low-RAM thresholds`
+- `Add session-notes.md`
+- (plus the user's CH32V003→CH32V00X rename + merge commits already on the branch)
