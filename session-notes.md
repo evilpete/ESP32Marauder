@@ -4,10 +4,13 @@ _Resume-ready handoff. Repo: `github.com/evilpete/ESP32Marauder`, branch `new_me
 
 ## 1. Current repo state (all pushed to `origin/new_merge`)
 ```
+<top>    Fix ESP32-C5 memguard starvation: board-tunable low-RAM thresholds
+9cc492d  Add session-notes.md: merge handoff / resume notes
 a8e1b1b  Fix ESP32-C5 SoftAP crash: disable 11ax on the AP interface
 85ac162  Fix boot crash: build "Admin Tools" in DEVICE_ROOT lazy case
 10f7108  Merge origin/master (v1.19.2) into new_merge   <- the merge commit (2 parents)
 ```
+(`<top>` = the memguard commit made this session; `git log --oneline -6` for exact hash.)
 - Working tree clean; `HEAD == origin/new_merge == a8e1b1b`.
 - No PR opened (not requested).
 
@@ -39,10 +42,11 @@ a8e1b1b  Fix ESP32-C5 SoftAP crash: disable 11ax on the AP interface
 - This behavior is **new from the merge** (new_merge had no memguard, so scanning worked, possibly risking OOM).
 - The pushed `a8e1b1b` 11ax-AP fix (restrict AP to 11b/g/n on `HAS_DUAL_BAND`) is reasonable to keep but was a symptom fix.
 
-**Planned fix (NOT yet applied)** — make memguard thresholds board-tunable, lower them for C5+display:
-1. `esp32_marauder/MemoryGuard.h`: add `#ifdef ARDUINO #include "configs.h" #endif`; make `MemoryGuardThresholds` default members conditional on a new macro `MARAUDER_LOW_INTERNAL_RAM` (lower set, starting point: pause/resume free ≈ **10 KB / 14 KB**, pause/resume largest ≈ **6 KB / 8 KB**). Non‑ARDUINO (host) keeps 24/40/8/12 so host tests stay green.
-2. `esp32_marauder/configs.h`: define `MARAUDER_LOW_INTERNAL_RAM` for `MARAUDER_WS_C5_28` and `MARAUDER_WS_C5_35`.
-- **Caveats:** the 10/14 KB values are a starting guess and **must be hardware-tuned** on WS_C5_28 (read the `[memguard] free=… largest=…` log after flashing and adjust). A lower floor risks the OOM the guard prevents, but the board is currently fully broken and `new_merge` had no guard at all, so a sane low floor is strictly an improvement. After the header change, confirm `test/test_memory_guard/test_main.cpp` and `tools/test_legacy_memory_profile.py` still pass on host.
+**Fix APPLIED** (committed to `new_merge`, see Section 1) — memguard thresholds are now board-tunable and lowered for C5+display:
+1. `esp32_marauder/MemoryGuard.h`: now `#include "configs.h"` under `#ifdef ARDUINO`; `MemoryGuardThresholds` defaults come from `MARAUDER_MEMGUARD_*` macros. With `MARAUDER_LOW_INTERNAL_RAM` defined → pause/resume free = **10 KB / 14 KB**, pause/resume largest = **6 KB / 8 KB**; otherwise the original **24 / 40 / 8 / 12 KB**. Non‑ARDUINO (host) has no board macro → original defaults, so the host Unity test is unchanged.
+2. `esp32_marauder/configs.h` (just after `//// END BOARD FEATURES`): defines `MARAUDER_LOW_INTERNAL_RAM` for `MARAUDER_WS_C5_28` / `MARAUDER_WS_C5_35`.
+- **STILL NEEDS HARDWARE VERIFICATION:** the 10/14 KB values are a starting guess. Flash WS_C5_28, retry WiFi scan + SoftAP, read the `[memguard] free=… largest=…` log, and tune via the `MARAUDER_MEMGUARD_*` macros (overridable per board in configs.h before MemoryGuard.h is first included). If allocations now proceed but the WiFi driver still OOM-crashes, the floor is too low / the board genuinely needs reduced buffers (consider also a reduced feature profile).
+- All 11 `tools/` python tests pass. `test/test_memory_guard/test_main.cpp` (host, Unity) couldn't be compiled here (no toolchain) but is logically unaffected — host defaults are identical.
 
 ## 4. Constraints / environment (important for next session)
 - **No Arduino/PlatformIO toolchain in this container** — cannot compile or flash. All firmware verification is on the user's hardware. Rely on: conflict-marker checks, `#if/#endif` balance, `tools/` unittests, and user flashing.
@@ -61,7 +65,7 @@ a8e1b1b  Fix ESP32-C5 SoftAP crash: disable 11ax on the AP interface
   - `origin/MSC_USB` — older master; USB/buffer work.
 
 ## 5. To do next session (in order)
-1. **Apply the memguard threshold fix** (Section 3) for WS_C5_28/WS_C5_35; commit + push; user re-flashes and tunes the numbers from the `[memguard]` log.
+1. **Flash WS_C5_28 with the applied memguard fix (Section 3)** and retry WiFi scan + SoftAP. Read the `[memguard] free=… largest=…` log and **tune** `MARAUDER_MEMGUARD_*` if needed. If WiFi now works, mark the C5 done.
 2. Re-confirm WS_C5_28 **SoftAP** after the memory fix (the 11ax fix may then suffice, or revisit).
 3. **Confirm with user:** new_merge had a *duplicate* "Sync Clock with WiFi" under `#ifdef HAS_DIRECT_UPLOAD`; only the clean `do_menu_sync_ntp()` one was ported — is that desired?
 4. Optional: open a PR for `new_merge` if the user wants one.
@@ -69,5 +73,5 @@ a8e1b1b  Fix ESP32-C5 SoftAP crash: disable 11ax on the AP interface
 ## 6. Boards tested so far
 - ✅ ESP32‑S3 (CYD_HMI / LilyGo T‑HMI) — boots & works after the Admin Tools fix.
 - ✅ ESP32‑WROOM — works.
-- ❌ ESP32‑C5 `MARAUDER_WS_C5_28` — boots, but WiFi scan/AP blocked by memguard (Section 3).
+- ⏳ ESP32‑C5 `MARAUDER_WS_C5_28` — boots; WiFi scan/AP was blocked by memguard. Memguard floor fix applied (Section 3) — **awaiting hardware re-flash to confirm / tune**.
 - Not yet reported: WS_C5_35, other C5 variants.
