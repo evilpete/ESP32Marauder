@@ -37,6 +37,9 @@
 class BatteryInterface {
   private:
     uint32_t initTime = 0;
+    // calc ADC avg.
+    // int8_t last4[4] = {0};
+    // int8_t last_index = 0;
 
     #ifdef HAS_MAX1704X
       Adafruit_MAX17048 maxlipo;
