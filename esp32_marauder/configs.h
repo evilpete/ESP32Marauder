@@ -167,6 +167,8 @@
     #define HARDWARE_NAME "Waveshare ESP32-C5-Touch-LCD-2.8"
   #elif defined(MARAUDER_POOM)
     #define HARDWARE_NAME "POOM"
+  #elif MARAUDER_WS_C5_35
+    #define HARDWARE_NAME "Marauder C5 3.5"
   #else
     #define HARDWARE_NAME "ESP32"
   #endif
@@ -782,6 +784,32 @@
     #define HAS_DIRECT_UPLOAD
   #endif
 
+
+  #ifdef MARAUDER_WS_C5_35
+    #define HAS_TOUCH
+    #define HAS_CAP_TOUCH
+      #define HAS_FT6336
+    //#define HAS_FLIPPER_LED
+    //#define FLIPPER_ZERO_HAT
+    #define HAS_BATTERY
+      #define HAS_AXP2101
+    #define HAS_BT
+    #define HAS_BUTTONS
+    #define HAS_NEOPIXEL_LED
+    //#define HAS_PWR_MGMT
+    #define HAS_SCREEN
+    #define HAS_FULL_SCREEN
+    #define HAS_GPS
+    #define HAS_C5_SD
+    #define HAS_SD
+    #define USE_SD
+    #define HAS_DUAL_BAND
+    #define HAS_PSRAM
+    //#define HAS_TEMP_SENSOR
+    #define HAS_NIMBLE_2
+    #define HAS_IDF_3
+    #define HAS_DIRECT_UPLOAD
+  #endif
   #ifdef MARAUDER_MINI_V3
     //#define HAS_TOUCH
     //#define HAS_FLIPPER_LED
@@ -805,7 +833,7 @@
     #define HAS_IDF_3
     //#define HAS_SIMPLEX_DISPLAY
     #define HAS_DIRECT_UPLOAD
-  #endif
+  #endif  // MARAUDER_WS_C5_35
 
   #if defined(MARAUDER_JC2432W328C)
     #define HAS_TOUCH
@@ -4201,9 +4229,18 @@
       #define CTP_SDA I2C_SDA
       #define CTP_SCL I2C_SCL
 
+    #elif defined(MARAUDER_WS_C5_35)    // ADC is through IO expander
+      #define HAS_AXP2101
+      #define I2C_SDA 27
+      #define I2C_SCL 26
+      #define CTP_SDA I2C_SDA
+      #define CTP_SCL I2C_SCL
+      #define CTP_INT 3
+
     #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
       #define I2C_SDA 0
       #define I2C_SCL 1
+
     #endif
 
     #if defined(MARAUDER_CYD_HMI)
@@ -4615,6 +4652,15 @@
       #define CTP_FREQ          100000  // 100 kHz (Standard-mode) 400 kHz (Fast-mode)
       #define I2C_ADDR_CST3530  0x58 // NOT 0x1A : CST3530 differs from CST820
 
+    #elif defined(MARAUDER_WS_C5_35)
+      #define I2C_SDA 27
+      #define I2C_SCL 26
+      #define HAS_FT6336
+      #define CTP_SDA I2C_SDA
+      #define CTP_SCL I2C_SCL
+      #define CTP_INT 3
+      #define I2C_ADDR_FT6336      0x38
+
     #elif defined(MARAUDER_CYD_3_5_INCH_CAP)
       #define HAS_GT911 1
       #define CTP_SDA 33
@@ -4775,7 +4821,7 @@
     #undef HAS_MAX1704X
   #endif
   #ifdef HAS_BATTERY
-    #undef HAS_BATTERY
+    #define HAS_AXP2101
   #endif
 #endif
 
