@@ -61,10 +61,6 @@
   // Pancake V8 (ESP32-C5, ST7796 320x480, FT6336), so reuse Pancake's verified
   // C5 feature + geometry logic and override only this board's differing pins below.
   //#define MARAUDER_WS_C5_35
-  #ifdef MARAUDER_WS_C5_35
-    #define MARAUDER_PANCAKE
-    #define MARAUDER_WS_C5_35_OVERRIDE
-  #endif
   //// END BOARD TARGETS
 
   // The official Arduino board package supplies this identifier for the XIAO
@@ -786,16 +782,18 @@
 
 
   #ifdef MARAUDER_WS_C5_35
+    // Temporary
+    #define MARAUDER_PANCAKE
+    #define MARAUDER_WS_C5_35_OVERRIDE
+    //
     #define HAS_TOUCH
-    #define HAS_CAP_TOUCH
+      #define HAS_CAP_TOUCH
       #define HAS_FT6336
-    //#define HAS_FLIPPER_LED
-    //#define FLIPPER_ZERO_HAT
     #define HAS_BATTERY
       #define HAS_AXP2101
     #define HAS_BT
     #define HAS_BUTTONS
-    #define HAS_NEOPIXEL_LED
+    // #define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
     #define HAS_SCREEN
     #define HAS_FULL_SCREEN
@@ -810,6 +808,7 @@
     #define HAS_IDF_3
     #define HAS_DIRECT_UPLOAD
   #endif
+
   #ifdef MARAUDER_MINI_V3
     //#define HAS_TOUCH
     //#define HAS_FLIPPER_LED
