@@ -164,7 +164,7 @@
   #elif defined(MARAUDER_POOM)
     #define HARDWARE_NAME "POOM"
   #elif MARAUDER_WS_C5_35
-    #define HARDWARE_NAME "Marauder C5 3.5"
+    #define HARDWARE_NAME "Waveshare ESP32-C5-Touch-LCD-3.5"
   #else
     #define HARDWARE_NAME "ESP32"
   #endif
@@ -782,32 +782,39 @@
 
 
   #ifdef MARAUDER_WS_C5_35
-    // Temporary
-    #define MARAUDER_PANCAKE
-    #define MARAUDER_WS_C5_35_OVERRIDE
-    //
     #define HAS_TOUCH
       #define HAS_CAP_TOUCH
       #define HAS_FT6336
     #define HAS_BATTERY
       #define HAS_AXP2101
+      // #define BATTERY_ADC_PIN 0x06    // ADC is through IO expander Reg Id
+    #define HAS_RTC
+      #define HAS_PCF85063         // i2c real-time clock (RTC)
     #define HAS_BT
+      #define HAS_NIMBLE_2
     #define HAS_BUTTONS
     // #define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
+    #define HAS_CH32V00X         // CH32V00X IO expander
+      #define CH32V00X_I2C_ADDR 0x24
     #define HAS_SCREEN
-    #define HAS_FULL_SCREEN
+      #define HAS_FULL_SCREEN
     #define HAS_GPS
-    #define HAS_C5_SD
-    #define HAS_SD
     #define USE_SD
+      #define HAS_SD
+      #define HAS_C5_SD
     #define HAS_DUAL_BAND
     #define HAS_PSRAM
-    //#define HAS_TEMP_SENSOR
-    #define HAS_NIMBLE_2
+    #define HAS_TEMP_SENSOR
+      #define HAS_SHTC3
+      #define HAS_CPU_TEMP 1
     #define HAS_IDF_3
     #define HAS_DIRECT_UPLOAD
-  #endif
+    #define DEEPSLEEP
+    #define HAS_ZIGBEE
+    #define HAS_SOUND
+      #define HAS_ES8311
+  #endif  // MARAUDER_WS_C5_35
 
   #ifdef MARAUDER_MINI_V3
     //#define HAS_TOUCH
@@ -815,24 +822,24 @@
     //#define FLIPPER_ZERO_HAT
     //#define HAS_BATTERY
     #define HAS_BT
+      #define HAS_NIMBLE_2
     #define HAS_BUTTONS
     //#define HAS_NEOPIXEL_LED
     //#define HAS_PWR_MGMT
     #define HAS_MINI_KB
     #define HAS_SCREEN
-    #define HAS_MINI_SCREEN
+      #define HAS_MINI_SCREEN
     #define HAS_GPS
-    #define HAS_C5_SD
     #define HAS_SD
-    #define USE_SD
+      #define HAS_C5_SD
+      #define USE_SD
     #define HAS_DUAL_BAND
     #define HAS_PSRAM
     //#define HAS_TEMP_SENSOR
-    #define HAS_NIMBLE_2
     #define HAS_IDF_3
     //#define HAS_SIMPLEX_DISPLAY
     #define HAS_DIRECT_UPLOAD
-  #endif  // MARAUDER_WS_C5_35
+  #endif  // MARAUDER_MINI_V3
 
   #if defined(MARAUDER_JC2432W328C)
     #define HAS_TOUCH
@@ -1246,7 +1253,7 @@
       #define D_PULL true
     #endif
 
-    #ifdef MARAUDER_PANCAKE
+    #if defined(MARAUDER_PANCAKE) || defined(MARAUDER_WS_C5_35)
       #define L_BTN -1
       #define C_BTN 28
       #define U_BTN -1
@@ -2009,7 +2016,7 @@
       #define KIT_LED_BUILTIN 13
     #endif
 
-    #if defined(MARAUDER_PANCAKE)
+    #if defined(MARAUDER_PANCAKE) || defined(MARAUDER_WS_C5_35)
       #define CHAN_PER_PAGE 7
 
       #define SCREEN_CHAR_WIDTH 40
@@ -3305,7 +3312,7 @@
     //#define BUTTON_ARRAY_LEN 5
   #endif
 
-  #if defined(MARAUDER_PANCAKE)
+  #if defined(MARAUDER_PANCAKE) || defined(MARAUDER_WS_C5_35)
     #define BANNER_TIME 100
 
     #define COMMAND_PREFIX "!"
@@ -3764,10 +3771,16 @@
       #define SD_SCK TFT_SCLK
 
     #elif defined(MARAUDER_WS_C5_28)
-      #define SD_SCK            6    // shared
-      #define SD_MOSI           7    // shared
-      #define SD_MISO           8    // dedicated MISO for SD
+      #define SD_SCK            6    // shared TFT
+      #define SD_MOSI           7    // shared TFT
+      #define SD_MISO           8    // shared TFT
       #define SD_CS             23
+
+    #elif defined(MARAUDER_WS_C5_35)
+      #define SD_SCK            6    // shared TFT_SCLK
+      #define SD_MOSI           7    // shared TFT_MOSI
+      #define SD_MISO           2    // shared TFT_MISO
+      #define SD_CS             9
 
     #elif defined(MARAUDER_JC2432W328C)
       #define SD_MISO      19
@@ -4113,7 +4126,7 @@
       #define GPS_SERIAL_INDEX 1
       #define GPS_TX 14
       #define GPS_RX 13
-    #elif defined(MARAUDER_PANCAKE)
+    #elif defined(MARAUDER_PANCAKE) || defined(MARAUDER_WS_C5_35)
       #define GPS_SERIAL_INDEX 1
       #define GPS_TX 14
       #define GPS_RX 13
@@ -4133,10 +4146,6 @@
       #define GPS_SERIAL_INDEX 1
       #define GPS_TX 15         // Gover 1
       #define GPS_RX 16
-    #elif defined(MARAUDER_CYD_HMI)
-      #define GPS_SERIAL_INDEX 1
-      #define GPS_TX 12
-      #define GPS_RX 11
     #endif
   #else
     #ifndef mac_history_len
@@ -4145,7 +4154,6 @@
     #endif
   #endif
   //// END GPS STUFF
-
 
   //// BATTERY STUFF
   #ifdef HAS_BATTERY
@@ -4232,9 +4240,6 @@
       #define HAS_AXP2101
       #define I2C_SDA 27
       #define I2C_SCL 26
-      #define CTP_SDA I2C_SDA
-      #define CTP_SCL I2C_SCL
-      #define CTP_INT 3
 
     #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
       #define I2C_SDA 0
@@ -4247,7 +4252,7 @@
     #endif
 
     //  If we know what we have, we can delete what we're not using
-    #if defined(BATTERY_ADC_PIN) || defined(HAS_CH32V00X)
+    #if (defined(BATTERY_ADC_PIN) || defined(HAS_CH32V00X)) && !defined(MARAUDER_WS_C5_35)
       #undef HAS_AXP2101
       #undef HAS_IP5306
       #undef HAS_MAX1704X
@@ -4630,7 +4635,6 @@
       #define CTP_SCL I2C_SCL
       #define CTP_INT 25
       #define CTP_RST 8
-
       #define I2C_ADDR_FT6336      0x38
 
     #elif defined(MARAUDER_LCDWIKI_28)
@@ -4667,7 +4671,6 @@
       #define CTP_INT 21
       #define CTP_RST 25
       #define I2C_ADDR_GT911 0x38
-
 
     #elif defined(MARAUDER_WS_C5_28)    // ADC is through IO expander
       #define HAS_CST3530 1      // distinguish from CST820
@@ -4801,6 +4804,7 @@
 
       //// END CONFIG LOGIC
 
+/* 
 //// Waveshare C5 3.5" pin overrides (applied after Pancake defaults resolve)
 #ifdef MARAUDER_WS_C5_35_OVERRIDE
   #undef HARDWARE_NAME
@@ -4823,5 +4827,6 @@
     #define HAS_AXP2101
   #endif
 #endif
+*/
 
 #endif

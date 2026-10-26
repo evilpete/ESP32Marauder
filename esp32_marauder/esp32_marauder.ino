@@ -367,8 +367,6 @@ void setup() {
 
   Serial.begin(115200);  // 115200);
 
->>>>>>> C5-Zigbee
-
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
     Wire.begin(I2C_SDA, I2C_SCL);

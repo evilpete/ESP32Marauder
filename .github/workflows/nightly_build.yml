@@ -214,12 +214,12 @@ jobs:
           ref: 1.12.0
           path: CustomAdafruit_NeoPixel
 
-      - name: Install Adafruit RTClib 
+      - name: lewisxhe/XPowersLib
         uses: actions/checkout@v2
         with:
-          repository: adafruit/RTClib
-          ref: 2.1.4
-          path: CustomAdafruit_RTClib
+          repository: lewisxhe/XPowersLib
+          ref: V0.3.3
+          path: CustomXPowersLib
 
       - name: Install APA102 for LilyGo T-Dongle C5
         if: matrix.board.flag == 'MARAUDER_T_DONGLE_C5'

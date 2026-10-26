@@ -82,7 +82,7 @@ static void ft6336_init() {
 #ifdef MARAUDER_WS_C5_35
     // Panel power, LCD reset and touch reset are on the CH32V00X I/O expander
     // (0x24), which also opens the shared I2C bus. Must run before tft.init().
-    CH32V00X_obj.touchReset()
+    CH32V00X_obj.touchReset();
 #elif CTP_RST >= 0
       pinMode(CTP_RST, OUTPUT);
       digitalWrite(CTP_RST, LOW);
