@@ -14,13 +14,20 @@
 #define FT6336_TD_STATUS 0x02
 #define FT6336_T1_XH     0x03
 
-#ifndef CTP_SDA
+#if !defined(CTP_SDA) && defined(I2C_SDA)
   #define CTP_SDA I2C_SDA
-  #define CTP_SSL I2C_SSL
+  #define CTP_SCL I2C_SCL
+  #if defined(I2C_RST)
+    #define CTP_RST I2C_RST
+  #endif
 #endif
 
 #ifndef CTP_FREQ
-  #define CTP_FREQ 400000U
+  #ifdef I2C_FREQ
+    #define CTP_FREQ I2C_FREQ
+  #else
+    #define CTP_FREQ 400000U
+  #endif
 #endif
 
 static bool _ft6336_read(uint8_t reg, uint8_t *buf, uint8_t len) {
@@ -75,17 +82,16 @@ static void ft6336_init() {
 #ifdef MARAUDER_WS_C5_35
     // Panel power, LCD reset and touch reset are on the CH32V00X I/O expander
     // (0x24), which also opens the shared I2C bus. Must run before tft.init().
-    ws_c5_exio_begin();
-#else
-    #if CTP_RST >= 0
+    CH32V00X_obj.touchReset()
+#elif CTP_RST >= 0
       pinMode(CTP_RST, OUTPUT);
       digitalWrite(CTP_RST, LOW);
       delay(10);
       digitalWrite(CTP_RST, HIGH);
       delay(300);
-    #endif
-    Wire.begin(CTP_SDA, CTP_SCL, 400000U);
 #endif
+
+    Wire.begin(CTP_SDA, CTP_SCL, 400000U);
 
     uint8_t chipId = 0;
     Wire.beginTransmission(FT6336_ADDR);

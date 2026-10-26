@@ -334,7 +334,6 @@ void print_reset_reason() {
 }
 
 
-
 uint8_t prevScanMode = 0;
 
 
@@ -368,6 +367,8 @@ void setup() {
 
   Serial.begin(115200);  // 115200);
 
+>>>>>>> C5-Zigbee
+
   #ifdef I2C_SDA
     log_d("I2C Wire.begin: I2C_SDA=%d  I2C_SCL=%d", I2C_SDA, I2C_SCL);
     Wire.begin(I2C_SDA, I2C_SCL);
@@ -386,7 +387,6 @@ void setup() {
     digitalWrite(ACT_LED_PIN, LOW);
     // perimanSetPinBusExtraType(ACT_LED_PIN, "ACT_LED_PIN");
   #endif
-
 
   #ifdef HAS_ES8311_NOT
     #ifdef I2C_SDA
@@ -559,7 +559,7 @@ void setup() {
   // this removes the need for "sharedSPI"
   // the TFT init fucks up the SPI bus by closing SD_MISO
   // so reinit it and assert it to for the sd_obj.
-    #if defined(HAS_C5_SD)
+    #if defined(HAS_C5_SD) and !defined(MARAUDER_POOM)
       #ifndef SD_MISO
         #define SD_MISO TFT_MISO
         #define SD_MOSI TFT_MOSI

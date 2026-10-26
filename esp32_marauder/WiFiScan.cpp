@@ -3024,10 +3024,31 @@ void WiFiScan::StartScan(uint8_t scan_mode, uint16_t color) {
           display_obj.tft.setTextColor(TFT_BLACK, color);
           display_obj.tft.drawCentreString("Scan Zigbee", TFT_WIDTH / 2, 16, 2);
         #endif
-        this->prepareScanStage(TFT_GREEN, TFT_BLACK);
       #endif
       this->setLEDMode(MODE_SNIFF);
       this->RunZigbeeScan(scan_mode, color);
+
+      // Match the WiFi "Beacon Sniff" screen: a - / + / HOP / X control row
+      // instead of tap-anywhere-to-exit. RunZigbeeScan() has already set the
+      // starting channel and hop state (CLI-locked channel => hop off). When
+      // the user did NOT CLI-lock a channel, honor the shared, persisted WiFi
+      // "ChanHop" flag for the initial hop state - the HOP button toggles that
+      // same NVS setting, as agreed, so the two stay consistent.
+      if (!(this->zb_start_channel >= ZIGBEE_MIN_CHANNEL &&
+            this->zb_start_channel <= ZIGBEE_MAX_CHANNEL))
+        this->zb_channel_hop = settings_obj.loadSetting<bool>("ChanHop");
+
+      // Remember the tile colour so the status strip can be redrawn live as
+      // the channel hops (ZBScan::zbDrawStatusLabel).
+      this->zb_color = color;
+      #ifdef HAS_SCREEN
+        display_obj.tft.setTextColor(TFT_GREEN, TFT_BLACK);
+        // Same draw helpers (and portrait layout) the WiFi sniffers use.
+        display_obj.tftDrawChannelScaleButtons(this->zb_channel, false);
+        display_obj.tftDrawExitScaleButtons(false);
+        display_obj.tftDrawChanHopButton(false, this->zb_channel_hop);
+        this->zbDrawStatusLabel();
+      #endif
     #endif
   }
   else if (scan_mode == WIFI_SCAN_GPS_NMEA){
@@ -4610,6 +4631,176 @@ void WiFiScan::RunSaveZBList(bool save_as) {
       Serial.println((String)node_count);
     }
   #endif
+}
+
+// Human-readable key-type tag for JSON / display.
+static const char *zbKeyTypeTag(ZbKeyType t) {
+  return (t == ZB_KEY_NETWORK) ? "NWK" : (t == ZB_KEY_TCLK) ? "TCLK" : "APP";
+}
+
+// Save all known/captured Zigbee keys to /zkeys.json (a JSON array). Rewrites
+// the whole file each time (the key list is tiny), so it stays valid JSON.
+// Called from "Save Keys" and automatically whenever a key is captured.
+void WiFiScan::RunSaveZBKeys() {
+  #ifdef HAS_SD
+    if (!sd_obj.supported) {
+      Serial.println(F("[ZBKEY] SD not available - cannot save /zkeys.json"));
+      return;
+    }
+
+    SD.remove("/zkeys.json");
+    File f = SD.open("/zkeys.json", FILE_WRITE);
+    if (!f) {
+      Serial.println(F("[ZBKEY] Could not open /zkeys.json for write"));
+      return;
+    }
+
+    DynamicJsonDocument jsonDocument(4096);
+    JsonArray jsonArray = jsonDocument.to<JsonArray>();
+
+    int key_count = (zigbee_keys != nullptr) ? zigbee_keys->size() : 0;
+    for (int i = 0; i < key_count; i++) {
+      ZbKey k = zigbee_keys->get(i);
+      JsonObject o = jsonArray.createNestedObject();
+
+      char hex[ZIGBEE_KEY_LEN * 3 + 1];
+      int p = 0;
+      for (int b = 0; b < ZIGBEE_KEY_LEN; b++)
+        p += snprintf(hex + p, sizeof(hex) - p, "%02X%s",
+                      k.key[b], b < ZIGBEE_KEY_LEN - 1 ? ":" : "");
+
+      // Wrap in String() so ArduinoJson copies the text into the document
+      // (k is a local; its char buffers go out of scope before serialize).
+      o["type"]       = String(zbKeyTypeTag(k.type));
+      o["key"]        = String(hex);
+      o["seq"]        = k.seqNum;
+      o["label"]      = String(k.label);
+      o["capturedAt"] = k.capturedAt_ms;
+    }
+
+    serializeJson(jsonArray, f);
+    f.close();
+
+    Serial.printf("[ZBKEY] Saved %d key(s) to /zkeys.json\n", key_count);
+    #ifdef HAS_SCREEN
+      display_obj.tft.setTextWrap(false);
+      display_obj.tft.setFreeFont(NULL);
+      display_obj.tft.setCursor(0, 110);
+      display_obj.tft.setTextSize(1);
+      display_obj.tft.setTextColor(TFT_CYAN);
+      display_obj.tft.print(F("Saved Zigbee keys: "));
+      display_obj.tft.println((String)key_count);
+    #endif
+  #endif
+}
+
+// Load keys from /zkeys.json back into the key list (additive, deduped by
+// zbAddKey). Lets previously-captured network keys survive a reboot.
+void WiFiScan::RunLoadZBKeys() {
+  #ifdef HAS_SD
+    File file = sd_obj.getFile(F("/zkeys.json"));
+    if (!file) {
+      Serial.println(F("[ZBKEY] Could not open /zkeys.json"));
+      return;
+    }
+
+    DynamicJsonDocument jsonDocument(4096);
+    DeserializationError err = deserializeJson(jsonDocument, file);
+    file.close();
+    if (err) {
+      Serial.print(F("[ZBKEY] /zkeys.json parse error: "));
+      Serial.println(err.c_str());
+      return;
+    }
+
+    JsonArray jsonArray = jsonDocument.as<JsonArray>();
+    int loaded = 0;
+    for (JsonVariant v : jsonArray) {
+      JsonObject o = v.as<JsonObject>();
+      const char *typeStr = o["type"] | "NWK";
+      const char *hex     = o["key"]  | "";
+      uint8_t seq         = o["seq"]  | 0;
+      const char *label   = o["label"] | "";
+
+      ZbKeyType type = ZB_KEY_NETWORK;
+      if (strcmp(typeStr, "TCLK") == 0) type = ZB_KEY_TCLK;
+      else if (strcmp(typeStr, "APP") == 0) type = ZB_KEY_APP;
+
+      // Parse "AA:BB:.." (or plain hex) into 16 bytes.
+      uint8_t key[ZIGBEE_KEY_LEN] = {};
+      int nib = 0, byteIdx = 0;
+      uint8_t cur = 0;
+      for (const char *c = hex; *c && byteIdx < ZIGBEE_KEY_LEN; c++) {
+        uint8_t v;
+        if (*c >= '0' && *c <= '9') v = *c - '0';
+        else if (*c >= 'a' && *c <= 'f') v = *c - 'a' + 10;
+        else if (*c >= 'A' && *c <= 'F') v = *c - 'A' + 10;
+        else continue;                       // skip ':' and any separators
+        cur = (cur << 4) | v;
+        if (++nib == 2) { key[byteIdx++] = cur; cur = 0; nib = 0; }
+      }
+      if (byteIdx == ZIGBEE_KEY_LEN && this->zbAddKey(type, key, seq, label))
+        loaded++;
+    }
+    Serial.printf("[ZBKEY] Loaded %d key(s) from /zkeys.json\n", loaded);
+    #ifdef HAS_SCREEN
+      display_obj.tft.setTextWrap(false);
+      display_obj.tft.setFreeFont(NULL);
+      display_obj.tft.setCursor(0, 110);
+      display_obj.tft.setTextSize(1);
+      display_obj.tft.setTextColor(TFT_CYAN);
+      display_obj.tft.print(F("Loaded Zigbee keys: "));
+      display_obj.tft.println((String)loaded);
+    #endif
+  #endif
+}
+
+// Static on-screen listing of all known/captured keys (menu "Show Keys").
+void WiFiScan::RunShowZBKeys() {
+  int key_count = (zigbee_keys != nullptr) ? zigbee_keys->size() : 0;
+
+  Serial.printf("[ZBKEY] %d key(s):\n", key_count);
+  #ifdef HAS_SCREEN
+    display_obj.tft.setTextWrap(false);
+    display_obj.tft.setFreeFont(NULL);
+    display_obj.tft.setTextSize(1);
+    display_obj.tft.setCursor(0, 40);
+    display_obj.tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    display_obj.tft.println(F("Zigbee Keys"));
+  #endif
+
+  if (key_count == 0) {
+    Serial.println(F("  (none)"));
+    #ifdef HAS_SCREEN
+      display_obj.tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+      display_obj.tft.println(F("  (no keys captured)"));
+    #endif
+    return;
+  }
+
+  for (int i = 0; i < key_count; i++) {
+    ZbKey k = zigbee_keys->get(i);
+    char hex[ZIGBEE_KEY_LEN * 3 + 1];
+    int p = 0;
+    for (int b = 0; b < ZIGBEE_KEY_LEN; b++)
+      p += snprintf(hex + p, sizeof(hex) - p, "%02X%s",
+                    k.key[b], b < ZIGBEE_KEY_LEN - 1 ? ":" : "");
+
+    Serial.printf("  %-4s seq=%u %s %s\n",
+                  zbKeyTypeTag(k.type), k.seqNum, hex, k.label);
+    #ifdef HAS_SCREEN
+      // Key is wider than the screen, so show the tag/seq/label then the hex
+      // on its own wrapped line.
+      display_obj.tft.setTextColor(
+        k.type == ZB_KEY_NETWORK ? TFT_CYAN : TFT_LIGHTGREY, TFT_BLACK);
+      display_obj.tft.print(zbKeyTypeTag(k.type));
+      display_obj.tft.print(F(" s")); display_obj.tft.print(k.seqNum);
+      display_obj.tft.print(F(" ")); display_obj.tft.println(k.label);
+      display_obj.tft.setTextWrap(true);
+      display_obj.tft.println(hex);
+      display_obj.tft.setTextWrap(false);
+    #endif
+  }
 }
 #endif // HAS_ZIGBEE
 
@@ -11142,11 +11333,34 @@ bool WiFiScan::filterActive() {
 // GCOVR_EXCL_START -- Packet Monitor graphs require a hardware TFT and live capture.
 #ifdef HAS_SCREEN
   int8_t WiFiScan::checkAnalyzerButtons(uint32_t currentTime) {
-    boolean pressed = false;
-  
     uint16_t t_x = 0, t_y = 0; // To store the touch coordinates
 
-    // Do the touch stuff
+    #if defined(HAS_ILI9341) && (defined(HAS_CST3530) || defined(HAS_CST820))
+      // Event-reporting capacitive controllers (CST3530 on the Waveshare C5,
+      // CST820 elsewhere): updateTouch() returns a single DOWN event, with the
+      // coordinate, per finger-press and nothing while the finger is held - so
+      // it is already debounced in the driver (one touch = one event). We
+      // hit-test that DOWN coordinate directly and return the button.
+      //
+      // The level-based path below instead relies on the touch reading as
+      // "pressed" across repeated polls (press -> justReleased), which never
+      // happens on these controllers (the finger reads down only once) - that
+      // is why the sniffer -/+/HOP/X buttons did nothing on the C5. This is the
+      // same approach the Zigbee sniff buttons use.
+      if (display_obj.updateTouch(&t_x, &t_y)) {
+        for (int8_t b = 0; b < BUTTON_ARRAY_LEN; b++)
+          if (display_obj.key[b].contains(t_x, t_y))
+            return b;
+      }
+      return -1;
+    #else
+      // Level-reporting controllers (resistive XPT2046, etc.) keep returning a
+      // touch while the finger is held. The blocking drain loop below is
+      // deliberate: it swallows the continuous touch so one finger-press is not
+      // registered as several separate events (debounce). The press ->
+      // justReleased transition is then completed on the following call, after
+      // the finger lifts. Left unchanged from the original.
+      boolean pressed = false;
     #ifdef HAS_ILI9341
       pressed = display_obj.updateTouch(&t_x, &t_y);
       if (pressed)
@@ -11184,16 +11398,9 @@ bool WiFiScan::filterActive() {
 
     if (pressed) {
       while(display_obj.updateTouch(&t_x, &t_y)) {
-
-
-        // Check buttons for presses
-        for (int8_t b = 0; b < BUTTON_ARRAY_LEN; b++)
-        {
-          if (pressed && display_obj.key[b].contains(t_x, t_y)) {
-            //display_obj.tft.fillCircle(t_x, t_y, 2, TFT_WHITE);
+          for (int8_t b = 0; b < BUTTON_ARRAY_LEN; b++) {
+            if (pressed && display_obj.key[b].contains(t_x, t_y))
             display_obj.key[b].press(true);
-            //Serial.println(b);
-          }
           else
             display_obj.key[b].press(false);
         }
@@ -11203,11 +11410,11 @@ bool WiFiScan::filterActive() {
         display_obj.key[b].press(false);
     }
 
-    // Which buttons pressed
     for (int8_t b = 0; b < BUTTON_ARRAY_LEN; b++)
       if (display_obj.key[b].justReleased())
         return b;
     return -1;
+    #endif
   }
 #endif
 
@@ -11962,6 +12169,77 @@ void WiFiScan::packetRateLoop(uint32_t tick) {
     }
   #endif
 }
+
+#ifdef HAS_ZIGBEE
+// Beacon-Sniff-style touch controls for the Zigbee sniffer: - / + step the
+// 802.15.4 channel (11..26), HOP toggles band hopping, X exits. Draws the same
+// key rectangles the WiFi sniffers use.
+//
+// NOTE on touch handling: we deliberately do NOT use WiFiScan::
+// checkAnalyzerButtons() here. That routine only marks a key "pressed" from
+// inside a `while (updateTouch())` loop, i.e. it needs the touch to keep
+// reading as pressed across repeated polls. The capacitive controllers on
+// these boards (e.g. CST3530 on the Waveshare C5) instead report a touch as a
+// single DOWN *event*: updateTouch() returns 1 once, with the coordinate, then
+// 0 while the finger is held - so checkAnalyzerButtons() never registers a
+// press and always returns -1. Here we hit-test the button rectangles directly
+// against that one DOWN coordinate, which is all this screen needs and works
+// with both event- and level-style touch controllers.
+void WiFiScan::zigbeeScanButtons(uint32_t currentTime) {
+  (void)currentTime;
+  #if defined(HAS_SCREEN) && defined(HAS_ILI9341)
+    uint16_t t_x = 0, t_y = 0;
+    if (!display_obj.updateTouch(&t_x, &t_y))
+      return;   // no fresh touch this tick
+
+    // X : stop the scan and return to the menu.
+    if (display_obj.key[EXIT_BUTTON_INDEX].contains(t_x, t_y)) {
+      this->StartScan(WIFI_SCAN_OFF);
+      this->orient_display = true;
+      return;
+    }
+    // '-' : step down one channel. Choosing a channel parks the radio on it,
+    // so -/+ also turn hopping off (auto-lock) and clear the shared ChanHop
+    // flag, keeping the HOP button and the persisted setting in agreement.
+    if (display_obj.key[CHAN_MINUS_INDEX].contains(t_x, t_y)) {
+      if (this->zb_channel > ZIGBEE_MIN_CHANNEL) {
+        this->zb_channel--;
+        this->zb_channel_hop = false;
+        settings_obj.saveSetting<bool>("ChanHop", false);
+        this->zbSetChannel(this->zb_channel);
+        display_obj.tftDrawChannelScaleButtons(this->zb_channel, false);
+        display_obj.tftDrawExitScaleButtons(false);
+        display_obj.tftDrawChanHopButton(false, this->zb_channel_hop);
+        this->zbDrawStatusLabel();
+      }
+      return;
+    }
+    // '+' : step up one channel (same auto-lock behaviour as '-').
+    if (display_obj.key[CHAN_PLUS_INDEX].contains(t_x, t_y)) {
+      if (this->zb_channel < ZIGBEE_MAX_CHANNEL) {
+        this->zb_channel++;
+        this->zb_channel_hop = false;
+        settings_obj.saveSetting<bool>("ChanHop", false);
+        this->zbSetChannel(this->zb_channel);
+        display_obj.tftDrawChannelScaleButtons(this->zb_channel, false);
+        display_obj.tftDrawExitScaleButtons(false);
+        display_obj.tftDrawChanHopButton(false, this->zb_channel_hop);
+        this->zbDrawStatusLabel();
+      }
+      return;
+    }
+    // HOP : toggle band hopping via the shared persistent ChanHop setting.
+    // Turning hop back on resumes from the current channel in zigbeeLoop().
+    if (display_obj.key[CHAN_HOP_INDEX].contains(t_x, t_y)) {
+      settings_obj.toggleSetting("ChanHop");
+      this->zb_channel_hop = settings_obj.loadSetting<bool>("ChanHop");
+      display_obj.tftDrawChanHopButton(false, this->zb_channel_hop);
+      this->zbDrawStatusLabel();
+      return;
+    }
+  #endif
+}
+#endif
 
 bool WiFiScan::checkHostPort(IPAddress ip, uint16_t port, uint16_t timeout) {
   WiFiClient client;
@@ -13654,7 +13932,17 @@ void WiFiScan::main(uint32_t currentTime)
   }
   #ifdef HAS_ZIGBEE
     else if (currentScanMode == ZIGBEE_SCAN_ALL) {
+      // Service the -/+/HOP/X touch buttons first (may stop the scan), then
+      // drain/parse frames. zigbeeLoop() no-ops once the radio is stopped.
+      this->zigbeeScanButtons(currentTime);
       this->zigbeeLoop(currentTime);
+      // Persist newly-captured keys to /zkeys.json as they arrive.
+      if (this->zb_keys_dirty) {
+        this->zb_keys_dirty = false;
+        #ifdef HAS_SD
+          this->RunSaveZBKeys();
+        #endif
+      }
     }
   #endif
 

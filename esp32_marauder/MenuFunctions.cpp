@@ -560,9 +560,12 @@ void MenuFunctions::main(uint32_t currentTime)
           (wifi_scan_obj.currentScanMode == WIFI_SCAN_DISPLAY_AP_INFO) ||
           (wifi_scan_obj.currentScanMode == WIFI_SCAN_EVIL_PORTAL) ||
           (wifi_scan_obj.currentScanMode == WIFI_SCAN_AP_STA) ||
-          #ifdef HAS_ZIGBEE
-            (wifi_scan_obj.currentScanMode == ZIGBEE_SCAN_ALL) ||
-          #endif
+          // NOTE: ZIGBEE_SCAN_ALL is intentionally NOT in this touch
+          // "tap-anywhere-to-stop" list (like WiFi's WIFI_SCAN_AP beacon
+          // sniff). Its own - / + / HOP / X button row (WiFiScan::
+          // zigbeeScanButtons) owns the touch area, and the X button exits.
+          // Physical-button boards still stop it via the #ifndef HAS_ILI9341
+          // path below.
           (wifi_scan_obj.currentScanMode == WIFI_PING_SCAN) ||
           (wifi_scan_obj.currentScanMode == WIFI_ARP_SCAN) ||
           (wifi_scan_obj.currentScanMode == WIFI_PORT_SCAN_ALL) ||
@@ -2434,6 +2437,10 @@ void do_menu_sync_ntp() {
      Serial.println(buf);
      display_obj.tft.setCursor(0, 110);
      display_obj.tft.println(buf);
+
+      print_datetime(timeinfo);
+     //display_obj.tft.setCursor(0, 110);
+     //display_obj.tft.println(&timeinfo, "%F %T");
    } else {
      log_d("Failed to obtain time from NTP");
    }
@@ -2710,6 +2717,11 @@ void MenuFunctions::RunSetup()
     this->drawStatusBar();
     wifi_scan_obj.StartScan(ZIGBEE_SCAN_ALL, TFT_GREEN);
   });
+  this->addNodes(&zigbeeMenu, "Show Keys", TFTPURPLE, SNIFFERS, [this]() {
+    display_obj.clearScreen();
+    this->drawStatusBar();
+    wifi_scan_obj.RunShowZBKeys();
+  });
   #ifdef HAS_SD
     this->addNodes(&zigbeeMenu, "Save Nodes", TFTNAVY, SD_UPDATE, [this]() {
       display_obj.clearScreen();
@@ -2720,6 +2732,16 @@ void MenuFunctions::RunSetup()
       display_obj.clearScreen();
       this->drawStatusBar();
       wifi_scan_obj.RunLoadZBList();
+    });
+    this->addNodes(&zigbeeMenu, "Save Keys", TFTNAVY, SD_UPDATE, [this]() {
+      display_obj.clearScreen();
+      this->drawStatusBar();
+      wifi_scan_obj.RunSaveZBKeys();
+    });
+    this->addNodes(&zigbeeMenu, "Load Keys", TFTBLUE, SD_UPDATE, [this]() {
+      display_obj.clearScreen();
+      this->drawStatusBar();
+      wifi_scan_obj.RunLoadZBKeys();
     });
   #endif
 #endif
