@@ -865,6 +865,7 @@
       #define SOUND_PIN 26
     #define DEEPSLEEP
     #define HAS_PM
+    #define ALLOW_LIGHTSLEEP
     // #define ADJ_CPUFREQ 1
     // #define ALLOW_LIGHTSLEEP
     //#define HAS_TEMP_SENSOR
@@ -898,6 +899,9 @@
       // #define ALLOW_LIGHTSLEEP
     #define HAS_SOUND
       #define CYD_SOUND
+    #define HAS_PM
+    #define ALLOW_LIGHTSLEEP
+    #define HAS_PWR_MGMT
     // #define HAS_TEMP_SENSOR
     //   #define HAS_CPU_TEMP
   #endif   // MARAUDER_CYD_24
