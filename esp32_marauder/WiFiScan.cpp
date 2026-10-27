@@ -5662,6 +5662,18 @@ void WiFiScan::RunInfo() {
         p_info(buffer);
   #endif   // HAS_CPU_TEMP
 
+  #if defined(CONFIG_PM_ENABLE)
+    extern bool pm_active;
+    extern bool pm_configured;
+
+    snprintf(buffer, sizeof(buffer), "Power Mgt: %s%s",
+          pm_configured ? "Enabled" : "Disabled",
+          pm_configured ? (pm_active ? " Active" : " Inactive") : "");
+
+    p_info(buffer);
+
+  #endif
+
   p_info("Uptime: " + uptimeString());  // wraps after about 49 days because it uses
 
   if (this->wifi_connected)

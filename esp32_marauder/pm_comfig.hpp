@@ -72,7 +72,7 @@
   #endif
 
 
-inline void pm_config() {
+inline void pm_show_conf() {
 
   #ifdef PM_MAX_FREQ
     log_d("MIN=%d MAX=%d", PM_MIN_FREQ, PM_MAX_FREQ);
@@ -164,23 +164,24 @@ inline void pm_config() {
 }
 
 
-inline bool pm_configured = false;
+bool pm_configured = false;
+bool pm_active = false;
 
 inline esp_err_t enable_pm(bool pm = true) {
   log_d("enable_pm Start");
   esp_err_t err;
 
-  if (pm_configured) {
+  if (pm_configured && (pm == pm_active)) {
     log_d("enable_pm already configured");
     return ESP_OK;
   }
 
 
-  pm_config();
+  pm_show_conf();
 
 #ifdef CONFIG_PM_ENABLE
 
-  log_d("CONFIG_PM_ENABLE Set");
+  log_d("CONFIG_PM_ENABLE Set = %s", pm ? 'true' : 'false');
 
   esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
   esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
@@ -237,6 +238,7 @@ inline esp_err_t enable_pm(bool pm = true) {
     delay(50);
     if (err == ESP_OK)
       pm_configured = true;
+      pm_active = pm;
 
 //    if (pm == fale) 9
 //    esp_pm_lock_handle_t pm_lock;
@@ -248,7 +250,6 @@ inline esp_err_t enable_pm(bool pm = true) {
     return err;
   #endif  // HAS_PM
 #endif    //  CONFIG_PM_ENABLE
-  (void)pm;
   return ESP_ERR_NOT_SUPPORTED;
 }
 

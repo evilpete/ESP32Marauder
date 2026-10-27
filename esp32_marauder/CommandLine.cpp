@@ -956,8 +956,12 @@ void CommandLine::runCommand(String input) {
     // #endif
   }
 
-  else if (cmd_args.get(0) == REBOOT_CMD)
+  else if (cmd_args.get(0) == REBOOT_CMD) {
+    #ifdef HAS_SCREEN
+      backlightOff();  // Turn Screen off during reboot
+    #endif
     ESP.restart();
+  }
   #if defined(DEEPSLEEP) || defined(POWER_HOLD_PIN)
   else if (cmd_args.get(0) == SHUTDOWN_CMD)
     shutdown_system();

@@ -492,17 +492,13 @@ void setup() {
       enable_pm();
     } else {
       log_d("EnablePM setting false, PM not started");
-      pm_config();  //  prints CONFIG_ values
+      pm_show_conf();  //  prints CONFIG_ values
     }
   #endif
   //Serial.begin(115200);
 
   //while(!Serial)
   //  delay(10);
-
-  #ifdef HAS_SOUND
-      sound_obj.RunSetup();
-  #endif
 
   Serial.println("ESP-IDF version is: " + String(esp_get_idf_version()));
   #ifdef ESP_ARDUINO_VERSION_STR
@@ -583,6 +579,10 @@ void setup() {
 
   #ifdef HAS_SCREEN
     backlightOn(); // Need this
+  #endif
+
+  #ifdef HAS_SOUND
+      sound_obj.RunSetup();
   #endif
 
   #ifdef HAS_SCREEN

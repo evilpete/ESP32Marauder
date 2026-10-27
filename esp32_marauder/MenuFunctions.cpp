@@ -3062,7 +3062,10 @@ void MenuFunctions::RunSetup()
       });
 
   #endif   // CONFIG_PM_ENABLE
-  #if defined(ADJ_CPUFREQ) && defined(CONFIG_IDF_TARGET_ESP32) && !defined(CONFIG_PM_ENABLE)
+
+
+  // Works with esp32 without Power Mgt
+  #if defined(ADJ_CPUFREQ) && defined(CONFIG_IDF_TARGET_ESP32)  && !defined(CONFIG_PM_ENABLE)
   // && !defined(CONFIG_PM_ENABLE) && !defined(HAS_PM)
       this->addNodes(&adminMenu, "Reset CPU to 240Mhz", TFTGREEN, SETTINGS, [this]() {
         this->changeMenu(&adminSubMenu, true);

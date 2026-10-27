@@ -231,6 +231,10 @@
 
     inline void brightnessInit() {
       log_d("flipperLED::brightnessInit: TFT_BL=%d", TFT_BL);
+        #if defined(HAS_PM) && defined(CONFIG_PM_ENABLE)
+          log_d("ledcSetClockSource => LEDC_USE_RC_FAST_CLK");
+          ledcSetClockSource(LEDC_USE_RC_FAST_CLK);   // global: backlight 
+        #endif
       pinMode(TFT_BL, OUTPUT);
       BL_SETUP();
       bl_prefs.begin("backlight", false);
@@ -244,6 +248,9 @@
       log_d("    BL_CHANNEL = %d", BL_CHANNEL);
       log_d("    TFT_BL = %d", TFT_BL);
       log_d("    BL TLED = %d", TLED);
+        #if defined(HAS_PM) && defined(CONFIG_PM_ENABLE)
+          ledcSetClockSource(LEDC_AUTO_CLK); 
+        #endif
     }
 
     inline void brightnessCycle() {

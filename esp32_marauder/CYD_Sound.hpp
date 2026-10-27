@@ -37,6 +37,7 @@ class CYD_Sound {
         #endif
         // ledcWrite(SND_CHANNEL, duty_cycle);
         setToneChannel(SND_CHANNEL);
+        tone(SOUND_PIN, 150, 2); // to start thingw
         noTone(SOUND_PIN);
         supported = true;
         return true;
