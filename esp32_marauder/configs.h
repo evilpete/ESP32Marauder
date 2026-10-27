@@ -70,9 +70,24 @@
     #define XIAO_ESP32_C5
   #endif
 
-  // Allocated only while settings are loaded or updated. This accommodates
-  // five saved WiFi profiles without permanently caching their passwords.
-  #define JSON_SETTING_SIZE 6144
+  // ArduinoJson document capacity for the settings DOM. Allocated transiently
+  // (on the heap) only while settings are loaded or updated.
+  //
+  // This must exceed the *in-memory* parse size, which for this nested
+  // name/type/value/range schema runs well above the serialized byte length.
+  // 6144 was being exceeded during deserializeJson() once the merge added
+  // entries (HAS_SOUND -> EnableSND, CONFIG_PM_ENABLE -> EnablePM) on top of the
+  // base set plus up to MAX_SAVED_WIFI_PROFILES / MAX_GEOFENCES list items. An
+  // overflow there corrupts the string pool mid-parse and faults in ArduinoJson
+  // findString()/stringEquals() (observed as an ESP32-C5 Load access fault).
+  //
+  // ASSUMPTION (per no-guesswork policy): 12288 is a derived upper bound
+  // (~18 settings + 5 WiFi + 5 geofence entries with their copied strings, ~2x
+  // headroom), not a hardware-measured value. Verify against the real
+  // json_settings_string length on-device and tune if needed. On internal-RAM-
+  // starved boards (e.g. ESP32-C5) a PSRAM-backed allocator is preferable to
+  // growing this further, since the buffer comes from internal heap.
+  #define JSON_SETTING_SIZE 12288
 
 #define MARAUDER_VERSION "v1.19.2"
 
