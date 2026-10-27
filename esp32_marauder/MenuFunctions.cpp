@@ -5299,9 +5299,10 @@ void MenuFunctions::buildLazyMenu(Menu* menu)
         this->changeMenu(&deviceMenu, true);
       });
       this->addNodes(menu, text_table1[30], TFTLIGHTGREY, REBOOT, []() {
+        backlightOff();
         ESP.restart();
       });
-      #ifdef POWER_HOLD_PIN
+      #if defined(POWER_HOLD_PIN) || (defined(HAS_BATTERY) && (defined(HAS_AXP2101) || defined(HAS_AXP192)))
         this->addNodes(menu, "Power Off", TFTLIGHTGREY, SHUTDOWN, []() {
             shutdown_system();
         });

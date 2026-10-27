@@ -14,6 +14,20 @@
     #include "esp_zigbee_core.h"
 #endif
 
+#if defined(ES8311) && defined(HAS_SOUND)
+  #include "Sound.hpp"
+#endif
+
+//#if defined(HAS_AXP192) && defined(HAS_BATTERY)
+//  #include "AXP192.h"
+//  extern AXP192 axp192_obj;
+//#endif
+#if defined(HAS_BATTERY) && (defined(HAS_AXP2101) || defined(HAS_AXP192))
+  #include "BatteryInterface.h"
+  extern BatteryInterface battery_obj;
+#endif
+
+
   #include "driver/gpio.h"
   #include "esp_sleep.h"
   #if SOC_RTCIO_PIN_COUNT > 0
@@ -67,11 +81,23 @@
     #endif
         delay(200);
 
-    #if defined(MARAUDER_WS_C5_28)
+
+    #if defined(ES8311) && defined(HAS_SOUND)
+      sound_obj.PowerOff();
+      log_d("ES8311 PowerOff");
+    #endif
+
+    // #if defined(HAS_FT6336)
+    //   ft6336_Hibernate();
+    // #endif
+
+    #if defined(HAS_CH32V00X)
       CH32V00X_obj.SetAudio(0);
       CH32V00X_obj.setPWM(0);
+      log_d("CH32V00X Powerdown");
     #endif
       delay(200);
+
 
     #if defined(HAS_SCREEN)  && defined(ST7789_DRIVER)
 
@@ -84,13 +110,12 @@
 
       // 3. Turn off the backlight (replace 38 with your actual backlight GPIO pin)
 
-      #ifdef TFT_BL
+      #if defined(TFT_BL) && !defined(HAS_CH32V00X)
         digitalWrite(TFT_BL, LOW);  
       #endif
 
     #endif
       
-
     // Should we isolate  pins with external pull-up resistors
     // to minimize current consumption.
     // #ifdef I2C_SDA
@@ -154,13 +179,17 @@
         Serial.flush();
         digitalWrite(POWER_HOLD_PIN, LOW);
 
-        //  if plugged in we use DEEPSLEEP instead
+    #elif defined(HAS_BATTERY) && (defined(HAS_AXP2101) || defined(HAS_AXP192))
+        log_d("battery_obj PowerOff");
+        Serial.println("battery_obj PowerOff");
+        Serial.flush();
+        battery_obj.PowerOff();
+
+    #endif
+        //  if plugged in or Powerdown failed use DEEPSLEEP instead
         delay(500);
         Serial.println("DeepSleep");
         DeepSleep();
-    #else
-        DeepSleep(DEEPSLEEP_WAKE_PIN);
-    #endif
   }
 
 #endif  // DEEPSLEEP / POWER_HOLD_PIN

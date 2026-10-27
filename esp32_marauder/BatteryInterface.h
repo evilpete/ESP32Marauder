@@ -63,6 +63,12 @@ class BatteryInterface {
     void RunSetup();
     void main(uint32_t currentTime);
     int8_t getBatteryLevel();
+
+    #if defined(HAS_AXP2101)
+      void PowerOff() { power.shutdown(); }
+    #elif defined(HAS_AXP192)
+      void PowerOff() { axp192_obj.PowerOff();  }
+    #endif
 };
 
 #endif  // ifndef BatteryInterface_h

@@ -112,6 +112,13 @@ static void ft6336_init() {
     Wire.endTransmission();
 }
 
+static int8_t ft6336_Hibernate() {
+    Wire.beginTransmission(FT6336_ADDR);
+    Wire.write(0x00);
+    Wire.write(0x03);
+    Wire.endTransmission();
+}
+
 // Reads raw panel coordinates (panel native portrait space: 0..319 × 0..479).
 // Call this when you need to apply a rotation-specific transform.
 // Returns 1 for an active touch, 0 for a confirmed release, and -1 when the

@@ -71,6 +71,11 @@
 #define BEEP_FREQ          1000
 #define BEEP_DURATION_MS   80
 
+#define ES8311_REG_RESET        0x00
+#define ES8311_REG_SYS_PDN1     0x0D
+#define ES8311_REG_SYS_PDN2     0x0E
+#define ES8311_REG_DAC_MUTE     0x31
+
 class ES8311 {
  public:
     bool supported = false;
@@ -152,6 +157,33 @@ class ES8311 {
         if (!supported) return;
         writeRegister(0x31, on ? 0x60 : 0x00);
         log_d("mute");
+    }
+
+    int PowerDown() {
+        int ret = 0;
+
+        if (!supported) return ret;
+
+
+        // 1. Mute DAC to prevent audible clicks/pops during analog power-down
+        ret |= writeRegister(ES8311_REG_DAC_MUTE, 0x40);
+
+        // 2. Power down Analog Reference & Bias circuits 
+        // Bits: PDN_ANAEBG=1, PDN_ANAADCBias=1, PDN_ADCVERFGEN=1, PDN_DACVREFGEN=1, PDN_VREF=1
+        ret |= writeRegister(ES8311_REG_SYS_PDN1, 0xFF);
+
+        // 3. Power down PGA and Modulators
+        // Bits: PDN_PGA=1, PDN_MOD=1, etc.
+        ret |= writeRegister(ES8311_REG_SYS_PDN2, 0xFF);
+
+        // 4. Power down Chip State Machine (CSM) and enable all digital resets
+        // Bit 7 (CSM_ON) = 0 -> CSM Power Down
+        // Bits 4:0 = 0x1F    -> Assert digital, csm, and clock manager resets
+        ret |= writeRegister(ES8311_REG_RESET, 0x1F);
+
+        log_d("PowerDown: ret=%d", ret);
+
+        return ret;
     }
 
       // Playback APIs

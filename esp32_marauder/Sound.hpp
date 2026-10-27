@@ -98,6 +98,10 @@ class Sound {
         return sound_dev.begin();
       #endif
     }
+    #if defined(HAS_ES8311)
+      int PowerDown() { sound_dev.PowerDown(); }
+    #endif
+
 
     bool supported() { return sound_dev.supported; }
     // click/tick are called from WiFi/BLE/Zigbee callbacks: rate-limit them

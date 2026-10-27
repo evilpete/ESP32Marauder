@@ -84,8 +84,10 @@ int8_t Display::menuButton(uint16_t *x, uint16_t *y, bool pressed, bool check_ho
       int8_t dbg_zone = -1;
       for (uint8_t b = BUTTON_ARRAY_LEN; b < BUTTON_ARRAY_LEN + 3; b++)
         if (this->key[b].contains(_x, _y)) { dbg_zone = (int8_t)(b - BUTTON_ARRAY_LEN); break; }
-      log_d("menuButton touch x=%d y=%d -> zone=%d (0=UP 1=SELECT 2=DOWN) hold=%d",
+      #ifdef DEBUG_TOUCH
+        log_d("menuButton touch x=%d y=%d -> zone=%d (0=UP 1=SELECT 2=DOWN) hold=%d",
             _x, _y, dbg_zone, (int)check_hold);
+      #endif
     }
     for (uint8_t b = BUTTON_ARRAY_LEN; b < BUTTON_ARRAY_LEN + 3; b++) {
       // log_d("key %d _x1=%d _y1=%d _w=%d _h=%d _label=%s", 
@@ -230,9 +232,11 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
           //*x = map(p.x, 200, 3700, 1, TFT_WIDTH);
           //*y = map(p.y, 240, 3800, 1, TFT_HEIGHT);
 
+          #ifdef DEBUG_TOUCH
           // DEBUG (CYD SELECT-not-detected): remember the raw touch before any
           // per-board hack so the log below shows the effect of the hack + map.
-          uint16_t dbg_raw_px = p.x, dbg_raw_py = p.y;
+          uint16_t dbg_raw_px = p.x, dbg_raw_py = p.y, dbg_raw_pz = p.z;
+          #endif
 
           uint8_t rot = this->tft.getRotation();
 
@@ -263,16 +267,20 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
               *y = map(p.x, 200, 3700, 1, TFT_HEIGHT);
               break;
           }
+
+          #ifdef DEBUG_TOUCH
           // DEBUG (CYD SELECT-not-detected): show rotation, the raw touch, the
           // post-hack touch, the mapped screen coords, and which menu third the
           // mapped *y lands in (0=UP, 1=SELECT, 2=DOWN). If touching the middle
           // of the screen never prints third=1, the Y mapping/rotation (and the
           // "p.x = 4095 - p.x" hack above, which feeds *y in landscape rots) is
           // the cause. Remove this log + revisit the hack once calibrated.
-          log_d("CYDtouch rot=%d raw(px=%d,py=%d) hack(px=%d,py=%d) screen(x=%d,y=%d) third=%d [TFT %dx%d]",
-                rot, dbg_raw_px, dbg_raw_py, p.x, p.y, *x, *y,
+          log_d("CYDtouch rot=%d raw(px=%d,py=%d,pz=%u) hack(px=%d,py=%d) screen(x=%d,y=%d) third=%d [TFT %dx%d]",
+                rot, dbg_raw_px, dbg_raw_py, dbg_raw_pz, p.x, p.y, *x, *y,
                 (*y < (TFT_HEIGHT / 3)) ? 0 : ((*y < (2 * TFT_HEIGHT / 3)) ? 1 : 2),
                 TFT_WIDTH, TFT_HEIGHT);
+
+          #endif
           return 1;
         }
         else
