@@ -85,6 +85,8 @@ void Settings::_buildCache() {
     return;
   }
 
+  log_d("settings len=%u", this->json_settings_string.length());
+
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
     const char* name = json["Settings"][i]["name"] | "";
 
@@ -715,11 +717,11 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, const
     jsonBuffer["Settings"][x]["range"]["max"] = MAX_GEOFENCES;
 
 
-    jsonBuffer["Settings"][13]["name"] = "Censor";
-    jsonBuffer["Settings"][13]["type"] = "bool";
-    jsonBuffer["Settings"][13]["value"] = false;
-    jsonBuffer["Settings"][13]["range"]["min"] = false;
-    jsonBuffer["Settings"][13]["range"]["max"] = true;
+    jsonBuffer["Settings"][++x]["name"] = "Censor";
+    jsonBuffer["Settings"][x]["type"] = "bool";
+    jsonBuffer["Settings"][x]["value"] = false;
+    jsonBuffer["Settings"][x]["range"]["min"] = false;
+    jsonBuffer["Settings"][x]["range"]["max"] = true;
 
     serializeJson(jsonBuffer, settingsFile);
     serializeJson(jsonBuffer, settings_string);

@@ -181,7 +181,7 @@ inline esp_err_t enable_pm(bool pm = true) {
 
 #ifdef CONFIG_PM_ENABLE
 
-  log_d("CONFIG_PM_ENABLE Set = %s", pm ? 'true' : 'false');
+  log_d("CONFIG_PM_ENABLE Set = %s", pm ? "true" : "false");
 
   esp_log_level_set("pm", ESP_LOG_VERBOSE);       // For power management module
   esp_log_level_set("cpu_freq", ESP_LOG_VERBOSE); // For dynamic frequency scaling
